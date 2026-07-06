@@ -3935,7 +3935,7 @@ mindmap
 
 单元测试关注"一个类的一个方法逻辑对不对"，并且**不依赖数据库、网络等外部资源**（用 Mock 假对象替代依赖）。
 
-假设要测 `UserService`，它依赖 `UserRepository`。我们用 Mockito 造一个假的 Repository：
+假设要测 `UserService`，它依赖 `UserMapper`（第 07 章的 MyBatis-Flex Mapper）。我们用 Mockito 造一个假的 Mapper：
 
 ```java
 import org.junit.jupiter.api.Test;
@@ -3950,10 +3950,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)  // 启用 Mockito
 class UserServiceTest {
 
-    @Mock                       // 造一个假的 Repository（不连真数据库）
-    private UserRepository userRepository;
+    @Mock                       // 造一个假的 Mapper（不连真数据库）
+    private UserMapper userMapper;
 
-    @InjectMocks                // 把上面的假 Repository 注入进 UserService
+    @InjectMocks                // 把上面的假 Mapper 注入进 UserService
     private UserService userService;
 
     @Test
@@ -3961,14 +3961,15 @@ class UserServiceTest {
         // 1. 准备（Arrange）：规定假对象的行为
         User mockUser = new User();
         mockUser.setId(1L);
-        mockUser.setName("张三");
-        when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+        mockUser.setUserName("张三");
+        // MyBatis-Flex 的 selectOneById 直接返回实体（不是 Optional）
+        when(userMapper.selectOneById(1L)).thenReturn(mockUser);
 
         // 2. 执行（Act）：调用被测方法
         User result = userService.getById(1L);
 
         // 3. 断言（Assert）：验证结果
-        assertThat(result.getName()).isEqualTo("张三");
+        assertThat(result.getUserName()).isEqualTo("张三");
     }
 }
 ```
@@ -3978,7 +3979,7 @@ class UserServiceTest {
 ```mermaid
 flowchart LR
     A[UserServiceTest] --> B[真实的 UserService<br/>被测对象]
-    B --> C["假的 UserRepository<br/>(Mock，不连数据库)"]
+    B --> C["假的 UserMapper<br/>(Mock，不连数据库)"]
 
     style B fill:#c8e6c9,stroke:#2e7d32
     style C fill:#fff3e0,stroke:#e65100
@@ -4005,12 +4006,13 @@ class UserControllerTest {
     @Test
     void 查询用户接口_应返回200和用户名() throws Exception {
         User mockUser = new User();
-        mockUser.setName("李四");
+        mockUser.setUserName("李四");
         when(userService.getById(1L)).thenReturn(mockUser);
 
-        mockMvc.perform(get("/users/1"))          // 模拟 GET /users/1
-               .andExpect(status().isOk())        // 期望状态码 200
-               .andExpect(jsonPath("$.name").value("李四"));  // 期望返回的 JSON 中 name=李四
+        // 控制器返回 Result<User>，数据在 data 字段里（见第 06、07 章）
+        mockMvc.perform(get("/api/v1/users/1"))    // 模拟 GET /api/v1/users/1
+               .andExpect(status().isOk())         // 期望状态码 200
+               .andExpect(jsonPath("$.data.userName").value("李四"));  // JSON 中 data.userName=李四
     }
 }
 ```
@@ -4069,7 +4071,7 @@ flowchart TD
 | --- | --- | --- | --- |
 | 纯单元测试（Mockito） | 不加载容器 | 最快 | 测单个类逻辑 |
 | `@WebMvcTest` | 仅 Web 层 | 较快 | 测 Controller 接口 |
-| `@DataJpaTest` | 仅数据层 | 较快 | 测 Repository |
+| `@SpringBootTest`（配测试库） | 数据层 | 中 | 测 Mapper（MyBatis-Flex 无 `@DataJpaTest` 这种切片） |
 | `@SpringBootTest` | 整个应用 | 慢 | 测完整流程 |
 
 ---
@@ -4821,6 +4823,7 @@ public class GlobalExceptionHandler {
 }
 ```
 
+
 ---
 
 ## 12.7 参数校验注解
@@ -5104,7 +5107,7 @@ public class MyRedisConfig {
 | --- | --- |
 | `@SpringBootTest` | 加载完整容器做集成测试 |
 | `@WebMvcTest` | 只加载 Web 层测试 Controller |
-| `@DataJpaTest` | 只加载数据层测试 Repository |
+| `@DataJpaTest` | 只加载 JPA 数据层做测试（JPA 专用；本教程用 MyBatis-Flex，测 Mapper 用 `@SpringBootTest`） |
 | `@Test` | JUnit 5 测试方法 |
 | `@BeforeEach` / `@AfterEach` | 每个测试前/后执行 |
 | `@BeforeAll` / `@AfterAll` | 所有测试前/后执行一次 |
@@ -5190,7 +5193,7 @@ public class User {
 @RequiredArgsConstructor       // 为 final 字段自动生成构造方法（实现构造注入）
 @Slf4j                         // 直接使用 log 变量
 public class UserService {
-    private final UserRepository userRepository;   // 自动注入
+    private final UserMapper userMapper;   // 自动注入
 
     public void demo() {
         log.info("使用 Lombok 生成的 log");
@@ -5288,11 +5291,11 @@ mindmap
 
 - 注解本质是**贴给 Spring 看的"标签"**，框架读到后替你完成配置和装配。
 - 注解虽多，但**按场景分类记忆**最有效：启动、组件、注入、Web、数据、事务、AOP、异步/缓存、测试、安全。
-- **不必一次背完**：先掌握 12.18 高频速记表里的核心注解，其余当字典按需查。
+- **不必一次背完**：先掌握 [12.18 高频速记表] 里的核心注解，其余当字典按需查。
 - 内置注解不够用时，可用**元注解自定义注解**，配合 AOP 实现强大功能。
 
 ---
 
-🎉 至此，整个教程（12 章）就全部学完了。祝你在 Spring Boot 的世界里越走越顺！
+⬅️ 返回 [目录首页](#-目录) ｜ 上一章：[Spring Boot 3.5 新特性](#ch11)
 
-⬆️ 返回 [目录](#-目录)
+🎉 至此，整个教程（12 章）就全部学完了。祝你在 Spring Boot 的世界里越走越顺！
