@@ -183,8 +183,8 @@ mindmap
 ```mermaid
 flowchart LR
     A[① JDK 21 LTS<br/>推荐使用 JDK 21] --> D[开始开发]
-    B[② 构建工具<br/>Maven 或 Gradle] --> D
-    C[③ 开发工具 IDE<br/>推荐 IntelliJ IDEA] --> D
+    B[② 构建工具<br/>Gradle] --> D
+    C[③ 开发工具 IDE<br/>推荐 IntelliJ IDEA 2026] --> D
 
     style A fill:#e3f2fd,stroke:#1565c0
     style B fill:#fff3e0,stroke:#e65100
@@ -212,16 +212,17 @@ OpenJDK 64-Bit Server VM (build 21.0.5+11, mixed mode, sharing)
 
 > 💡 JDK 下载推荐：[Eclipse Temurin (Adoptium)](https://adoptium.net/) 或 [Oracle JDK](https://www.oracle.com/java/technologies/downloads/)。
 
-### ② 关于 Maven / Gradle
+### ② 关于 Gradle
 
-它们是**构建工具**，负责帮你下载依赖、编译、打包。二选一即可，本教程主要用 **Maven**（初学者更常见、更直观）。
+它是**构建工具**，负责帮你下载依赖、编译、打包。业界主流的构建工具有 Maven 和 Gradle 两种，**本教程统一使用 Gradle**（构建脚本更简洁、增量构建更快）。
 
-- 好消息：如果你用 IntelliJ IDEA，它**自带 Maven**，通常不用单独安装。
-- 检查命令（如果单独装了）：`mvn -version`
+- 好消息：如果你用 IntelliJ IDEA，它**自带 Gradle**，通常不用单独安装。
+- 用 Spring Initializr 创建的项目会自带 `gradlew`（Gradle Wrapper）脚本，团队成员**无需各自安装 Gradle**，直接运行 `./gradlew` 即可。
+- 检查命令（如果单独装了）：`gradle -v`
 
 ### ③ 安装 IDE
 
-强烈推荐 **IntelliJ IDEA**（社区版免费就够用了），对 Spring Boot 支持最好。也可以用 VS Code + Java 插件、或 Eclipse。
+强烈推荐 **IntelliJ IDEA**（本教程以 **IntelliJ IDEA 2026** 为例，社区版免费就够用了），对 Spring Boot 和 Gradle 的支持最好。也可以用 VS Code + Java 插件、或 Eclipse。
 
 ---
 
@@ -259,7 +260,7 @@ flowchart LR
     A[Spring Boot 是什么] --> A1[让 Spring 开箱即用的脚手架]
     B[解决了什么] --> B1[配置多/依赖乱/部署烦]
     C[核心特性] --> C1[自动配置/Starter/内嵌服务器]
-    D[环境要求] --> D1[JDK 21 / Maven / IDEA]
+    D[环境要求] --> D1[JDK 21 / Gradle / IDEA 2026]
 
     style A1 fill:#e3f2fd
     style B1 fill:#fff3e0
@@ -268,7 +269,7 @@ flowchart LR
 ```
 
 - Spring Boot 是简化 Spring 开发的框架，核心是**自动配置**、**起步依赖**和**内嵌服务器**。
-- 开发环境需要 **JDK 21**、**Maven（或 Gradle）** 和一个 **IDE**。
+- 开发环境需要 **JDK 21**、**Gradle** 和一个 **IDE**（推荐 IntelliJ IDEA 2026）。
 - 应用打包成 jar，内嵌服务器，可直接运行。
 
 ---
@@ -276,6 +277,7 @@ flowchart LR
 ➡️ 环境准备好了，下一章我们就来 **[创建第一个 Spring Boot 应用](#ch02)**，让程序真正跑起来！
 
 ---
+
 
 <a id="ch02"></a>
 
@@ -306,7 +308,7 @@ flowchart LR
 
 | 选项 | 推荐值 | 说明 |
 | --- | --- | --- |
-| Project | **Maven** | 构建工具，初学选 Maven |
+| Project | **Gradle - Groovy** | 构建工具，本教程用 Gradle |
 | Language | **Java** | 编程语言 |
 | Spring Boot | **3.5.x** | 选最新的 3.5 稳定版 |
 | Group | `com.example` | 公司/组织的域名倒写 |
@@ -336,7 +338,9 @@ demo/
 │   │       └── application.properties  ← 配置文件（重要！）
 │   └── test/
 │       └── java/...             ← 测试代码
-├── pom.xml                      ← Maven 配置文件（管理依赖）
+├── build.gradle                 ← Gradle 构建脚本（管理依赖，核心！）
+├── settings.gradle              ← Gradle 项目设置（项目名等）
+├── gradlew / gradlew.bat        ← Gradle Wrapper 脚本（免安装 Gradle）
 └── ...
 ```
 
@@ -344,7 +348,7 @@ demo/
 
 ```mermaid
 flowchart TD
-    ROOT[demo 项目] --> POM[pom.xml<br/>管理依赖和构建]
+    ROOT[demo 项目] --> POM[build.gradle<br/>管理依赖和构建]
     ROOT --> SRC[src/main]
     ROOT --> TEST[src/test<br/>测试代码]
 
@@ -450,7 +454,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     A[运行方式] --> B[方式一：IDE 里运行<br/>右键 main 方法 → Run]
-    A --> C["方式二：命令行<br/>mvn spring-boot:run"]
+    A --> C["方式二：命令行<br/>./gradlew bootRun"]
 
     style B fill:#e8f5e9,stroke:#2e7d32
     style C fill:#e3f2fd,stroke:#1565c0
@@ -818,13 +822,12 @@ flowchart TD
     style B1 fill:#c8e6c9,stroke:#2e7d32
 ```
 
-在 `pom.xml` 里，你只需要写一行：
+在 `build.gradle` 里，你只需要写一行：
 
-```xml
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-web</artifactId>
-</dependency>
+```groovy
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+}
 ```
 
 它就会自动把 Spring MVC、内嵌 Tomcat、JSON 处理（Jackson）等一整套 Web 开发需要的东西都带进来，**而且版本都是经过官方测试、互相兼容的**。
@@ -840,7 +843,7 @@ flowchart TD
 | `spring-boot-starter-validation` | 参数校验 |
 | `spring-boot-starter-actuator` | 应用监控与健康检查 |
 
-> 💡 你注意到了吗？上面的依赖**没写版本号**。因为版本由父项目 `spring-boot-starter-parent` 统一管理，这就是 Spring Boot 的"版本仲裁"机制，帮你避免版本冲突。
+> 💡 你注意到了吗？上面的依赖**没写版本号**。因为版本由 Spring Boot 的 Gradle 插件（`org.springframework.boot` + `io.spring.dependency-management`）统一管理，这就是 Spring Boot 的"版本仲裁"机制，帮你避免版本冲突。（用 Spring Initializr 创建项目时，这两个插件已自动配好在 `build.gradle` 里。）
 
 ---
 
@@ -2522,30 +2525,26 @@ INSERT INTO tb_user(user_name, age, email, status) VALUES
 
 > 💡 表名用 `tb_` 前缀、字段用**下划线命名**（`user_name`）是常见规范。稍后你会看到 MyBatis-Flex 如何自动把 `user_name` 列映射到 Java 的 `userName` 字段。
 
-### 第 2 步：在 pom.xml 添加依赖
+### 第 2 步：在 build.gradle 添加依赖
 
-```xml
-<!-- MyBatis-Flex 的 Spring Boot 3 启动器（注意是 boot3！） -->
-<dependency>
-    <groupId>com.mybatis-flex</groupId>
-    <artifactId>mybatis-flex-spring-boot3-starter</artifactId>
-    <version>1.11.8</version>
-</dependency>
+```groovy
+dependencies {
+    // MyBatis-Flex 的 Spring Boot 3 启动器（注意是 boot3！）
+    implementation 'com.mybatis-flex:mybatis-flex-spring-boot3-starter:1.11.8'
 
-<!-- MySQL 驱动 -->
-<dependency>
-    <groupId>com.mysql</groupId>
-    <artifactId>mysql-connector-j</artifactId>
-    <scope>runtime</scope>
-</dependency>
+    // ⭐ APT 处理器：Gradle 下【必须】显式声明，否则不会生成 TableDef（如 USER）！
+    annotationProcessor 'com.mybatis-flex:mybatis-flex-processor:1.11.8'
 
-<!-- Lombok：自动生成 getter/setter，简化实体类（可选但强烈推荐） -->
-<dependency>
-    <groupId>org.projectlombok</groupId>
-    <artifactId>lombok</artifactId>
-    <optional>true</optional>
-</dependency>
+    // MySQL 驱动（版本由 Spring Boot 管理，无需写）
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // Lombok：自动生成 getter/setter，简化实体类（可选但强烈推荐）
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
 ```
+
+> ⚠️ **Gradle 用户特别注意**：MyBatis-Flex 的 APT 处理器（`mybatis-flex-processor`）在 Gradle 下**必须手动加 `annotationProcessor`**，否则编译时不会生成 `TableDef`（如 `USER`），查询代码会报错。Maven 的 starter 会自动带上它，Gradle 则需要你自己写这一行——这是从 Maven 转 Gradle 最容易漏的一步。
 
 > ⚠️ **版本对应关系**（务必选对）：
 > - Spring Boot **3.x** → `mybatis-flex-spring-boot3-starter`
@@ -2740,9 +2739,9 @@ flowchart LR
 APT 在**项目编译时**自动运行。你只需：
 
 - 在 IDEA 里 `Build → Build Project`，或
-- 命令行执行 `mvn clean compile`（或 `mvn clean package`）
+- 命令行执行 `./gradlew build`（或 `./gradlew compileJava`）
 
-之后会在 `target/generated-sources` 下生成 `com.example.demo.entity.table.UserTableDef` 类，里面有一个静态常量 `USER`。
+之后会在 `build/generated/sources/annotationProcessor/java/main` 下生成 `com.example.demo.entity.table.UserTableDef` 类，里面有一个静态常量 `USER`。
 
 ### 如何使用？静态导入即可
 
@@ -2753,8 +2752,9 @@ import static com.example.demo.entity.table.UserTableDef.USER;
 然后就能写 `USER.USER_NAME`、`USER.AGE` 这样的字段引用了（下一节大量用到）。
 
 > ⚠️ **常见坑**：如果代码里 `USER` 报红/找不到，说明 APT 还没生成。解决办法：
-> 1. 先执行一次 `mvn clean compile` 或 IDEA 的 Build Project；
-> 2. 确认 IDEA 已开启注解处理（Settings → Build → Compiler → Annotation Processors → Enable）。
+> 1. 确认 `build.gradle` 里已加 `annotationProcessor 'com.mybatis-flex:mybatis-flex-processor:1.11.8'`（**Gradle 下这一步最容易漏！**）；
+> 2. 先执行一次 `./gradlew build` 或 IDEA 的 Build Project；
+> 3. 确认 IDEA 已开启注解处理（Settings → Build → Compiler → Annotation Processors → Enable）。
 > 生成后 `USER` 就能正常导入了。这和 Lombok 的原理是一样的。
 
 ---
@@ -3486,6 +3486,7 @@ mindmap
       别用错版本
     APT
       USER 报红先 Build 一次
+      Gradle 加 annotationProcessor
       IDEA 开启注解处理
     映射
       驼峰↔下划线自动
@@ -3502,7 +3503,7 @@ mindmap
 **要点回顾：**
 
 1. ❌ Spring Boot 3 用了 `mybatis-flex-spring-boot-starter`（2.x 的）→ 启动报错。要用 **boot3**。
-2. ❌ `USER` 找不到 → APT 没生成，先 `mvn clean compile` 并在 IDEA 开启注解处理。
+2. ❌ `USER` 找不到 → APT 没生成：确认 `build.gradle` 加了 `annotationProcessor ...mybatis-flex-processor`，执行 `./gradlew build`，并在 IDEA 开启注解处理。
 3. ⚠️ 查询条件的值为 `null` 会被**自动忽略**——这通常是优点，但如果你确实想查 `xxx IS NULL`，要用 `.isNull()` 而不是 `.eq(null)`。
 4. ⚠️ `update(entity)` 默认**不更新 null 字段**（局部更新）。若想把某字段更新成 null，需用相应的 API 或 `UpdateWrapper`。
 5. ✅ 学习期打开 `log-impl` 打印 SQL，随时核对 `QueryWrapper` 生成的 SQL 是否符合预期。
@@ -4076,7 +4077,7 @@ flowchart TD
 ## 9.7 运行测试
 
 - **IDE 中**：类或方法旁边有绿色三角，点它即可运行。
-- **命令行**：`mvn test` 会运行所有测试。
+- **命令行**：`./gradlew test` 会运行所有测试。
 
 测试结果一目了然：✅ 绿色通过，❌ 红色失败（并告诉你哪个断言没过）。
 
@@ -4095,6 +4096,7 @@ flowchart TD
 ➡️ 代码写好、测试通过，最后一步是让它跑到服务器上。下一章：**[打包与部署](#ch10)**。
 
 ---
+
 
 <a id="ch10"></a>
 
@@ -4128,26 +4130,25 @@ flowchart LR
 
 ## 10.2 打包成可执行 jar
 
-Spring Boot 项目默认就配好了打包插件 `spring-boot-maven-plugin`。在项目根目录执行：
+Spring Boot 项目默认就配好了 Gradle 插件 `org.springframework.boot`。在项目根目录执行：
 
 ```bash
-mvn clean package
+./gradlew build
 ```
 
 ```mermaid
 flowchart LR
-    A["mvn clean package"] --> B[clean 清理旧的构建产物]
-    B --> C[compile 编译源码]
-    C --> D[test 运行测试]
-    D --> E[package 打包]
-    E --> F["target/demo-0.0.1-SNAPSHOT.jar"]
+    A["./gradlew build"] --> B[编译源码]
+    B --> C[test 运行测试]
+    C --> D[bootJar 打成可执行 jar]
+    D --> F["build/libs/demo-0.0.1-SNAPSHOT.jar"]
 
     style F fill:#c8e6c9,stroke:#2e7d32
 ```
 
-打包成功后，在 `target/` 目录下会生成一个 jar 文件，例如 `demo-0.0.1-SNAPSHOT.jar`。
+打包成功后，在 `build/libs/` 目录下会生成一个 jar 文件，例如 `demo-0.0.1-SNAPSHOT.jar`。
 
-> 💡 想跳过测试打包，可以加 `-DskipTests`：`mvn clean package -DskipTests`（不推荐在正式发布时跳过）。
+> 💡 想跳过测试打包，可以加 `-x test`：`./gradlew build -x test`（不推荐在正式发布时跳过）。也可以用 `./gradlew bootJar` 只打可执行 jar。
 
 ---
 
@@ -4214,7 +4215,7 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # 3. 把打好的 jar 复制进镜像，重命名为 app.jar
-COPY target/demo-0.0.1-SNAPSHOT.jar app.jar
+COPY build/libs/demo-0.0.1-SNAPSHOT.jar app.jar
 
 # 4. 声明容器对外暴露的端口
 EXPOSE 8080
@@ -4227,7 +4228,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 ```bash
 # 先打好 jar
-mvn clean package -DskipTests
+./gradlew build -x test
 
 # 构建镜像，命名为 demo-app
 docker build -t demo-app .
@@ -4270,7 +4271,7 @@ flowchart TD
 ## 10.6 本章小结
 
 - Spring Boot 内嵌服务器，打成**可执行 jar**，用 `java -jar` 直接运行。
-- 打包命令：**`mvn clean package`**，产物在 `target/` 目录。
+- 打包命令：**`./gradlew build`**，产物在 `build/libs/` 目录。
 - 运行时可用 `--参数` 覆盖配置（如切换环境、改端口）。
 - **Docker 部署**：写 `Dockerfile` → `docker build` → `docker run`，实现环境一致。
 
@@ -4279,6 +4280,7 @@ flowchart TD
 ➡️ 恭喜你走完了核心流程！最后一章，我们来看看 **[Spring Boot 3.5 的新特性](#ch11)**，了解这个版本带来了哪些变化。
 
 ---
+
 
 <a id="ch11"></a>
 

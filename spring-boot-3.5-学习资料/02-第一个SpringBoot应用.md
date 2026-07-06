@@ -25,7 +25,7 @@ flowchart LR
 
 | 选项 | 推荐值 | 说明 |
 | --- | --- | --- |
-| Project | **Maven** | 构建工具，初学选 Maven |
+| Project | **Gradle - Groovy** | 构建工具，本教程用 Gradle |
 | Language | **Java** | 编程语言 |
 | Spring Boot | **3.5.x** | 选最新的 3.5 稳定版 |
 | Group | `com.example` | 公司/组织的域名倒写 |
@@ -55,7 +55,9 @@ demo/
 │   │       └── application.properties  ← 配置文件（重要！）
 │   └── test/
 │       └── java/...             ← 测试代码
-├── pom.xml                      ← Maven 配置文件（管理依赖）
+├── build.gradle                 ← Gradle 构建脚本（管理依赖，核心！）
+├── settings.gradle              ← Gradle 项目设置（项目名等）
+├── gradlew / gradlew.bat        ← Gradle Wrapper 脚本（免安装 Gradle）
 └── ...
 ```
 
@@ -63,7 +65,7 @@ demo/
 
 ```mermaid
 flowchart TD
-    ROOT[demo 项目] --> POM[pom.xml<br/>管理依赖和构建]
+    ROOT[demo 项目] --> POM[build.gradle<br/>管理依赖和构建]
     ROOT --> SRC[src/main]
     ROOT --> TEST[src/test<br/>测试代码]
 
@@ -169,7 +171,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     A[运行方式] --> B[方式一：IDE 里运行<br/>右键 main 方法 → Run]
-    A --> C["方式二：命令行<br/>mvn spring-boot:run"]
+    A --> C["方式二：命令行<br/>./gradlew bootRun"]
 
     style B fill:#e8f5e9,stroke:#2e7d32
     style C fill:#e3f2fd,stroke:#1565c0

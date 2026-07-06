@@ -107,30 +107,26 @@ INSERT INTO tb_user(user_name, age, email, status) VALUES
 
 > 💡 表名用 `tb_` 前缀、字段用**下划线命名**（`user_name`）是常见规范。稍后你会看到 MyBatis-Flex 如何自动把 `user_name` 列映射到 Java 的 `userName` 字段。
 
-### 第 2 步：在 pom.xml 添加依赖
+### 第 2 步：在 build.gradle 添加依赖
 
-```xml
-<!-- MyBatis-Flex 的 Spring Boot 3 启动器（注意是 boot3！） -->
-<dependency>
-    <groupId>com.mybatis-flex</groupId>
-    <artifactId>mybatis-flex-spring-boot3-starter</artifactId>
-    <version>1.11.8</version>
-</dependency>
+```groovy
+dependencies {
+    // MyBatis-Flex 的 Spring Boot 3 启动器（注意是 boot3！）
+    implementation 'com.mybatis-flex:mybatis-flex-spring-boot3-starter:1.11.8'
 
-<!-- MySQL 驱动 -->
-<dependency>
-    <groupId>com.mysql</groupId>
-    <artifactId>mysql-connector-j</artifactId>
-    <scope>runtime</scope>
-</dependency>
+    // ⭐ APT 处理器：Gradle 下【必须】显式声明，否则不会生成 TableDef（如 USER）！
+    annotationProcessor 'com.mybatis-flex:mybatis-flex-processor:1.11.8'
 
-<!-- Lombok：自动生成 getter/setter，简化实体类（可选但强烈推荐） -->
-<dependency>
-    <groupId>org.projectlombok</groupId>
-    <artifactId>lombok</artifactId>
-    <optional>true</optional>
-</dependency>
+    // MySQL 驱动（版本由 Spring Boot 管理，无需写）
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // Lombok：自动生成 getter/setter，简化实体类（可选但强烈推荐）
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
 ```
+
+> ⚠️ **Gradle 用户特别注意**：MyBatis-Flex 的 APT 处理器（`mybatis-flex-processor`）在 Gradle 下**必须手动加 `annotationProcessor`**，否则编译时不会生成 `TableDef`（如 `USER`），查询代码会报错。Maven 的 starter 会自动带上它，Gradle 则需要你自己写这一行——这是从 Maven 转 Gradle 最容易漏的一步。
 
 > ⚠️ **版本对应关系**（务必选对）：
 > - Spring Boot **3.x** → `mybatis-flex-spring-boot3-starter`
@@ -325,9 +321,9 @@ flowchart LR
 APT 在**项目编译时**自动运行。你只需：
 
 - 在 IDEA 里 `Build → Build Project`，或
-- 命令行执行 `mvn clean compile`（或 `mvn clean package`）
+- 命令行执行 `./gradlew build`（或 `./gradlew compileJava`）
 
-之后会在 `target/generated-sources` 下生成 `com.example.demo.entity.table.UserTableDef` 类，里面有一个静态常量 `USER`。
+之后会在 `build/generated/sources/annotationProcessor/java/main` 下生成 `com.example.demo.entity.table.UserTableDef` 类，里面有一个静态常量 `USER`。
 
 ### 如何使用？静态导入即可
 
@@ -338,8 +334,9 @@ import static com.example.demo.entity.table.UserTableDef.USER;
 然后就能写 `USER.USER_NAME`、`USER.AGE` 这样的字段引用了（下一节大量用到）。
 
 > ⚠️ **常见坑**：如果代码里 `USER` 报红/找不到，说明 APT 还没生成。解决办法：
-> 1. 先执行一次 `mvn clean compile` 或 IDEA 的 Build Project；
-> 2. 确认 IDEA 已开启注解处理（Settings → Build → Compiler → Annotation Processors → Enable）。
+> 1. 确认 `build.gradle` 里已加 `annotationProcessor 'com.mybatis-flex:mybatis-flex-processor:1.11.8'`（**Gradle 下这一步最容易漏！**）；
+> 2. 先执行一次 `./gradlew build` 或 IDEA 的 Build Project；
+> 3. 确认 IDEA 已开启注解处理（Settings → Build → Compiler → Annotation Processors → Enable）。
 > 生成后 `USER` 就能正常导入了。这和 Lombok 的原理是一样的。
 
 ---
@@ -1071,6 +1068,7 @@ mindmap
       别用错版本
     APT
       USER 报红先 Build 一次
+      Gradle 加 annotationProcessor
       IDEA 开启注解处理
     映射
       驼峰↔下划线自动
@@ -1087,7 +1085,7 @@ mindmap
 **要点回顾：**
 
 1. ❌ Spring Boot 3 用了 `mybatis-flex-spring-boot-starter`（2.x 的）→ 启动报错。要用 **boot3**。
-2. ❌ `USER` 找不到 → APT 没生成，先 `mvn clean compile` 并在 IDEA 开启注解处理。
+2. ❌ `USER` 找不到 → APT 没生成：确认 `build.gradle` 加了 `annotationProcessor ...mybatis-flex-processor`，执行 `./gradlew build`，并在 IDEA 开启注解处理。
 3. ⚠️ 查询条件的值为 `null` 会被**自动忽略**——这通常是优点，但如果你确实想查 `xxx IS NULL`，要用 `.isNull()` 而不是 `.eq(null)`。
 4. ⚠️ `update(entity)` 默认**不更新 null 字段**（局部更新）。若想把某字段更新成 null，需用相应的 API 或 `UpdateWrapper`。
 5. ✅ 学习期打开 `log-impl` 打印 SQL，随时核对 `QueryWrapper` 生成的 SQL 是否符合预期。

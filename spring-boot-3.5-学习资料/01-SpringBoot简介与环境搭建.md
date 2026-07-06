@@ -103,8 +103,8 @@ mindmap
 ```mermaid
 flowchart LR
     A[① JDK 21 LTS<br/>推荐使用 JDK 21] --> D[开始开发]
-    B[② 构建工具<br/>Maven 或 Gradle] --> D
-    C[③ 开发工具 IDE<br/>推荐 IntelliJ IDEA] --> D
+    B[② 构建工具<br/>Gradle] --> D
+    C[③ 开发工具 IDE<br/>推荐 IntelliJ IDEA 2026] --> D
 
     style A fill:#e3f2fd,stroke:#1565c0
     style B fill:#fff3e0,stroke:#e65100
@@ -132,16 +132,17 @@ OpenJDK 64-Bit Server VM (build 21.0.5+11, mixed mode, sharing)
 
 > 💡 JDK 下载推荐：[Eclipse Temurin (Adoptium)](https://adoptium.net/) 或 [Oracle JDK](https://www.oracle.com/java/technologies/downloads/)。
 
-### ② 关于 Maven / Gradle
+### ② 关于 Gradle
 
-它们是**构建工具**，负责帮你下载依赖、编译、打包。二选一即可，本教程主要用 **Maven**（初学者更常见、更直观）。
+它是**构建工具**，负责帮你下载依赖、编译、打包。业界主流的构建工具有 Maven 和 Gradle 两种，**本教程统一使用 Gradle**（构建脚本更简洁、增量构建更快）。
 
-- 好消息：如果你用 IntelliJ IDEA，它**自带 Maven**，通常不用单独安装。
-- 检查命令（如果单独装了）：`mvn -version`
+- 好消息：如果你用 IntelliJ IDEA，它**自带 Gradle**，通常不用单独安装。
+- 用 Spring Initializr 创建的项目会自带 `gradlew`（Gradle Wrapper）脚本，团队成员**无需各自安装 Gradle**，直接运行 `./gradlew` 即可。
+- 检查命令（如果单独装了）：`gradle -v`
 
 ### ③ 安装 IDE
 
-强烈推荐 **IntelliJ IDEA**（社区版免费就够用了），对 Spring Boot 支持最好。也可以用 VS Code + Java 插件、或 Eclipse。
+强烈推荐 **IntelliJ IDEA**（本教程以 **IntelliJ IDEA 2026** 为例，社区版免费就够用了），对 Spring Boot 和 Gradle 的支持最好。也可以用 VS Code + Java 插件、或 Eclipse。
 
 ---
 
@@ -179,7 +180,7 @@ flowchart LR
     A[Spring Boot 是什么] --> A1[让 Spring 开箱即用的脚手架]
     B[解决了什么] --> B1[配置多/依赖乱/部署烦]
     C[核心特性] --> C1[自动配置/Starter/内嵌服务器]
-    D[环境要求] --> D1[JDK 21 / Maven / IDEA]
+    D[环境要求] --> D1[JDK 21 / Gradle / IDEA 2026]
 
     style A1 fill:#e3f2fd
     style B1 fill:#fff3e0
@@ -188,7 +189,7 @@ flowchart LR
 ```
 
 - Spring Boot 是简化 Spring 开发的框架，核心是**自动配置**、**起步依赖**和**内嵌服务器**。
-- 开发环境需要 **JDK 21**、**Maven（或 Gradle）** 和一个 **IDE**。
+- 开发环境需要 **JDK 21**、**Gradle** 和一个 **IDE**（推荐 IntelliJ IDEA 2026）。
 - 应用打包成 jar，内嵌服务器，可直接运行。
 
 ---
