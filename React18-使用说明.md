@@ -152,90 +152,382 @@ root.unmount();
 
 ## 二、JSX 基础
 
+> **JSX 是什么？** JSX（JavaScript XML）是 React 提供的一种语法糖，让你能在 JavaScript 里用类似 HTML 的写法来描述界面。它不是字符串，也不是 HTML，而是"会被编译成 JavaScript 的特殊语法"。
+>
+> **为什么要用 JSX？** 因为界面结构（标签）和界面逻辑（JS）本来就紧密相关，JSX 让它们写在一起，直观且好维护。虽然 React 也能不用 JSX（直接调用 `React.createElement`），但那样非常啰嗦，几乎没人这么写。
+>
+> 本章从"最简单的一行 JSX"讲起，逐步覆盖表达式、属性、结构规则和内容渲染细节，共 24 个示例。
+
+### （A）JSX 的本质与表达式
+
 ### 示例 6：最简单的 JSX
 
 ```jsx
 const element = <h1>Hello, React 18!</h1>;
 ```
 
-### 示例 7：JSX 中嵌入表达式
+**详解**：这一行看起来像 HTML，但它其实是 JavaScript。`element` 是一个普通的 JS 变量，值是一个"React 元素"（描述界面长什么样的对象）。注意它右边**没有引号**——`<h1>...</h1>` 不是字符串，而是 JSX 语法。这是理解 JSX 的第一步：**它是代码，不是文本**。
+
+### 示例 7：JSX 的本质——会被编译成 React.createElement
+
+```jsx
+// 你写的 JSX：
+const element = <h1 className="title">你好</h1>;
+
+// 编译工具（Babel/Vite）会把它转成等价的 JS：
+const element = React.createElement('h1', { className: 'title' }, '你好');
+```
+
+**详解**：这是 JSX 最重要的原理。浏览器并不认识 JSX，所以构建工具会把每个 JSX 标签转换成 `React.createElement(标签, 属性对象, 子内容)` 的函数调用，最终得到一个描述 UI 的普通 JS 对象（称为"虚拟 DOM"）。理解这一点能帮你想通很多规则，比如：为什么属性用 `className`（因为它其实是对象的一个键）、为什么必须有单一根节点（因为一个函数调用只能返回一个对象）。**平时你不用手写 createElement，但知道 JSX 会变成它，很多疑惑就迎刃而解了。**
+
+### 示例 8：在 JSX 中嵌入变量（大括号 `{}`）
 
 ```jsx
 const name = '张三';
 const element = <h1>你好，{name}</h1>;
 ```
 
-### 示例 8：JSX 中使用运算
+**详解**：在 JSX 里用一对大括号 `{}` 可以"嵌入"任何 JavaScript 表达式。这里 `{name}` 会被替换成变量 `name` 的值，最终渲染成"你好，张三"。**大括号是 JSX 与 JS 之间的桥梁**：括号外是"类 HTML 的结构"，括号内是"真正的 JS"。
+
+### 示例 9：大括号里可以放各种表达式
 
 ```jsx
-const a = 3, b = 4;
-const element = <p>{a} + {b} = {a + b}</p>;
+const user = { firstName: '三', lastName: '张' };
+const element = (
+  <div>
+    <p>字符串拼接：{'你好，' + user.lastName + user.firstName}</p>
+    <p>调用方法：{user.lastName.toUpperCase()}</p>
+    <p>访问数组：{[1, 2, 3][0]}</p>
+    <p>三元表达式：{user ? '已登录' : '未登录'}</p>
+  </div>
+);
 ```
 
-### 示例 9：JSX 属性（className / style）
+**详解**：`{}` 里能放的是**表达式**——即"能算出一个值的代码"。包括：变量、运算、函数调用、属性访问、三元表达式、`&&`、模板字符串等。上面演示了几种常见形式。记住关键词"**表达式**"，它是判断能不能写进 `{}` 的标准。
+
+### 示例 10：大括号里不能放语句
+
+```jsx
+// ❌ 错误：if 是"语句"，不能直接写进 {}
+// <p>{ if (x) { return 'a'; } }</p>
+
+// ✅ 正确：改用三元"表达式"
+const element = <p>{x ? 'a' : 'b'}</p>;
+
+// ✅ 或者把逻辑提到 JSX 外面，用变量承接
+let text;
+if (x) text = 'a'; else text = 'b';
+const element2 = <p>{text}</p>;
+```
+
+**详解**：这是新手最容易困惑的点。`{}` 里只能放"表达式"，**不能放 `if`、`for`、`switch` 这类"语句"**。原因回到示例 7——`{}` 里的内容最终要作为参数传给 `createElement`，而参数必须是一个值，语句不产生值。遇到复杂逻辑有两种办法：① 用三元/`&&` 等表达式；② 把逻辑写在 JSX 外面，用变量存结果再嵌入（第五章会详细展开）。
+
+### 示例 11：在 JSX 中做运算与调用函数
+
+```jsx
+function formatPrice(n) {
+  return '¥' + n.toFixed(2);
+}
+
+const count = 3, price = 19.9;
+const element = (
+  <div>
+    <p>总数：{count * 2}</p>
+    <p>单价：{formatPrice(price)}</p>
+    <p>时间：{new Date().getFullYear()} 年</p>
+  </div>
+);
+```
+
+**详解**：既然 `{}` 里是 JS 表达式，那当然可以做算术运算（`count * 2`）、调用自己写的函数（`formatPrice(price)`）、甚至调用内置 API（`new Date().getFullYear()`）。这让"数据"和"展示格式"能灵活结合。建议把复杂的格式化逻辑抽成函数（如 `formatPrice`），保持 JSX 简洁易读。
+
+### 示例 12：在 JSX 中使用三元表达式（内联条件）
+
+```jsx
+const isVip = true;
+const element = (
+  <div>
+    <p>{isVip ? '尊贵的会员' : '普通用户'}</p>
+    <span>{isVip ? '⭐' : ''}</span>
+  </div>
+);
+```
+
+**详解**：因为 `if` 语句不能进 `{}`，所以 JSX 里做条件判断最常用三元表达式 `条件 ? A : B`。它是个表达式，能算出一个值。这里根据 `isVip` 显示不同文字和图标。（更多条件渲染的写法——`&&`、多分支、空状态等——集中在第五章详细讲解。）
+
+### （B）JSX 属性（Attributes）
+
+### 示例 13：JSX 属性基础
 
 ```jsx
 const element = (
-  <div className="box" style={{ color: 'red', fontSize: 20 }}>
+  <a href="https://react.dev" title="官方文档" target="_blank">
+    React 官网
+  </a>
+);
+```
+
+**详解**：给 JSX 标签设置属性，写法和 HTML 很像：`属性名="值"`。这些属性最终会变成 `createElement` 第二个参数（属性对象）里的键值对。大多数标准 HTML 属性都能直接用，但有几个特殊的（见下面 `className`、`style`）需要注意。
+
+### 示例 14：className —— 为什么不用 class
+
+```jsx
+// ❌ 不要写 class
+// const el = <div class="box">内容</div>;
+
+// ✅ 要写 className
+const el = <div className="box card">内容</div>;
+```
+
+**详解**：在 HTML 里设置 CSS 类用 `class`，但在 JSX 里必须写成 **`className`**。原因是：JSX 最终编译成 JS 对象（示例 7），而 `class` 是 JavaScript 的保留关键字（用于定义类），不能当对象的属性名，所以 React 用 `className` 代替。同理，HTML 的 `for` 属性（label 用）在 JSX 里要写成 `htmlFor`。多个类名之间用空格分隔，和 HTML 一样。
+
+### 示例 15：style —— 内联样式用对象
+
+```jsx
+const element = (
+  <div style={{ color: 'red', fontSize: 20, backgroundColor: '#eee' }}>
     带样式的文字
   </div>
 );
-// 注意：class 要写成 className，style 接收一个对象。
 ```
 
-### 示例 10：JSX 必须有单一根节点（Fragment）
+**详解**：JSX 的 `style` 属性接收的**不是字符串，而是一个 JavaScript 对象**。注意三个细节：
+1. **双层大括号 `{{ }}`**：外层 `{}` 表示"嵌入 JS 表达式"，内层 `{}` 是"对象字面量"，合起来就是"嵌入一个对象"。
+2. **属性名用驼峰命名**：CSS 里的 `font-size`、`background-color` 要写成 `fontSize`、`backgroundColor`（因为带连字符的名字不能直接做 JS 对象的键）。
+3. **数字默认单位是 px**：`fontSize: 20` 等价于 `20px`；需要其他单位就写成字符串，如 `width: '50%'`。
+
+### 示例 16：动态拼接 className
 
 ```jsx
-import { Fragment } from 'react';
+function Button({ primary, disabled }) {
+  const className = `btn ${primary ? 'btn-primary' : ''} ${disabled ? 'btn-disabled' : ''}`;
+  return <button className={className}>按钮</button>;
+}
+```
 
-function List() {
+**详解**：类名常常需要根据状态动态变化。因为 `className` 的值也能用 `{}` 嵌入表达式，所以可以用模板字符串拼接。这里根据 `primary`、`disabled` 决定加不加对应的类。当条件很多时，社区常用 `clsx` 或 `classnames` 这类小工具库来更优雅地拼接类名。
+
+### 示例 17：属性值使用变量与表达式
+
+```jsx
+function Avatar({ url, size }) {
   return (
-    <Fragment>
-      <li>项目 1</li>
-      <li>项目 2</li>
-    </Fragment>
+    <img
+      src={url}                        // 值来自变量
+      width={size}                     // 数字变量
+      alt={'用户头像 ' + size + 'px'}   // 表达式
+    />
   );
 }
+```
 
-// 简写形式：
-function List2() {
+**详解**：属性值不一定是写死的字符串，也可以用 `{}` 嵌入变量或表达式（此时**不要加引号**）。规则是：**值是字面字符串用引号 `"..."`；值是 JS 表达式用大括号 `{...}`**。写成 `src="url"` 会把字符串 "url" 当地址（错误），写成 `src={url}` 才是用变量 `url` 的值。
+
+### 示例 18：布尔属性与属性简写
+
+```jsx
+function Input({ isDisabled }) {
   return (
     <>
-      <li>项目 1</li>
-      <li>项目 2</li>
+      <input disabled={isDisabled} />   {/* 用变量控制 */}
+      <input disabled />                {/* 只写属性名，等价于 disabled={true} */}
+      <input disabled={false} />        {/* 明确关闭 */}
     </>
   );
 }
 ```
 
-### 示例 11：JSX 中的注释
+**详解**：像 `disabled`、`checked`、`readOnly` 这类布尔属性，可以传布尔值控制开关。只写属性名（如 `<input disabled />`）等价于 `disabled={true}`。要动态控制时，用 `disabled={变量}`。注意：想关闭时要写 `disabled={false}`，而不是干脆不写——虽然效果类似，但用变量显式控制更清晰。
+
+### 示例 19：用展开运算符传递属性 `{...obj}`
 
 ```jsx
+function TextInput(props) {
+  // 把 props 里的所有属性一次性传给 input
+  return <input {...props} />;
+}
+
+// 使用：<TextInput type="text" placeholder="请输入" maxLength={10} />
+const buttonProps = { type: 'submit', className: 'btn' };
+const el = <button {...buttonProps}>提交</button>;
+```
+
+**详解**：`{...对象}` 是 JS 的展开语法，在 JSX 里用它可以把一个对象的所有键值对"摊开"成属性，省去逐个书写。常用于"透传属性"——比如封装组件时，把外部传入的 `props` 原样转发给内部的原生元素。若展开后又单独写了同名属性，后写的会覆盖前面的（如 `<input {...props} type="password" />` 会强制 type 为 password）。
+
+### 示例 20：自定义 data-* 与无障碍 aria-* 属性
+
+```jsx
+const element = (
+  <button
+    data-id="123"                 // 自定义数据属性
+    data-role="submit"
+    aria-label="提交表单"          // 无障碍标签
+    aria-disabled={false}
+  >
+    提交
+  </button>
+);
+```
+
+**详解**：和标准属性不同，`data-*`（自定义数据属性）和 `aria-*`（无障碍属性）在 JSX 里**保留连字符写法**，不用改成驼峰。`data-*` 用于在 DOM 上存放自定义数据；`aria-*` 用于提升可访问性（让屏幕阅读器等辅助设备理解界面）。这是 JSX 属性命名规则的一个例外，记住即可。
+
+### （C）JSX 的结构规则
+
+### 示例 21：JSX 必须有唯一的根元素
+
+```jsx
+// ❌ 错误：返回了两个并列元素，没有共同的父节点
+// function App() {
+//   return (
+//     <h1>标题</h1>
+//     <p>段落</p>
+//   );
+// }
+
+// ✅ 正确：用一个父元素包起来
 function App() {
   return (
     <div>
-      {/* 这是 JSX 中的注释 */}
-      <p>内容</p>
+      <h1>标题</h1>
+      <p>段落</p>
     </div>
   );
 }
 ```
 
-### 示例 12：JSX 中渲染 HTML（谨慎使用）
+**详解**：一段 JSX 必须有且只有一个"根元素"。原因还是回到示例 7——JSX 编译成 `createElement` 调用，而一个 `return` 只能返回一个值（一个元素对象），不能同时返回两个并列的元素。所以要么用一个真实标签（如 `<div>`）包裹，要么用下面讲的 Fragment。
+
+### 示例 22：用 Fragment 包裹多个元素（不产生多余 DOM）
 
 ```jsx
-function RawHtml() {
-  const html = '<b>加粗文字</b>';
+import { Fragment } from 'react';
+
+function Info() {
+  return (
+    <Fragment>
+      <h1>标题</h1>
+      <p>段落</p>
+    </Fragment>
+  );
+}
+```
+
+**详解**：有时你只想满足"单一根节点"的要求，但**不想**在页面上多套一层 `<div>`（多余的 div 会打乱布局、影响 CSS）。这时用 `<Fragment>` 包裹：它满足"唯一根元素"的语法要求，但**不会渲染成任何真实 DOM 节点**。上面的代码最终在页面上只有 `<h1>` 和 `<p>`，没有额外的容器。
+
+### 示例 23：Fragment 的简写 `<>...</>`
+
+```jsx
+function Info() {
+  return (
+    <>
+      <h1>标题</h1>
+      <p>段落</p>
+    </>
+  );
+}
+```
+
+**详解**：因为 Fragment 用得很频繁，React 提供了简写：空标签 `<>` 和 `</>`。它和 `<Fragment>` 完全等价，且不用 `import`，更简洁。**唯一的限制**：简写形式不能带任何属性——如果你需要给 Fragment 加 `key`（比如在列表里循环生成，见第五章），就必须用完整的 `<Fragment key={...}>` 写法。日常包裹用 `<>` 即可。
+
+### 示例 24：标签必须闭合（含自闭合标签）
+
+```jsx
+function Media() {
+  return (
+    <div>
+      <img src="a.jpg" alt="图" />   {/* 自闭合，末尾必须有 /> */}
+      <br />
+      <input type="text" />
+      <hr />
+    </div>
+  );
+}
+```
+
+**详解**：JSX 比 HTML 更严格——**所有标签都必须闭合**。像 `<img>`、`<br>`、`<input>`、`<hr>` 这些在 HTML 里可以不闭合的"空元素"，在 JSX 里必须写成自闭合形式，即末尾加 `/>`（如 `<img ... />`）。忘记闭合会直接导致编译报错。有子内容的标签则要成对出现，如 `<div>...</div>`。
+
+### 示例 25：JSX 中的注释
+
+```jsx
+function App() {
+  return (
+    <div>
+      {/* 这是 JSX 内部的注释，必须包在大括号里 */}
+      <p>内容</p>
+      {/* 多行注释
+          也这样写 */}
+    </div>
+  );
+}
+```
+
+**详解**：在 JSX 的标签之间写注释，要用 `{/* ... */}` 的形式——因为注释也要放进 `{}` 才能被 JSX 识别。不能像 HTML 那样用 `<!-- -->`，也不能在标签内容区直接写 `//`。在 JSX 外面（普通 JS 代码里）则照常用 `//` 或 `/* */`。
+
+### （D）JSX 内容渲染细节
+
+### 示例 26：哪些值不会被渲染（null / undefined / false / true）
+
+```jsx
+function Demo() {
+  return (
+    <div>
+      {null}        {/* 不渲染 */}
+      {undefined}   {/* 不渲染 */}
+      {false}       {/* 不渲染 */}
+      {true}        {/* 不渲染 */}
+      {0}           {/* ⚠️ 会渲染出 "0" */}
+      {'文本'}       {/* 渲染文本 */}
+    </div>
+  );
+}
+```
+
+**详解**：React 在渲染 `{}` 里的值时，对某些值会"忽略、什么都不显示"：`null`、`undefined`、`false`、`true` 都不渲染。**这正是条件渲染 `{条件 && <组件/>}` 能工作的基础**——条件为 `false` 时整体值是 `false`，于是什么都不显示。但要特别小心：数字 `0` 和空字符串会被当作有效内容渲染出来（`0` 会在页面上显示一个"0"），这是常见的坑（第五章示例会专门讲）。
+
+### 示例 27：在 JSX 中渲染数组
+
+```jsx
+function List() {
+  const items = [<li key="a">苹果</li>, <li key="b">香蕉</li>];
+  return <ul>{items}</ul>;
+}
+```
+
+**详解**：`{}` 里可以直接放一个"元素数组"，React 会依次渲染数组里的每个元素。这就是列表渲染的底层原理——平时用 `array.map(...)` 生成的正是这样一个元素数组。注意数组里的每个元素都需要一个唯一的 `key` 属性，帮助 React 识别每一项（第五章会深入讲 `key` 的作用）。
+
+### 示例 28：多行 JSX 用小括号包裹
+
+```jsx
+function Card() {
+  return (
+    <div className="card">
+      <h3>标题</h3>
+      <p>正文</p>
+    </div>
+  );
+}
+```
+
+**详解**：当 JSX 有多行时，习惯用一对小括号 `( ... )` 把它包起来，紧跟在 `return` 后面。**为什么？** JavaScript 有"自动分号插入"机制——如果 `return` 后面直接换行，JS 可能会自作主张在 `return` 后加分号，导致返回 `undefined`。用括号把 JSX 包住，就能安全地把它写成多行、清晰缩进。单行 JSX 则不需要括号。
+
+### 示例 29：渲染原始 HTML 字符串（dangerouslySetInnerHTML）
+
+```jsx
+function RichText() {
+  const html = '<b>加粗</b> 和 <i>斜体</i>';
   return <div dangerouslySetInnerHTML={{ __html: html }} />;
 }
-// 警告：dangerouslySetInnerHTML 可能带来 XSS 风险，只用于可信内容。
 ```
+
+**详解**：默认情况下，JSX 会把字符串里的 HTML 标签当**纯文本**转义显示（比如直接输出 `<b>加粗</b>` 这几个字），这是 React 防止 XSS 攻击的安全设计。如果你确实需要把一段 HTML 字符串当真正的 HTML 渲染，就用 `dangerouslySetInnerHTML={{ __html: 字符串 }}`。
+
+**⚠️ 为什么名字里带"dangerously（危险地）"？** 这是 React 故意起的警示性名字。如果这段 HTML 来自用户输入或不可信来源，攻击者可能注入恶意脚本（XSS 攻击）。**使用原则**：只对完全可信的内容使用它，或先用 `DOMPurify` 等库消毒后再渲染。绝大多数情况下你都不需要它。
 
 ---
 
 ## 三、组件与 Props
 
-### 示例 13：函数组件
+### 示例 30：函数组件
 
 ```jsx
 function Welcome() {
@@ -243,13 +535,13 @@ function Welcome() {
 }
 ```
 
-### 示例 14：箭头函数组件
+### 示例 31：箭头函数组件
 
 ```jsx
 const Welcome = () => <h1>欢迎光临</h1>;
 ```
 
-### 示例 15：接收 props
+### 示例 32：接收 props
 
 ```jsx
 function Welcome(props) {
@@ -259,7 +551,7 @@ function Welcome(props) {
 // 使用：<Welcome name="李四" />
 ```
 
-### 示例 16：解构 props
+### 示例 33：解构 props
 
 ```jsx
 function Welcome({ name, age }) {
@@ -267,7 +559,7 @@ function Welcome({ name, age }) {
 }
 ```
 
-### 示例 17：props 默认值
+### 示例 34：props 默认值
 
 ```jsx
 function Button({ text = '点击' }) {
@@ -276,7 +568,7 @@ function Button({ text = '点击' }) {
 // 不传 text 时显示"点击"
 ```
 
-### 示例 18：children 属性
+### 示例 35：children 属性
 
 ```jsx
 function Card({ children }) {
@@ -287,7 +579,7 @@ function Card({ children }) {
 // <Card><p>卡片内容</p></Card>
 ```
 
-### 示例 19：组件组合（嵌套）
+### 示例 36：组件组合（嵌套）
 
 ```jsx
 function Avatar({ url }) {
@@ -304,7 +596,7 @@ function UserInfo({ user }) {
 }
 ```
 
-### 示例 20：传递函数作为 prop
+### 示例 37：传递函数作为 prop
 
 ```jsx
 function Child({ onAction }) {
@@ -317,7 +609,7 @@ function Parent() {
 }
 ```
 
-### 示例 21：透传所有 props（展开运算符）
+### 示例 38：透传所有 props（展开运算符）
 
 ```jsx
 function Input(props) {
@@ -332,7 +624,7 @@ function Input(props) {
 
 ## 四、State 与事件
 
-### 示例 22：useState 计数器
+### 示例 39：useState 计数器
 
 ```jsx
 import { useState } from 'react';
@@ -347,7 +639,7 @@ function Counter() {
 }
 ```
 
-### 示例 23：函数式更新（依赖旧值时的正确写法）
+### 示例 40：函数式更新（依赖旧值时的正确写法）
 
 ```jsx
 function Counter() {
@@ -362,7 +654,7 @@ function Counter() {
 }
 ```
 
-### 示例 24：state 为对象
+### 示例 41：state 为对象
 
 ```jsx
 function Profile() {
@@ -373,7 +665,7 @@ function Profile() {
 }
 ```
 
-### 示例 25：state 为数组（添加元素）
+### 示例 42：state 为数组（添加元素）
 
 ```jsx
 function TodoList() {
@@ -388,7 +680,7 @@ function TodoList() {
 }
 ```
 
-### 示例 26：state 为数组（删除元素）
+### 示例 43：state 为数组（删除元素）
 
 ```jsx
 function List() {
@@ -404,7 +696,7 @@ function List() {
 }
 ```
 
-### 示例 27：惰性初始化 state
+### 示例 44：惰性初始化 state
 
 ```jsx
 function Expensive() {
@@ -418,7 +710,7 @@ function Expensive() {
 function computeExpensiveValue() { return 42; }
 ```
 
-### 示例 28：多个 state
+### 示例 45：多个 state
 
 ```jsx
 function Form() {
@@ -433,7 +725,7 @@ function Form() {
 }
 ```
 
-### 示例 29：事件对象
+### 示例 46：事件对象
 
 ```jsx
 function ClickInfo() {
@@ -445,7 +737,7 @@ function ClickInfo() {
 }
 ```
 
-### 示例 30：传参给事件处理函数
+### 示例 47：传参给事件处理函数
 
 ```jsx
 function Buttons() {
@@ -459,7 +751,7 @@ function Buttons() {
 }
 ```
 
-### 示例 31：阻止事件冒泡
+### 示例 48：阻止事件冒泡
 
 ```jsx
 function Box() {
@@ -473,7 +765,7 @@ function Box() {
 }
 ```
 
-### 示例 32：键盘事件
+### 示例 49：键盘事件
 
 ```jsx
 function SearchBox() {
@@ -484,7 +776,7 @@ function SearchBox() {
 }
 ```
 
-### 示例 33：自动批处理（React 18 新行为）
+### 示例 50：自动批处理（React 18 新行为）
 
 ```jsx
 function Batching() {
@@ -502,7 +794,7 @@ function Batching() {
 }
 ```
 
-### 示例 34：退出批处理（flushSync）
+### 示例 51：退出批处理（flushSync）
 
 ```jsx
 import { flushSync } from 'react-dom';
@@ -526,7 +818,7 @@ function Demo() {
 
 ### （A）条件渲染 —— 从最简单开始
 
-### 示例 35：最简单的条件——提前 return
+### 示例 52：最简单的条件——提前 return
 
 ```jsx
 function Greeting({ isLoggedIn }) {
@@ -539,7 +831,7 @@ function Greeting({ isLoggedIn }) {
 
 **详解**：这是最直观的写法。组件本质是一个函数，你完全可以用普通的 `if` 判断，然后 `return` 不同的 JSX。命中第一个 `return` 后函数就结束了，所以下面那行只有在 `isLoggedIn` 为假时才会执行。适合"整块内容完全不同"的场景。
 
-### 示例 36：三元运算符（内联在 JSX 里）
+### 示例 53：三元运算符（内联在 JSX 里）
 
 ```jsx
 function Status({ online }) {
@@ -549,7 +841,7 @@ function Status({ online }) {
 
 **详解**：当只是"一小段内容"随条件变化时，用 `if` 拆成两个 `return` 太啰嗦。JSX 的 `{}` 里可以放**表达式**，而三元 `条件 ? A : B` 正是一个表达式。`online` 为真显示"在线"，否则"离线"。记住：`{}` 里不能放 `if` 语句，但可以放三元表达式。
 
-### 示例 37：三元里返回 JSX 元素
+### 示例 54：三元里返回 JSX 元素
 
 ```jsx
 function LoginButton({ isLoggedIn }) {
@@ -563,9 +855,9 @@ function LoginButton({ isLoggedIn }) {
 }
 ```
 
-**详解**：三元的两个分支不仅能返回字符串，也能返回完整的 JSX 元素。相比示例 35 的提前 return，这种写法能让"页面大部分相同、只有局部不同"的结构写在一起，一眼看清差异在哪。
+**详解**：三元的两个分支不仅能返回字符串，也能返回完整的 JSX 元素。相比示例 52 的提前 return，这种写法能让"页面大部分相同、只有局部不同"的结构写在一起，一眼看清差异在哪。
 
-### 示例 38：`&&` 短路渲染（有则显示，无则不显示）
+### 示例 55：`&&` 短路渲染（有则显示，无则不显示）
 
 ```jsx
 function Inbox({ count }) {
@@ -579,7 +871,7 @@ function Inbox({ count }) {
 
 **详解**：`A && B` 的规则是——`A` 为真时返回 `B`，`A` 为假时返回 `A` 本身。当 `count > 0` 为 `true` 时，就渲染右边的 `<span>`；为 `false` 时整个表达式的值是 `false`，而 React 对 `false` 的处理是"什么都不渲染"。这是"满足条件才显示"的最常用写法。
 
-### 示例 39：`&&` 的经典陷阱——数字 0 会被显示出来
+### 示例 56：`&&` 的经典陷阱——数字 0 会被显示出来
 
 ```jsx
 function List({ items }) {
@@ -595,7 +887,7 @@ function ListFixed({ items }) {
 
 **详解**：这是新手最容易踩的坑。`0 && <ul>` 的结果是 `0`，而 React **会把数字 0 当作有效内容渲染出来**（只有 `false`、`null`、`undefined` 才不渲染）。所以 `&&` 左边一定要是真正的布尔值，用 `length > 0`、`Boolean(x)` 或 `!!x` 来保证。
 
-### 示例 40：`||` 提供默认内容（兜底）
+### 示例 57：`||` 提供默认内容（兜底）
 
 ```jsx
 function UserName({ name }) {
@@ -603,9 +895,9 @@ function UserName({ name }) {
 }
 ```
 
-**详解**：`A || B` 表示 `A` 为真用 `A`，否则用 `B`。当 `name` 是空字符串、`null`、`undefined` 等假值时，就显示"匿名用户"。这是给缺省数据做兜底的简洁写法。若你希望 `0` 或 `''` 也算有效值，应改用空值合并 `??`（见示例 49）。
+**详解**：`A || B` 表示 `A` 为真用 `A`，否则用 `B`。当 `name` 是空字符串、`null`、`undefined` 等假值时，就显示"匿名用户"。这是给缺省数据做兜底的简洁写法。若你希望 `0` 或 `''` 也算有效值，应改用空值合并 `??`（见示例 66）。
 
-### 示例 41：用 null 隐藏整个组件
+### 示例 58：用 null 隐藏整个组件
 
 ```jsx
 function Warning({ show }) {
@@ -614,9 +906,9 @@ function Warning({ show }) {
 }
 ```
 
-**详解**：组件返回 `null` 是完全合法的，表示"这个组件此刻不显示任何东西"。它和示例 38 的 `&&` 效果类似，但写在组件内部，适合"组件自己决定要不要显示"的封装场景（比如一个通用的提示框组件）。
+**详解**：组件返回 `null` 是完全合法的，表示"这个组件此刻不显示任何东西"。它和示例 55 的 `&&` 效果类似，但写在组件内部，适合"组件自己决定要不要显示"的封装场景（比如一个通用的提示框组件）。
 
-### 示例 42：先把 JSX 存进变量，再渲染
+### 示例 59：先把 JSX 存进变量，再渲染
 
 ```jsx
 function Page({ isLoading, data }) {
@@ -634,7 +926,7 @@ function Page({ isLoading, data }) {
 
 **详解**：当条件较复杂、分支较多时，把每个分支的 JSX 先赋值给一个变量，最后统一在 `return` 里使用，会比一长串嵌套三元清晰得多。这样外层结构（如 `<div className="page">`）只写一次，逻辑和结构分离，可读性高。
 
-### 示例 43：多分支 if / else if
+### 示例 60：多分支 if / else if
 
 ```jsx
 function Grade({ score }) {
@@ -646,7 +938,7 @@ function Grade({ score }) {
 
 **详解**：多个区间判断时，连续的 `if + return` 是最清晰的表达方式。命中即返回，无需写 `else`。注意判断顺序要"从高到低"，否则 `score >= 60` 会先把 95 分也拦下。
 
-### 示例 44：用 switch 处理多状态
+### 示例 61：用 switch 处理多状态
 
 ```jsx
 function StatusText({ status }) {
@@ -661,7 +953,7 @@ function StatusText({ status }) {
 
 **详解**：当条件是"一个变量等于若干枚举值之一"时，`switch` 比一堆 `if` 更工整。别忘了 `default` 分支处理意外值。由于每个 `case` 都直接 `return`，所以不需要写 `break`。
 
-### 示例 45：用对象映射代替 switch（推荐）
+### 示例 62：用对象映射代替 switch（推荐）
 
 ```jsx
 function Icon({ type }) {
@@ -676,7 +968,7 @@ function Icon({ type }) {
 
 **详解**：如果每个分支只是"取一个值"，用对象做"字典查表"比 `switch` 更简洁，也更容易扩展——加一种类型只需加一行。`map[type]` 取不到时用 `|| '❓'` 兜底。映射的值同样可以是 JSX 元素，不只是字符串。
 
-### 示例 46：在 JSX 中用立即执行函数写复杂逻辑（IIFE）
+### 示例 63：在 JSX 中用立即执行函数写复杂逻辑（IIFE）
 
 ```jsx
 function Dashboard({ role }) {
@@ -692,9 +984,9 @@ function Dashboard({ role }) {
 }
 ```
 
-**详解**：JSX 的 `{}` 里只能放表达式、不能放语句。当你确实想在此处写 `if/switch` 这类语句，可以用"立即执行函数"`(() => { ... })()` 把语句包起来——它整体是一个表达式。不过多数情况下，示例 42（变量存 JSX）更易读，IIFE 应谨慎使用。
+**详解**：JSX 的 `{}` 里只能放表达式、不能放语句。当你确实想在此处写 `if/switch` 这类语句，可以用"立即执行函数"`(() => { ... })()` 把语句包起来——它整体是一个表达式。不过多数情况下，示例 59（变量存 JSX）更易读，IIFE 应谨慎使用。
 
-### 示例 47：把条件判断抽成子组件
+### 示例 64：把条件判断抽成子组件
 
 ```jsx
 function AuthButton({ isLoggedIn, onLogin, onLogout }) {
@@ -709,7 +1001,7 @@ function LogoutButton({ onClick }) { return <button onClick={onClick}>退出</bu
 
 **详解**：当条件分支各自的逻辑变复杂时，与其在一个组件里堆砌，不如把每个分支抽成独立子组件。父组件只负责"选哪个"，子组件各自负责"怎么显示"。这就是组件化拆分的思路，让每部分职责单一、便于复用和测试。
 
-### 示例 48：加载 / 错误 / 成功三态渲染（实战常见）
+### 示例 65：加载 / 错误 / 成功三态渲染（实战常见）
 
 ```jsx
 function UserProfile({ loading, error, user }) {
@@ -727,7 +1019,7 @@ function UserProfile({ loading, error, user }) {
 
 **详解**：几乎所有涉及数据请求的组件都要处理这三种（甚至四种）状态。用连续的提前 `return` 逐一"排除"异常情况，最后剩下的才是正常渲染。这种"卫语句"风格避免了深层嵌套，是处理异步 UI 的标准套路。
 
-### 示例 49：可选链 `?.` 与空值合并 `??` 结合条件渲染
+### 示例 66：可选链 `?.` 与空值合并 `??` 结合条件渲染
 
 ```jsx
 function Profile({ user }) {
@@ -745,7 +1037,7 @@ function Profile({ user }) {
 
 ### （B）列表渲染 —— 把数组变成 JSX
 
-### 示例 50：最简单的列表——map 渲染字符串数组
+### 示例 67：最简单的列表——map 渲染字符串数组
 
 ```jsx
 function Fruits() {
@@ -760,7 +1052,7 @@ function Fruits() {
 
 **详解**：列表渲染的核心是数组的 `map` 方法：它把数组里的每一项"映射"成一个 JSX 元素，最终得到一个 JSX 元素数组，React 会依次渲染它们。这里每个水果名唯一，所以直接用它当 `key`（下面会详细讲 key）。
 
-### 示例 51：map 带索引参数
+### 示例 68：map 带索引参数
 
 ```jsx
 function RankList() {
@@ -775,9 +1067,9 @@ function RankList() {
 }
 ```
 
-**详解**：`map` 的回调第二个参数是当前项的下标 `index`（从 0 开始）。这里用 `index + 1` 显示排名。注意：**用 index 来显示序号没问题，但用它当 `key` 要谨慎**（见示例 53）。
+**详解**：`map` 的回调第二个参数是当前项的下标 `index`（从 0 开始）。这里用 `index + 1` 显示排名。注意：**用 index 来显示序号没问题，但用它当 `key` 要谨慎**（见示例 70）。
 
-### 示例 52：渲染对象数组
+### 示例 69：渲染对象数组
 
 ```jsx
 function ProductList() {
@@ -797,7 +1089,7 @@ function ProductList() {
 
 **详解**：真实数据几乎都是对象数组。每个对象通常自带一个唯一 `id`，这正是理想的 `key`。在回调里通过 `p.name`、`p.price` 访问对象的属性来构造 JSX。
 
-### 示例 53：key 的作用与"不要用 index 当 key"
+### 示例 70：key 的作用与"不要用 index 当 key"
 
 ```jsx
 function TodoList({ todos }) {
@@ -816,7 +1108,7 @@ function TodoList({ todos }) {
 - **什么时候可以用 index？** 仅当列表是"静态的、永不重排/增删"时才勉强可用。
 - **原则**：尽量用数据里稳定且唯一的字段（如 `id`）作为 key。
 
-### 示例 54：用 filter 过滤后再渲染
+### 示例 71：用 filter 过滤后再渲染
 
 ```jsx
 function ActiveUsers({ users }) {
@@ -832,7 +1124,7 @@ function ActiveUsers({ users }) {
 
 **详解**：`filter` 先按条件把数组"过滤"成一个更小的数组，再用 `map` 渲染。链式调用 `filter().map()` 是极常见的组合。注意 `filter` 不改变原数组，而是返回新数组，符合 React"不可变数据"的理念。
 
-### 示例 55：用 sort 排序后渲染（先拷贝再排序）
+### 示例 72：用 sort 排序后渲染（先拷贝再排序）
 
 ```jsx
 function ScoreBoard({ scores }) {
@@ -848,7 +1140,7 @@ function ScoreBoard({ scores }) {
 
 **详解**：`sort` 是"原地排序"，会**直接修改**传入的数组。如果 `scores` 来自 props 或 state，直接排序就等于偷偷改了原数据，可能引发 bug。正确做法是先用展开语法 `[...scores]` 复制一份再排。`(a, b) => b.point - a.point` 表示按分数从高到低。
 
-### 示例 56：一次返回多个元素——带 key 的 Fragment
+### 示例 73：一次返回多个元素——带 key 的 Fragment
 
 ```jsx
 function DefinitionList({ items }) {
@@ -867,7 +1159,7 @@ function DefinitionList({ items }) {
 
 **详解**：有时每次循环需要返回**多个并列元素**（这里是 `<dt>` 和 `<dd>`），又不想额外包一层 `<div>`。此时用 `<React.Fragment>`，它不产生真实 DOM。注意：需要写 `key` 时，必须用完整的 `<React.Fragment key={...}>`，简写的 `<>...</>` 不支持 key。
 
-### 示例 57：列表 + 条件——每一项内部再做条件渲染
+### 示例 74：列表 + 条件——每一项内部再做条件渲染
 
 ```jsx
 function TaskList({ tasks }) {
@@ -887,7 +1179,7 @@ function TaskList({ tasks }) {
 
 **详解**：条件渲染和列表渲染经常嵌套使用。这里外层用 `map` 遍历任务，内层用 `&&` 决定每项是否显示"已完成"标记和"紧急"标签。这是真实列表 UI 最常见的形态。
 
-### 示例 58：空列表的友好提示
+### 示例 75：空列表的友好提示
 
 ```jsx
 function MessageList({ messages }) {
@@ -904,7 +1196,7 @@ function MessageList({ messages }) {
 
 **详解**：列表为空时如果什么都不显示，用户会以为页面出错了。养成习惯：先判断 `length === 0` 给出"空状态"提示，再渲染正常列表。这是条件渲染与列表渲染结合的典型场景。
 
-### 示例 59：嵌套列表（列表里再套列表）
+### 示例 76：嵌套列表（列表里再套列表）
 
 ```jsx
 function CategoryList({ categories }) {
@@ -927,7 +1219,7 @@ function CategoryList({ categories }) {
 
 **详解**：处理"分类 → 分类下的条目"这类树状/二维数据时，外层 `map` 遍历分类，内层 `map` 遍历每个分类的条目。**每一层 map 都要有自己的 key**，且 key 只需在同一层的兄弟节点间唯一即可。
 
-### 示例 60：斑马纹 / 高亮——用 index 决定样式
+### 示例 77：斑马纹 / 高亮——用 index 决定样式
 
 ```jsx
 function StripedList({ rows }) {
@@ -948,7 +1240,7 @@ function StripedList({ rows }) {
 
 **详解**：`index` 除了显示序号，也常用来做"隔行变色"（`index % 2`）或"高亮第一项/最后一项"等样式逻辑。这里注意：**index 用于计算样式没问题，但 `key` 仍然用稳定的 `row.id`**，两者用途不同，别混用。
 
-### 示例 61：列表项绑定事件并传递该项数据
+### 示例 78：列表项绑定事件并传递该项数据
 
 ```jsx
 function UserList({ users, onSelect }) {
@@ -966,7 +1258,7 @@ function UserList({ users, onSelect }) {
 
 **详解**：列表中每一项都需要知道"点击的是我"。用箭头函数 `() => onSelect(user.id)` 把当前项的 `id` 传给回调。注意要写成箭头函数包一层，而不是直接 `onClick={onSelect(user.id)}`（后者会在渲染时立即执行，而不是点击时执行）。
 
-### 示例 62：把数据转成组件数组（渲染子组件列表）
+### 示例 79：把数据转成组件数组（渲染子组件列表）
 
 ```jsx
 function ProductGrid({ products }) {
@@ -991,7 +1283,7 @@ function ProductCard({ product }) {
 
 **详解**：当列表每一项的结构较复杂时，应把单项抽成独立的子组件（`ProductCard`），`map` 里只负责传数据。**`key` 要写在 `map` 直接返回的那个元素上**（这里是 `<ProductCard>`），而不是子组件内部的元素。
 
-### 示例 63：分组渲染（先用 reduce 分组，再渲染）
+### 示例 80：分组渲染（先用 reduce 分组，再渲染）
 
 ```jsx
 function GroupedContacts({ contacts }) {
@@ -1019,7 +1311,7 @@ function GroupedContacts({ contacts }) {
 
 **详解**：这是一个进阶技巧——数据往往需要先"加工"再渲染。这里用 `reduce` 把联系人按首字母分组成对象，再用 `Object.keys()` 拿到所有分组字母、排序后遍历渲染。渲染逻辑本身仍是嵌套 `map`，关键在于**渲染前先把数据整理成合适的结构**。
 
-### 示例 64：综合实战——搜索过滤 + 排序 + 空态 + 计数
+### 示例 81：综合实战——搜索过滤 + 排序 + 空态 + 计数
 
 ```jsx
 import { useState } from 'react';
@@ -1077,7 +1369,7 @@ function SearchableList({ items }) {
 
 ## 六、表单处理
 
-### 示例 65：受控输入框
+### 示例 82：受控输入框
 
 ```jsx
 function NameInput() {
@@ -1091,7 +1383,7 @@ function NameInput() {
 }
 ```
 
-### 示例 66：受控 textarea
+### 示例 83：受控 textarea
 
 ```jsx
 function Comment() {
@@ -1100,7 +1392,7 @@ function Comment() {
 }
 ```
 
-### 示例 67：受控 select 下拉框
+### 示例 84：受控 select 下拉框
 
 ```jsx
 function CitySelect() {
@@ -1114,7 +1406,7 @@ function CitySelect() {
 }
 ```
 
-### 示例 68：复选框（checkbox）
+### 示例 85：复选框（checkbox）
 
 ```jsx
 function Agree() {
@@ -1129,7 +1421,7 @@ function Agree() {
 }
 ```
 
-### 示例 69：单选按钮（radio）
+### 示例 86：单选按钮（radio）
 
 ```jsx
 function Gender() {
@@ -1145,7 +1437,7 @@ function Gender() {
 }
 ```
 
-### 示例 70：一个函数处理多个字段
+### 示例 87：一个函数处理多个字段
 
 ```jsx
 function Form() {
@@ -1162,7 +1454,7 @@ function Form() {
 }
 ```
 
-### 示例 71：表单提交
+### 示例 88：表单提交
 
 ```jsx
 function LoginForm() {
@@ -1180,7 +1472,7 @@ function LoginForm() {
 }
 ```
 
-### 示例 72：非受控组件（用 ref 读取值）
+### 示例 89：非受控组件（用 ref 读取值）
 
 ```jsx
 import { useRef } from 'react';
@@ -1197,7 +1489,7 @@ function UncontrolledForm() {
 }
 ```
 
-### 示例 73：文件上传
+### 示例 90：文件上传
 
 ```jsx
 function FileUpload() {
@@ -1220,7 +1512,7 @@ function FileUpload() {
 
 ### （A）useEffect —— 处理副作用
 
-### 示例 74：useEffect 最简单的样子（每次渲染后执行）
+### 示例 91：useEffect 最简单的样子（每次渲染后执行）
 
 ```jsx
 import { useState, useEffect } from 'react';
@@ -1236,7 +1528,7 @@ function Title() {
 
 **详解**：所谓"副作用"是指渲染之外、会影响外部世界的操作，比如改文档标题、发网络请求、操作 DOM、设置定时器等。`useEffect(fn)` 会在**每次渲染完成后**执行 `fn`。这里没写第二个参数，所以每次 `count` 变化导致重渲染后，标题都会更新。副作用不能直接写在组件函数体里（那样会在渲染过程中执行，可能引发问题），必须放进 `useEffect`。
 
-### 示例 75：空依赖数组（只在挂载时执行一次）
+### 示例 92：空依赖数组（只在挂载时执行一次）
 
 ```jsx
 function OnMount() {
@@ -1249,7 +1541,7 @@ function OnMount() {
 
 **详解**：`useEffect` 的第二个参数叫"依赖数组"。传空数组 `[]` 表示"没有任何依赖"，于是这个 effect 只在组件**首次挂载后**执行一次，后续重渲染都不再执行。适合做只需一次的初始化，比如获取初始数据、注册全局监听。（注意：开发环境的 `StrictMode` 下会故意执行两次以帮你发现问题，生产环境只执行一次。）
 
-### 示例 76：指定依赖（依赖变化时才执行）
+### 示例 93：指定依赖（依赖变化时才执行）
 
 ```jsx
 function Watcher({ userId }) {
@@ -1262,7 +1554,7 @@ function Watcher({ userId }) {
 
 **详解**：依赖数组里列出的值，只要**任意一个**在两次渲染之间发生变化，effect 就会重新执行。这里 `userId` 不变时，即使组件因别的原因重渲染，effect 也不会跑。React 用 `Object.is` 逐个比较依赖项，所以依赖应放"原始值或稳定引用"。
 
-### 示例 77：依赖数组的三种形态对比（重点总结）
+### 示例 94：依赖数组的三种形态对比（重点总结）
 
 ```jsx
 useEffect(() => { /* ... */ });          // ① 不传：每次渲染后都执行
@@ -1275,9 +1567,9 @@ useEffect(() => { /* ... */ }, [a, b]);  // ③ 有依赖：a 或 b 变化时执
 - **`[]`** → 仅挂载时执行一次，卸载时执行清理；
 - **`[a, b]`** → 挂载时执行，之后每当 `a` 或 `b` 变化时再执行。
 
-选哪种，取决于你的副作用"依赖了哪些数据"。原则是：**effect 内部用到的每一个组件内变量（props、state、函数），都应出现在依赖数组里**（见示例 83）。
+选哪种，取决于你的副作用"依赖了哪些数据"。原则是：**effect 内部用到的每一个组件内变量（props、state、函数），都应出现在依赖数组里**（见示例 100）。
 
-### 示例 78：清理函数（以定时器为例）
+### 示例 95：清理函数（以定时器为例）
 
 ```jsx
 function Timer() {
@@ -1292,7 +1584,7 @@ function Timer() {
 
 **详解**：`useEffect` 的回调可以 `return` 一个"清理函数"。React 会在**组件卸载时**、以及**下一次执行该 effect 之前**调用它。定时器、订阅这类会"持续占用资源"的副作用，必须在清理函数里释放（这里 `clearInterval`），否则组件卸载后定时器还在跑，会造成内存泄漏和报错。
 
-### 示例 79：清理事件监听
+### 示例 96：清理事件监听
 
 ```jsx
 function WindowSize() {
@@ -1308,7 +1600,7 @@ function WindowSize() {
 
 **详解**：给 `window`、`document` 等外部对象添加的监听器，React 不会自动帮你移除。规则很简单——**`addEventListener` 和 `removeEventListener` 必须成对出现**，后者放在清理函数里，且传入的必须是同一个函数引用（所以这里把 `onResize` 提取成具名函数）。
 
-### 示例 80：在 useEffect 中请求数据（基础版）
+### 示例 97：在 useEffect 中请求数据（基础版）
 
 ```jsx
 function UserProfile({ id }) {
@@ -1324,7 +1616,7 @@ function UserProfile({ id }) {
 
 **详解**：数据请求是最常见的副作用。把 `fetch` 放进 `useEffect`，并把请求依赖的 `id` 放进依赖数组，这样每当 `id` 变化就会自动重新请求。渲染时先展示"加载中"，数据回来后 `setUser` 触发重渲染显示内容。但这个版本有个隐患——见下一个示例。
 
-### 示例 81：请求数据的竞态问题与 ignore 标志
+### 示例 98：请求数据的竞态问题与 ignore 标志
 
 ```jsx
 function UserProfile({ id }) {
@@ -1344,7 +1636,7 @@ function UserProfile({ id }) {
 
 **详解**：如果 `id` 快速变化（比如从 1 切到 2），会发起两个请求。但网络返回顺序不保证——万一"id=1"的响应比"id=2"晚到，就会用旧数据覆盖新数据，这叫"竞态条件"。解决办法：在清理函数里把上一次 effect 标记为 `ignore = true`，其响应回来后就不再 `setUser`。这是 React 官方推荐的处理请求竞态的标准模式。
 
-### 示例 82：闭包陷阱——读到"过期"的 state
+### 示例 99：闭包陷阱——读到"过期"的 state
 
 ```jsx
 function Counter() {
@@ -1362,7 +1654,7 @@ function Counter() {
 
 **详解**：这是 Hooks 里最经典的坑。因为依赖是 `[]`，effect 只在挂载时运行一次，此时 `count` 的值 `0` 被闭包"永久捕获"。定时器回调里若直接用 `count`，永远是 `0`，导致计数卡在 1。**解决方案**：用函数式更新 `setCount(c => c + 1)`，`c` 是 React 传入的最新值，与闭包无关。这样既避免了陷阱，又不必把 `count` 加进依赖数组导致定时器反复重建。
 
-### 示例 83：不要漏写依赖（并理解为什么）
+### 示例 100：不要漏写依赖（并理解为什么）
 
 ```jsx
 function Search({ query, onResult }) {
@@ -1374,11 +1666,11 @@ function Search({ query, onResult }) {
 }
 ```
 
-**详解**：ESLint 的 `react-hooks/exhaustive-deps` 规则会提醒你补全依赖。漏写依赖的后果是：effect 内部读到的是某次渲染时"冻结"的旧值，行为难以预测。原则是**诚实地列出 effect 用到的每一个组件内变量**。如果某个依赖变化太频繁导致 effect 反复执行，正确做法不是删依赖，而是用 `useCallback`/`useMemo` 稳定它，或用函数式更新绕开（如示例 82）。
+**详解**：ESLint 的 `react-hooks/exhaustive-deps` 规则会提醒你补全依赖。漏写依赖的后果是：effect 内部读到的是某次渲染时"冻结"的旧值，行为难以预测。原则是**诚实地列出 effect 用到的每一个组件内变量**。如果某个依赖变化太频繁导致 effect 反复执行，正确做法不是删依赖，而是用 `useCallback`/`useMemo` 稳定它，或用函数式更新绕开（如示例 99）。
 
 ### （B）useRef —— 引用 DOM 与保存可变值
 
-### 示例 84：useRef 引用 DOM 元素
+### 示例 101：useRef 引用 DOM 元素
 
 ```jsx
 import { useRef, useEffect } from 'react';
@@ -1394,7 +1686,7 @@ function AutoFocus() {
 
 **详解**：`useRef(null)` 返回一个 `{ current: null }` 的对象。把它通过 `ref={inputRef}` 挂到 JSX 元素上后，React 会在渲染后把真实 DOM 节点放进 `inputRef.current`。于是你能命令式地操作 DOM（聚焦、测量、滚动、播放视频等）。注意要在 `useEffect` 里访问 `.current`，因为渲染阶段 DOM 还没就绪。
 
-### 示例 85：useRef 保存可变值（修改它不会触发渲染）
+### 示例 102：useRef 保存可变值（修改它不会触发渲染）
 
 ```jsx
 function Stopwatch() {
@@ -1414,7 +1706,7 @@ function Stopwatch() {
 
 **详解**：`useRef` 的第二个用途是"在多次渲染之间存放一个可变值"。和 `state` 不同，**修改 `ref.current` 不会触发重新渲染**。这里用它保存定时器 id，因为这个 id 只是内部记录、不需要显示到界面上。凡是"需要跨渲染记住、但改变时不需要更新 UI"的值，都适合用 ref。
 
-### 示例 86：useRef vs useState 的区别（对照理解）
+### 示例 103：useRef vs useState 的区别（对照理解）
 
 ```jsx
 function Demo() {
@@ -1434,7 +1726,7 @@ function Demo() {
 - **需要显示在界面、变化要驱动重渲染** → 用 `useState`；
 - **只是内部记录、变化不该刷新界面**（DOM 引用、定时器 id、上一次的值等） → 用 `useRef`。
 
-### 示例 87：useRef 保存上一次的值（自定义 usePrevious）
+### 示例 104：useRef 保存上一次的值（自定义 usePrevious）
 
 ```jsx
 function usePrevious(value) {
@@ -1455,7 +1747,7 @@ function PriceDisplay({ price }) {
 
 ### （C）useContext —— 跨层级共享数据
 
-### 示例 88：useContext 基础用法
+### 示例 105：useContext 基础用法
 
 ```jsx
 import { createContext, useContext } from 'react';
@@ -1478,7 +1770,7 @@ function App() {
 
 **详解**：Context 用于"跨越多层组件共享数据"。三步走：① `createContext(默认值)` 创建；② 用 `<Context.Provider value={...}>` 在上层提供数据；③ 子孙组件用 `useContext(Context)` 直接读取，无论隔了多少层。`useContext` 拿到的是"组件树中最近的那个 Provider"的 `value`；若上方没有 Provider，则用创建时的默认值。
 
-### 示例 89：useContext 解决"逐层传递 props"（prop drilling）
+### 示例 106：useContext 解决"逐层传递 props"（prop drilling）
 
 ```jsx
 const UserContext = createContext(null);
@@ -1504,7 +1796,7 @@ function UserBadge() {
 
 ### （D）useReducer —— 管理复杂状态
 
-### 示例 90：useReducer 计数器（入门）
+### 示例 107：useReducer 计数器（入门）
 
 ```jsx
 import { useReducer } from 'react';
@@ -1531,7 +1823,7 @@ function Counter() {
 
 **详解**：`useReducer` 是 `useState` 的"进阶版"，思路来自 Redux。它接收一个 `reducer(旧状态, action) => 新状态` 函数和初始状态，返回当前 `state` 和一个 `dispatch` 函数。你不再直接改状态，而是 `dispatch({ type: '动作' })` 派发一个动作，由 reducer 集中决定状态怎么变。好处是把"状态更新逻辑"从组件里抽出来，集中、可预测、易测试。
 
-### 示例 91：useReducer 管理复杂表单
+### 示例 108：useReducer 管理复杂表单
 
 ```jsx
 function formReducer(state, action) {
@@ -1558,7 +1850,7 @@ function Form() {
 
 **详解**：当一个状态是"包含多个字段的对象"、更新逻辑又有多种（修改某字段、重置、批量校验等）时，用 `useReducer` 比多个 `useState` 更清爽。所有更新集中在 reducer 里，用 `action.type` 区分操作。注意 reducer 里始终返回**新对象**（`{ ...state, ... }`），不要直接改旧 state。
 
-### 示例 92：useReducer 管理列表
+### 示例 109：useReducer 管理列表
 
 ```jsx
 function todoReducer(todos, action) {
@@ -1591,7 +1883,7 @@ function Todos() {
 
 **详解**：列表的增、删、改往往逻辑集中，非常适合 `useReducer`。每种操作对应一个 `case`，都返回新数组（`[...]`/`map`/`filter`，绝不原地修改）。组件里只管 `dispatch` 语义化的动作，读起来像在"描述发生了什么"，而不是"怎么改数据"。
 
-### 示例 93：useReducer vs useState 如何选择
+### 示例 110：useReducer vs useState 如何选择
 
 ```jsx
 // 简单、独立的状态 → useState
@@ -1608,7 +1900,7 @@ const [state, dispatch] = useReducer(reducer, initialState);
 
 ### （E）useMemo / useCallback —— 缓存以优化性能
 
-### 示例 94：useMemo 缓存昂贵的计算结果
+### 示例 111：useMemo 缓存昂贵的计算结果
 
 ```jsx
 import { useMemo } from 'react';
@@ -1624,7 +1916,7 @@ function ExpensiveList({ items, keyword }) {
 
 **详解**：`useMemo(fn, deps)` 会"记住" `fn` 的返回值，只有依赖 `deps` 变化时才重新计算，否则复用上次结果。它用于避免"每次渲染都重复做昂贵计算"（如大数组过滤/排序、复杂派生数据）。这里只要 `items` 和 `keyword` 不变，即使组件因别的 state 重渲染，过滤也不会重跑。
 
-### 示例 95：useMemo 稳定对象引用（配合 React.memo）
+### 示例 112：useMemo 稳定对象引用（配合 React.memo）
 
 ```jsx
 function Parent({ userId }) {
@@ -1647,7 +1939,7 @@ const Child = React.memo(({ config }) => {
 
 **详解**：`React.memo` 通过"浅比较 props"来跳过重渲染。但对象/数组/函数每次渲染都是新引用，浅比较必然判定"变了"，`memo` 就失效了。用 `useMemo` 把对象缓存起来，只要 `userId` 不变，`config` 就是同一个引用，`Child` 才能真正被 `memo` 跳过。点计数按钮时 Child 不再重渲染。
 
-### 示例 96：useCallback 缓存函数
+### 示例 113：useCallback 缓存函数
 
 ```jsx
 import { useCallback } from 'react';
@@ -1671,9 +1963,9 @@ const Child = React.memo(({ onClick }) => {
 });
 ```
 
-**详解**：`useCallback(fn, deps)` 相当于 `useMemo(() => fn, deps)`，专门用来缓存"函数"。道理同示例 95：函数每次渲染都是新引用，会让接收它的 `memo` 子组件失效。用 `useCallback` 固定函数引用后，父组件计数变化不再连累 `Child` 重渲染。依赖数组里要放函数内部用到的会变化的变量。
+**详解**：`useCallback(fn, deps)` 相当于 `useMemo(() => fn, deps)`，专门用来缓存"函数"。道理同示例 112：函数每次渲染都是新引用，会让接收它的 `memo` 子组件失效。用 `useCallback` 固定函数引用后，父组件计数变化不再连累 `Child` 重渲染。依赖数组里要放函数内部用到的会变化的变量。
 
-### 示例 97：不要滥用 useMemo / useCallback
+### 示例 114：不要滥用 useMemo / useCallback
 
 ```jsx
 // ❌ 没必要：加法本身极快，缓存的开销比计算还大
@@ -1691,7 +1983,7 @@ const onClick2 = () => setOpen(true);
 
 ### （F）useLayoutEffect / useImperativeHandle
 
-### 示例 98：useLayoutEffect 同步测量避免闪烁
+### 示例 115：useLayoutEffect 同步测量避免闪烁
 
 ```jsx
 import { useLayoutEffect, useRef, useState } from 'react';
@@ -1709,7 +2001,7 @@ function Tooltip() {
 
 **详解**：`useLayoutEffect` 的用法和 `useEffect` 一样，但执行时机不同：它在 DOM 更新后、**浏览器绘制前同步执行**。所以适合"读取布局并立即同步修改 DOM"的场景（测量尺寸、调整滚动位置、定位弹层），能避免用户看到中间的闪烁。代价是它会阻塞绘制，用多了影响性能。
 
-### 示例 99：useLayoutEffect 与 useEffect 的区别
+### 示例 116：useLayoutEffect 与 useEffect 的区别
 
 ```jsx
 useEffect(() => { /* 绘制后异步执行，不阻塞渲染，99% 情况用它 */ });
@@ -1718,7 +2010,7 @@ useLayoutEffect(() => { /* 绘制前同步执行，会阻塞渲染，仅测量/�
 
 **详解**：一句话记忆——**默认永远用 `useEffect`**。它在浏览器绘制后异步执行，不会拖慢首屏。只有当你遇到"用了 useEffect 会出现明显闪烁/跳动"（因为你需要在绘制前读布局并改 DOM）时，才换成 `useLayoutEffect`。两者 API 完全一样，区别只在执行时机与是否阻塞绘制。
 
-### 示例 100：useImperativeHandle 向父组件暴露方法
+### 示例 117：useImperativeHandle 向父组件暴露方法
 
 ```jsx
 import { forwardRef, useImperativeHandle, useRef } from 'react';
@@ -1748,7 +2040,7 @@ function App() {
 
 ### （G）自定义 Hook —— 复用逻辑
 
-### 示例 101：自定义 Hook：useToggle
+### 示例 118：自定义 Hook：useToggle
 
 ```jsx
 import { useState, useCallback } from 'react';
@@ -1767,7 +2059,7 @@ function Switch() {
 
 **详解**：自定义 Hook 就是"名字以 use 开头、内部调用了其他 Hook 的普通函数"。它的价值在于**复用有状态的逻辑**：把一段常用逻辑（这里是布尔开关）封装起来，多个组件都能调用，各自拥有独立的状态。注意它复用的是"逻辑"，不是"状态"——两个组件各调一次 `useToggle`，状态互不干扰。
 
-### 示例 102：自定义 Hook：useFetch（含加载态与竞态处理）
+### 示例 119：自定义 Hook：useFetch（含加载态与竞态处理）
 
 ```jsx
 import { useState, useEffect } from 'react';
@@ -1796,9 +2088,9 @@ function Users() {
 }
 ```
 
-**详解**：这个 `useFetch` 把"请求数据"这套通用逻辑——加载态、错误态、竞态处理（示例 81 的 `ignore` 标志）——全部封装。任何组件只要 `const { data, loading, error } = useFetch(url)` 就能拿到完整的请求状态，组件本身只关心怎么渲染。这正是自定义 Hook 的威力：把重复的副作用逻辑抽象成一个可复用的"能力"。
+**详解**：这个 `useFetch` 把"请求数据"这套通用逻辑——加载态、错误态、竞态处理（示例 98 的 `ignore` 标志）——全部封装。任何组件只要 `const { data, loading, error } = useFetch(url)` 就能拿到完整的请求状态，组件本身只关心怎么渲染。这正是自定义 Hook 的威力：把重复的副作用逻辑抽象成一个可复用的"能力"。
 
-### 示例 103：自定义 Hook：useLocalStorage（与浏览器存储同步）
+### 示例 120：自定义 Hook：useLocalStorage（与浏览器存储同步）
 
 ```jsx
 import { useState, useEffect } from 'react';
@@ -1826,7 +2118,7 @@ function Settings() {
 
 ## 八、React 18 新增 Hooks
 
-### 示例 104：useId 生成唯一 id
+### 示例 121：useId 生成唯一 id
 
 ```jsx
 import { useId } from 'react';
@@ -1842,7 +2134,7 @@ function Field() {
 }
 ```
 
-### 示例 105：useId 生成多个相关 id
+### 示例 122：useId 生成多个相关 id
 
 ```jsx
 function Form() {
@@ -1858,7 +2150,7 @@ function Form() {
 }
 ```
 
-### 示例 106：useTransition 标记非紧急更新
+### 示例 123：useTransition 标记非紧急更新
 
 ```jsx
 import { useState, useTransition } from 'react';
@@ -1887,7 +2179,7 @@ function SearchList({ allItems }) {
 }
 ```
 
-### 示例 107：useDeferredValue 延迟值
+### 示例 124：useDeferredValue 延迟值
 
 ```jsx
 import { useState, useDeferredValue, useMemo } from 'react';
@@ -1910,7 +2202,7 @@ function Search({ allItems }) {
 }
 ```
 
-### 示例 108：startTransition（非 Hook 版本）
+### 示例 125：startTransition（非 Hook 版本）
 
 ```jsx
 import { startTransition } from 'react';
@@ -1925,7 +2217,7 @@ function TabButton({ onSelect }) {
 }
 ```
 
-### 示例 109：useSyncExternalStore 订阅外部数据源
+### 示例 126：useSyncExternalStore 订阅外部数据源
 
 ```jsx
 import { useSyncExternalStore } from 'react';
@@ -1952,7 +2244,7 @@ function StatusBar() {
 }
 ```
 
-### 示例 110：useSyncExternalStore 订阅自定义 store
+### 示例 127：useSyncExternalStore 订阅自定义 store
 
 ```jsx
 // 一个极简的外部 store
@@ -1973,7 +2265,7 @@ function Counter() {
 }
 ```
 
-### 示例 111：useInsertionEffect（用于 CSS-in-JS 库）
+### 示例 128：useInsertionEffect（用于 CSS-in-JS 库）
 
 ```jsx
 import { useInsertionEffect } from 'react';
@@ -1993,7 +2285,7 @@ function useCss(rule) {
 
 ## 九、并发特性（Concurrent Features）
 
-### 示例 112：Suspense 配合 lazy 懒加载
+### 示例 129：Suspense 配合 lazy 懒加载
 
 ```jsx
 import { Suspense, lazy } from 'react';
@@ -2009,7 +2301,7 @@ function App() {
 }
 ```
 
-### 示例 113：多个 lazy 组件共享一个 Suspense
+### 示例 130：多个 lazy 组件共享一个 Suspense
 
 ```jsx
 const Chart = lazy(() => import('./Chart'));
@@ -2025,7 +2317,7 @@ function Dashboard() {
 }
 ```
 
-### 示例 114：嵌套 Suspense
+### 示例 131：嵌套 Suspense
 
 ```jsx
 function Page() {
@@ -2040,7 +2332,7 @@ function Page() {
 }
 ```
 
-### 示例 115：Suspense + 数据请求（配合支持 Suspense 的库）
+### 示例 132：Suspense + 数据请求（配合支持 Suspense 的库）
 
 ```jsx
 // 需要配合 React Query、Relay 等支持 Suspense 的数据方案
@@ -2054,7 +2346,7 @@ function Profile() {
 // UserDetails 内部使用支持 suspense 的数据获取
 ```
 
-### 示例 116：hydrateRoot（服务端渲染注水）
+### 示例 133：hydrateRoot（服务端渲染注水）
 
 ```jsx
 import { hydrateRoot } from 'react-dom/client';
@@ -2064,7 +2356,7 @@ import App from './App';
 hydrateRoot(document.getElementById('root'), <App />);
 ```
 
-### 示例 117：并发渲染避免卡顿的完整对比
+### 示例 134：并发渲染避免卡顿的完整对比
 
 ```jsx
 function App() {
@@ -2091,7 +2383,7 @@ function App() {
 
 ## 十、性能优化
 
-### 示例 118：React.memo 缓存组件
+### 示例 135：React.memo 缓存组件
 
 ```jsx
 const Item = React.memo(function Item({ text }) {
@@ -2101,7 +2393,7 @@ const Item = React.memo(function Item({ text }) {
 // props 不变时，Item 不会重新渲染
 ```
 
-### 示例 119：React.memo 自定义比较函数
+### 示例 136：React.memo 自定义比较函数
 
 ```jsx
 const User = React.memo(
@@ -2112,7 +2404,7 @@ const User = React.memo(
 );
 ```
 
-### 示例 120：拆分组件减少渲染范围
+### 示例 137：拆分组件减少渲染范围
 
 ```jsx
 // 把频繁变化的部分独立成小组件，避免整棵树重渲染
@@ -2135,7 +2427,7 @@ function LiveClock() {
 }
 ```
 
-### 示例 121：useMemo 缓存传给子组件的对象
+### 示例 138：useMemo 缓存传给子组件的对象
 
 ```jsx
 function Parent({ id }) {
@@ -2145,7 +2437,7 @@ function Parent({ id }) {
 }
 ```
 
-### 示例 122：懒加载路由组件
+### 示例 139：懒加载路由组件
 
 ```jsx
 import { lazy, Suspense } from 'react';
@@ -2166,7 +2458,7 @@ function App() {
 }
 ```
 
-### 示例 123：列表虚拟化思路（只渲染可见项）
+### 示例 140：列表虚拟化思路（只渲染可见项）
 
 ```jsx
 // 大列表建议用 react-window / react-virtualized
@@ -2195,7 +2487,7 @@ function VirtualList({ items, itemHeight = 30, height = 300 }) {
 
 ## 十一、Context 与组件通信
 
-### 示例 124：创建可切换的主题 Context
+### 示例 141：创建可切换的主题 Context
 
 ```jsx
 const ThemeContext = createContext();
@@ -2216,7 +2508,7 @@ function ThemeButton() {
 }
 ```
 
-### 示例 125：用 Context + useReducer 做全局状态
+### 示例 142：用 Context + useReducer 做全局状态
 
 ```jsx
 const StoreContext = createContext();
@@ -2240,7 +2532,7 @@ function CounterDisplay() {
 }
 ```
 
-### 示例 126：多个 Context 组合
+### 示例 143：多个 Context 组合
 
 ```jsx
 function App() {
@@ -2256,7 +2548,7 @@ function App() {
 }
 ```
 
-### 示例 127：子传父（回调函数）
+### 示例 144：子传父（回调函数）
 
 ```jsx
 function Child({ onSend }) {
@@ -2274,7 +2566,7 @@ function Parent() {
 }
 ```
 
-### 示例 128：兄弟组件通信（状态提升）
+### 示例 145：兄弟组件通信（状态提升）
 
 ```jsx
 function Parent() {
@@ -2298,7 +2590,7 @@ function Display({ value }) {
 
 ## 十二、进阶与实战
 
-### 示例 129：完整的 Todo 应用
+### 示例 146：完整的 Todo 应用
 
 ```jsx
 import { useState } from 'react';
@@ -2336,7 +2628,7 @@ function TodoApp() {
 }
 ```
 
-### 示例 130：防抖搜索（自定义 Hook）
+### 示例 147：防抖搜索（自定义 Hook）
 
 ```jsx
 function useDebounce(value, delay = 500) {
@@ -2358,7 +2650,7 @@ function Search() {
 }
 ```
 
-### 示例 131：错误边界（Error Boundary）
+### 示例 148：错误边界（Error Boundary）
 
 ```jsx
 import { Component } from 'react';
@@ -2387,7 +2679,7 @@ function App() {
 }
 ```
 
-### 示例 132：Portal 渲染到 body（弹窗）
+### 示例 149：Portal 渲染到 body（弹窗）
 
 ```jsx
 import { createPortal } from 'react-dom';
@@ -2414,7 +2706,7 @@ function App() {
 }
 ```
 
-### 示例 133：分页数据加载
+### 示例 150：分页数据加载
 
 ```jsx
 function PagedList() {
@@ -2434,7 +2726,7 @@ function PagedList() {
 }
 ```
 
-### 示例 134：倒计时组件
+### 示例 151：倒计时组件
 
 ```jsx
 function Countdown({ seconds = 60 }) {
@@ -2448,7 +2740,7 @@ function Countdown({ seconds = 60 }) {
 }
 ```
 
-### 示例 135：Tab 切换组件
+### 示例 152：Tab 切换组件
 
 ```jsx
 function Tabs() {
@@ -2466,7 +2758,7 @@ function Tabs() {
 }
 ```
 
-### 示例 136：受控 + 校验的表单
+### 示例 153：受控 + 校验的表单
 
 ```jsx
 function SignupForm() {
@@ -2491,7 +2783,7 @@ function SignupForm() {
 }
 ```
 
-### 示例 137：主题切换 + localStorage 持久化
+### 示例 154：主题切换 + localStorage 持久化
 
 ```jsx
 function ThemedApp() {
@@ -2520,4 +2812,4 @@ function ThemedApp() {
 
 ---
 
-至此共 137 个示例，涵盖 React 18 从入门到进阶的核心用法。建议边读边动手运行，效果更佳。
+至此共 154 个示例，涵盖 React 18 从入门到进阶的核心用法。建议边读边动手运行，效果更佳。
