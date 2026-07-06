@@ -5191,106 +5191,95 @@ function Parent() {
 
 ## 十二、进阶与实战
 
+> 本章把前面学到的知识（组件、state、事件、Hooks、条件/列表、表单、Context 等）综合起来，做成一个个**可直接使用的实战小组件和自定义 Hook**。它们由简单到复杂，覆盖真实项目中最常见的需求。
+>
+> 建议对照前面章节来看——你会发现每个实战都是若干基础知识点的组合。共 17 个示例。
+
+### （A）常用交互组件
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 235：完整的 Todo 应用</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 235：Tab 切换组件</h3>
 
 ```jsx
 import { useState } from 'react';
 
-function TodoApp() {
-  const [todos, setTodos] = useState([]);
-  const [text, setText] = useState('');
-
-  const add = () => {
-    if (!text.trim()) return;
-    setTodos([...todos, { id: Date.now(), text, done: false }]);
-    setText('');
-  };
-  const toggle = (id) =>
-    setTodos(todos.map(t => t.id === id ? { ...t, done: !t.done } : t));
-  const remove = (id) => setTodos(todos.filter(t => t.id !== id));
-
+function Tabs() {
+  const [active, setActive] = useState(0);
+  const tabs = ['介绍', '参数', '评价'];
+  const contents = ['这是介绍内容', '这是参数内容', '这是评价内容'];
   return (
     <div>
-      <input value={text} onChange={e => setText(e.target.value)}
-        onKeyDown={e => e.key === 'Enter' && add()} />
-      <button onClick={add}>添加</button>
-      <ul>
-        {todos.map(t => (
-          <li key={t.id}>
-            <span style={{ textDecoration: t.done ? 'line-through' : 'none' }}
-              onClick={() => toggle(t.id)}>{t.text}</span>
-            <button onClick={() => remove(t.id)}>×</button>
-          </li>
+      <div>
+        {tabs.map((t, i) => (
+          <button
+            key={i}
+            onClick={() => setActive(i)}
+            style={{ fontWeight: active === i ? 'bold' : 'normal' }}
+          >
+            {t}
+          </button>
         ))}
-      </ul>
-      <p>共 {todos.length} 项，完成 {todos.filter(t => t.done).length} 项</p>
+      </div>
+      <div>{contents[active]}</div>
     </div>
   );
 }
 ```
 
-<br>
-
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 236：防抖搜索（自定义 Hook）</h3>
-
-```jsx
-function useDebounce(value, delay = 500) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(id);
-  }, [value, delay]);
-  return debounced;
-}
-
-function Search() {
-  const [text, setText] = useState('');
-  const debounced = useDebounce(text, 500);
-  useEffect(() => {
-    if (debounced) console.log('发起搜索：', debounced);
-  }, [debounced]);
-  return <input value={text} onChange={e => setText(e.target.value)} />;
-}
-```
+**详解**：Tab 切换是最基础的交互组件。核心是用一个 state `active` 记录"当前选中第几个"。点击某个按钮就 `setActive(i)`，再根据 `active` 决定按钮样式（高亮当前项）和显示哪块内容。这里综合了 state（示例 58）、列表渲染（示例 90）、事件传参（示例 77）、条件样式（示例 60）。理解它就掌握了"用一个 state 驱动多个 UI"的通用套路。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 237：错误边界（Error Boundary）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 236：折叠面板（Accordion）</h3>
 
 ```jsx
-import { Component } from 'react';
-
-// 错误边界目前仍需用类组件实现
-class ErrorBoundary extends Component {
-  state = { hasError: false };
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  componentDidCatch(error, info) {
-    console.error('捕获错误：', error, info);
-  }
-  render() {
-    if (this.state.hasError) return <h2>出错了，请刷新页面</h2>;
-    return this.props.children;
-  }
-}
-
-function App() {
+function Accordion({ items }) {
+  const [openId, setOpenId] = useState(null);
+  const toggle = (id) => setOpenId(prev => (prev === id ? null : id));
   return (
-    <ErrorBoundary>
-      <BuggyComponent />
-    </ErrorBoundary>
+    <div>
+      {items.map(item => (
+        <div key={item.id}>
+          <button onClick={() => toggle(item.id)}>
+            {item.title} {openId === item.id ? '▲' : '▼'}
+          </button>
+          {openId === item.id && <div>{item.content}</div>}
+        </div>
+      ))}
+    </div>
   );
 }
 ```
 
+**详解**：折叠面板（手风琴）实现"同时只展开一项"的效果。用一个 state `openId` 记录"当前展开的是哪一项"。点击时 `toggle`：如果点的正是已展开项就收起（设为 `null`），否则展开它。每一项通过 `openId === item.id` 判断是否显示内容和箭头方向。这是 Tab 思路的变体——不同点在于"可以全部收起"（`null` 状态）。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 238：Portal 渲染到 body（弹窗）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 237：倒计时组件</h3>
 
 ```jsx
+import { useState, useEffect } from 'react';
+
+function Countdown({ seconds = 60 }) {
+  const [left, setLeft] = useState(seconds);
+  useEffect(() => {
+    if (left <= 0) return;                 // 到 0 就停止
+    const id = setTimeout(() => setLeft(left - 1), 1000);
+    return () => clearTimeout(id);         // 清理，防止残留定时器
+  }, [left]);
+  return <p>{left > 0 ? `剩余 ${left} 秒` : '时间到！'}</p>;
+}
+```
+
+**详解**：倒计时组件展示了 `useEffect` + 定时器的经典用法。这里用 `setTimeout` 而非 `setInterval`——每次 `left` 变化都重新建一个 1 秒后减 1 的定时器，`left` 到 0 时直接 `return` 不再设新定时器。清理函数 `clearTimeout` 确保组件卸载或重渲染时不留下野定时器（第七章示例 78）。常用于短信验证码"重新发送"倒计时、活动截止等。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 238：模态弹窗（Portal）</h3>
+
+```jsx
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
 function Modal({ children, onClose }) {
@@ -5298,9 +5287,10 @@ function Modal({ children, onClose }) {
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         {children}
+        <button onClick={onClose}>关闭</button>
       </div>
     </div>,
-    document.body
+    document.body // 渲染到 body，而非当前组件所在的 DOM 位置
   );
 }
 
@@ -5309,15 +5299,168 @@ function App() {
   return (
     <>
       <button onClick={() => setOpen(true)}>打开弹窗</button>
-      {open && <Modal onClose={() => setOpen(false)}>弹窗内容</Modal>}
+      {open && <Modal onClose={() => setOpen(false)}>这是弹窗内容</Modal>}
     </>
   );
 }
 ```
 
+**详解**：弹窗要覆盖整个页面，但组件可能嵌套在很深的、带 `overflow:hidden` 或定位的容器里，直接渲染会被裁剪。`createPortal(内容, 目标节点)` 能把内容**渲染到 DOM 树的另一个位置**（这里是 `document.body`），从而摆脱父容器的样式限制，同时逻辑上它仍是当前组件的子节点（事件照常冒泡）。点遮罩层关闭、点内容区用 `stopPropagation` 阻止关闭（示例 79）。这是弹窗、下拉菜单、提示框的标准实现。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 239：分页数据加载</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 239：Toast 提示（自动消失）</h3>
+
+```jsx
+function useToast() {
+  const [msg, setMsg] = useState('');
+  const show = (text, duration = 2000) => {
+    setMsg(text);
+    setTimeout(() => setMsg(''), duration); // 到时自动清空
+  };
+  const toast = msg ? <div className="toast">{msg}</div> : null;
+  return { toast, show };
+}
+
+function App() {
+  const { toast, show } = useToast();
+  return (
+    <>
+      <button onClick={() => show('操作成功！')}>触发提示</button>
+      {toast}
+    </>
+  );
+}
+```
+
+**详解**：Toast 是那种"弹出一句提示、几秒后自动消失"的轻提示。这里封装成自定义 Hook `useToast`——`show(text)` 设置消息并启动一个定时器到时清空，`toast` 是要渲染的元素（有消息才显示）。组件里解构出 `{ toast, show }`，把 `toast` 放到界面上、需要时调 `show`。这综合了 state、定时器、条件渲染，并体现了"把 UI + 逻辑打包成 Hook"的思想。
+
+### （B）表单与校验实战
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 240：受控 + 实时校验的表单</h3>
+
+```jsx
+function EmailForm() {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const submit = (e) => {
+    e.preventDefault();
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      setError('邮箱格式不正确');
+      return;
+    }
+    setError('');
+    alert('提交成功：' + email);
+  };
+  return (
+    <form onSubmit={submit}>
+      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="邮箱" />
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <button type="submit">提交</button>
+    </form>
+  );
+}
+```
+
+**详解**：这是表单校验的最小完整例子（第六章有更完整的版本）。要点：受控输入（`value` + `onChange`）、提交时 `preventDefault` 阻止刷新、用正则校验、把错误信息存进 `error` state 并条件渲染。这个"输入→校验→显示错误→提交"的闭环是所有表单的骨架。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 241：登录表单（含提交中状态）</h3>
+
+```jsx
+function LoginForm() {
+  const [form, setForm] = useState({ username: '', password: '' });
+  const [loading, setLoading] = useState(false);
+  const update = (f) => (e) => setForm(p => ({ ...p, [f]: e.target.value }));
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await fakeLogin(form);
+      alert('登录成功');
+    } finally {
+      setLoading(false);
+    }
+  };
+  return (
+    <form onSubmit={submit}>
+      <input value={form.username} onChange={update('username')} placeholder="用户名" disabled={loading} />
+      <input type="password" value={form.password} onChange={update('password')} disabled={loading} />
+      <button type="submit" disabled={loading}>{loading ? '登录中...' : '登录'}</button>
+    </form>
+  );
+}
+function fakeLogin(data) { return new Promise(r => setTimeout(r, 1000)); }
+```
+
+**详解**：真实的登录表单要处理**异步提交**。用 `loading` state 标记"正在登录"，提交期间禁用输入框和按钮、按钮文字改成"登录中..."，防止用户重复点击。`try/finally` 保证无论成功失败最后都复位 `loading`（第六章示例 132）。综合了对象 state、多字段更新、异步事件处理。
+
+### （C）数据请求实战
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 242：数据请求三态（loading / error / data）</h3>
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function UserList() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let ignore = false;
+    setLoading(true);
+    fetch('/api/users')
+      .then(r => r.json())
+      .then(d => { if (!ignore) { setData(d); setLoading(false); } })
+      .catch(e => { if (!ignore) { setError(e); setLoading(false); } });
+    return () => { ignore = true; };
+  }, []);
+
+  if (loading) return <p>加载中...</p>;
+  if (error)   return <p>加载失败</p>;
+  return <ul>{data.map(u => <li key={u.id}>{u.name}</li>)}</ul>;
+}
+```
+
+**详解**：几乎所有涉及网络请求的组件都要处理三种状态：加载中、出错、成功。这里用三个 state 分别记录，`useEffect` 里发请求（带 `ignore` 标志防竞态，第七章示例 81），渲染时用连续 `if` 逐一处理异常、最后才渲染正常内容（第五章示例 48）。这是手写数据请求的标准骨架。**实际项目更推荐用 React Query / SWR**——它们把这套逻辑连同缓存、重试封装好了。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 243：防抖搜索（自定义 Hook）</h3>
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function useDebounce(value, delay = 500) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id); // 值又变了就取消上一次
+  }, [value, delay]);
+  return debounced;
+}
+
+function Search() {
+  const [text, setText] = useState('');
+  const debouncedText = useDebounce(text, 500);
+  useEffect(() => {
+    if (debouncedText) console.log('发起搜索：', debouncedText);
+  }, [debouncedText]);
+  return <input value={text} onChange={e => setText(e.target.value)} placeholder="搜索" />;
+}
+```
+
+**详解**：搜索框如果每敲一个字就发一次请求，既浪费又可能触发大量无效请求。防抖让请求"等用户停止输入 500ms 后"才发一次。`useDebounce` 把这个逻辑封装成 Hook：`text` 每次变化都重设定时器，只有 500ms 内不再变化，`debouncedText` 才更新，进而触发搜索的 `useEffect`（第十章示例 217）。输入框绑定即时的 `text`（打字流畅），搜索用延迟的 `debouncedText`。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 244：分页数据加载</h3>
 
 ```jsx
 function PagedList() {
@@ -5325,7 +5468,7 @@ function PagedList() {
   const [data, setData] = useState([]);
   useEffect(() => {
     fetch(`/api/list?page=${page}`).then(r => r.json()).then(setData);
-  }, [page]);
+  }, [page]); // page 变化就重新请求
   return (
     <div>
       <ul>{data.map(d => <li key={d.id}>{d.name}</li>)}</ul>
@@ -5337,98 +5480,303 @@ function PagedList() {
 }
 ```
 
-<br>
-
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 240：倒计时组件</h3>
-
-```jsx
-function Countdown({ seconds = 60 }) {
-  const [left, setLeft] = useState(seconds);
-  useEffect(() => {
-    if (left <= 0) return;
-    const id = setTimeout(() => setLeft(left - 1), 1000);
-    return () => clearTimeout(id);
-  }, [left]);
-  return <p>{left > 0 ? `剩余 ${left} 秒` : '结束！'}</p>;
-}
-```
+**详解**：分页的关键是把"当前页码 `page`"作为 `useEffect` 的依赖——`page` 一变就自动重新请求对应页的数据。翻页按钮用函数式更新 `setPage(p => p ± 1)`，第一页时禁用"上一页"。这个"某个参数变化 → useEffect 重新请求"的模式适用于各种筛选、排序、翻页场景。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 241：Tab 切换组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 245：加载更多 / 无限滚动</h3>
 
 ```jsx
-function Tabs() {
-  const [active, setActive] = useState(0);
-  const tabs = ['介绍', '参数', '评价'];
+function InfiniteList() {
+  const [items, setItems] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  const loadMore = async () => {
+    setLoading(true);
+    const res = await fetch(`/api/list?page=${page}`).then(r => r.json());
+    setItems(prev => [...prev, ...res]); // 追加而非替换
+    setPage(p => p + 1);
+    setLoading(false);
+  };
+
+  useEffect(() => { loadMore(); }, []); // 首次自动加载第一页
+
   return (
     <div>
-      {tabs.map((t, i) => (
-        <button key={i} onClick={() => setActive(i)}
-          style={{ fontWeight: active === i ? 'bold' : 'normal' }}>{t}</button>
-      ))}
-      <div>当前内容：{tabs[active]}</div>
+      <ul>{items.map(i => <li key={i.id}>{i.name}</li>)}</ul>
+      <button onClick={loadMore} disabled={loading}>
+        {loading ? '加载中...' : '加载更多'}
+      </button>
     </div>
   );
 }
 ```
 
+**详解**：与分页"替换数据"不同，"加载更多"是**追加数据**——用 `setItems(prev => [...prev, ...新数据])` 把新一页拼到已有列表后面。每加载一页 `page` 加 1。配合滚动监听（滚到底部自动调用 `loadMore`）就是"无限滚动"。这里综合了数组不可变更新（示例 71）、异步请求、loading 状态。
+
+### （D）实用自定义 Hook
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 242：受控 + 校验的表单</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 246：useToggle（开关状态）</h3>
 
 ```jsx
-function SignupForm() {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const submit = (e) => {
-    e.preventDefault();
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setError('邮箱格式不正确');
-      return;
-    }
-    setError('');
-    alert('注册成功：' + email);
-  };
+import { useState, useCallback } from 'react';
+
+function useToggle(initial = false) {
+  const [on, setOn] = useState(initial);
+  const toggle = useCallback(() => setOn(o => !o), []);
+  return [on, toggle];
+}
+
+function App() {
+  const [visible, toggleVisible] = useToggle();
   return (
-    <form onSubmit={submit}>
-      <input value={email} onChange={e => setEmail(e.target.value)} />
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <button type="submit">注册</button>
-    </form>
+    <>
+      <button onClick={toggleVisible}>{visible ? '隐藏' : '显示'}</button>
+      {visible && <p>可切换的内容</p>}
+    </>
   );
 }
 ```
 
+**详解**：`useToggle` 把"布尔开关"这一超高频逻辑封装成一行可复用的 Hook，返回 `[当前值, 切换函数]`，用法类似 `useState`。任何"显示/隐藏、开/关、折叠/展开"的场景都能用它，避免重复写 `setX(x => !x)`。这体现了自定义 Hook 的价值：**把常用逻辑抽象成可复用的能力**（第七章示例 101）。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 243：主题切换 + localStorage 持久化</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 247：useLocalStorage（持久化状态）</h3>
 
 ```jsx
-function ThemedApp() {
-  const [dark, setDark] = useLocalStorage('dark', false);
+import { useState, useEffect } from 'react';
+
+function useLocalStorage(key, initial) {
+  const [value, setValue] = useState(() => {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : initial; // 惰性初始化，只读一次
+  });
   useEffect(() => {
-    document.body.className = dark ? 'dark' : 'light';
-  }, [dark]);
-  return <button onClick={() => setDark(d => !d)}>
-    切换到{dark ? '亮色' : '暗色'}
-  </button>;
+    localStorage.setItem(key, JSON.stringify(value)); // value 变了就写回
+  }, [key, value]);
+  return [value, setValue];
+}
+
+function Settings() {
+  const [name, setName] = useLocalStorage('username', '');
+  return <input value={name} onChange={e => setName(e.target.value)} />;
 }
 ```
 
+**详解**：这个 Hook 让一段状态自动与 `localStorage` 同步，刷新页面后仍能恢复。用法和 `useState` 完全一致（返回 `[值, 设置函数]`），毫无学习负担。两个要点：初始值用**惰性初始化**（传函数，只读一次 localStorage）；用 `useEffect` 监听 `value` 变化并写回（第七章示例 103）。它是下一个示例（主题持久化）的基础。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 248：主题切换 + localStorage 持久化</h3>
+
+```jsx
+function ThemedApp() {
+  const [dark, setDark] = useLocalStorage('dark', false); // 复用上一个 Hook
+  useEffect(() => {
+    document.body.className = dark ? 'dark' : 'light'; // 同步到 body 的 class
+  }, [dark]);
+  return (
+    <button onClick={() => setDark(d => !d)}>
+      切换到{dark ? '亮色' : '暗色'}模式
+    </button>
+  );
+}
+```
+
+**详解**：把 `useLocalStorage`（持久化）和 `useEffect`（同步副作用）组合起来，实现"记住用户主题偏好"的功能——刷新后主题不丢失。`dark` 状态存进 localStorage，变化时通过 `useEffect` 把对应的 class 加到 `<body>` 上（配合 CSS 生效）。这展示了**自定义 Hook 的组合复用**：`ThemedApp` 直接站在 `useLocalStorage` 的肩膀上。
+
+### （E）健壮性与综合大实战
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 249：错误边界（Error Boundary）</h3>
+
+```jsx
+import { Component } from 'react';
+
+// 错误边界目前仍需用"类组件"实现（Hooks 暂无等价写法）
+class ErrorBoundary extends Component {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true }; // 出错时更新 state，触发降级 UI
+  }
+  componentDidCatch(error, info) {
+    console.error('捕获到错误：', error, info); // 上报错误
+  }
+  render() {
+    if (this.state.hasError) return <h2>页面出错了，请刷新重试</h2>;
+    return this.props.children;
+  }
+}
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <MaybeBuggyComponent />
+    </ErrorBoundary>
+  );
+}
+```
+
+**详解**：如果某个组件渲染时抛出错误，默认会导致**整个应用白屏崩溃**。"错误边界"能捕获其子树的渲染错误，显示一个降级 UI（而非白屏），并把错误上报。它是 React 里**极少数必须用类组件写**的东西——`getDerivedStateFromError` 负责出错时切换到降级状态，`componentDidCatch` 负责记录/上报错误。把它包在应用外层或关键区块外，能大大提升健壮性（也用于捕获懒加载失败，第九章示例 195）。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 250：错误边界 + Suspense 组合</h3>
+
+```jsx
+import { Suspense, lazy } from 'react';
+
+const Chart = lazy(() => import('./Chart'));
+
+function Dashboard() {
+  return (
+    <ErrorBoundary>                       {/* 管"出错"：加载失败/渲染报错 */}
+      <Suspense fallback={<p>加载中...</p>}> {/* 管"等待"：加载中占位 */}
+        <Chart />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+```
+
+**详解**：这是健壮的异步 UI 的标准三层结构（第九章示例 195）：`ErrorBoundary` 负责"出错"（加载失败、渲染异常时显示降级 UI），`Suspense` 负责"等待"（加载中显示占位），最内层是真正的懒加载/异步组件。两者职责互补——Suspense 不处理错误，ErrorBoundary 不处理加载中。记住这个组合，就能优雅应对异步组件的所有状态。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 251：综合大实战——完整的 Todo 应用</h3>
+
+```jsx
+import { useState, useEffect } from 'react';
+
+// 复用示例 247 的持久化 Hook
+function useLocalStorage(key, initial) {
+  const [value, setValue] = useState(() => {
+    const s = localStorage.getItem(key);
+    return s ? JSON.parse(s) : initial;
+  });
+  useEffect(() => { localStorage.setItem(key, JSON.stringify(value)); }, [key, value]);
+  return [value, setValue];
+}
+
+function TodoApp() {
+  const [todos, setTodos] = useLocalStorage('todos', []); // 持久化的任务列表
+  const [text, setText] = useState('');
+  const [filter, setFilter] = useState('all'); // all | active | done
+
+  const add = () => {
+    if (!text.trim()) return;
+    setTodos([...todos, { id: Date.now(), text, done: false }]); // 增
+    setText('');
+  };
+  const toggle = (id) =>
+    setTodos(todos.map(t => t.id === id ? { ...t, done: !t.done } : t)); // 改
+  const remove = (id) => setTodos(todos.filter(t => t.id !== id));       // 删
+
+  // 根据过滤条件派生要显示的列表
+  const visible = todos.filter(t =>
+    filter === 'all' ? true : filter === 'done' ? t.done : !t.done
+  );
+
+  return (
+    <div>
+      <input
+        value={text}
+        onChange={e => setText(e.target.value)}
+        onKeyDown={e => e.key === 'Enter' && add()}
+        placeholder="输入任务，回车添加"
+      />
+      <button onClick={add}>添加</button>
+
+      <div>
+        {['all', 'active', 'done'].map(f => (
+          <button key={f} onClick={() => setFilter(f)}
+            style={{ fontWeight: filter === f ? 'bold' : 'normal' }}>
+            {f === 'all' ? '全部' : f === 'active' ? '未完成' : '已完成'}
+          </button>
+        ))}
+      </div>
+
+      <ul>
+        {visible.map(t => (
+          <li key={t.id}>
+            <span onClick={() => toggle(t.id)}
+              style={{ textDecoration: t.done ? 'line-through' : 'none', cursor: 'pointer' }}>
+              {t.text}
+            </span>
+            <button onClick={() => remove(t.id)}>×</button>
+          </li>
+        ))}
+      </ul>
+
+      <p>共 {todos.length} 项，完成 {todos.filter(t => t.done).length} 项</p>
+    </div>
+  );
+}
+```
+
+**详解**：这是全书的"毕业设计"，把众多知识点融为一体：
+1. **持久化状态**：任务列表用 `useLocalStorage`，刷新不丢（示例 247）；
+2. **增删改**：数组不可变更新三板斧 `[...]` / `map` / `filter`（示例 71-73）；
+3. **受控输入 + 回车添加**：`value`+`onChange`、`onKeyDown` 判断 Enter（示例 80、82）；
+4. **过滤（派生数据）**：用 `filter` state + 计算 `visible`，而不是再存一个列表——**能从现有 state 算出来的，就不要单独存**；
+5. **条件样式与统计**：完成项划线、底部统计。
+
+如果你能独立写出这个 Todo 应用并理解每一行，说明你已经扎实掌握了 React 18 的核心。恭喜！接下来就可以去学 React Router（路由）、状态管理库、TypeScript 等进阶主题了。
+
 ---
 
-## 附录：常见易错点小结
+## 附录：常见易错点与学习建议
 
-1. **不要直接修改 state**：数组/对象要用展开语法生成新引用，否则 React 检测不到变化。
-2. **useState 更新是异步/批处理的**：连续依赖旧值请用函数式更新 `setX(prev => ...)`。
-3. **useEffect 依赖数组要写全**：漏写依赖会导致读取到过期的闭包变量。
-4. **列表 key 要稳定唯一**：尽量用数据 id，避免用数组下标。
-5. **清理副作用**：定时器、事件监听、订阅一定要在 `useEffect` 返回函数里清理。
-6. **StrictMode 下开发环境副作用会执行两次**，这是有意的，用来暴露不纯的副作用。
-7. **`createRoot` 取代 `ReactDOM.render`**：这是 React 18 的标准入口。
-8. **区分紧急与非紧急更新**：用户输入用普通更新，昂贵的派生更新用 `startTransition` / `useDeferredValue`。
+> 这份速查表汇总了初学 React 时最容易踩的坑，按主题分类。遇到"改了数据界面不动""effect 反复执行""列表行为异常"等问题时，先回来对照检查。
+
+### 一、State 相关
+
+1. **不要直接修改 state**：对象/数组要用展开语法生成**新引用**（`{...obj}`、`[...arr]`），否则 React 检测不到变化、不会重渲染（示例 66）。
+2. **state 更新不是立即生效的**：`setCount(x)` 之后马上读 `count` 还是旧值。连续基于旧值更新要用**函数式更新** `setCount(c => c + 1)`（示例 67、68）。
+3. **能派生的数据不要存进 state**：能从现有 state/props 算出来的值（如过滤后的列表、总数），直接在渲染时计算，不要单独用一个 state 存（示例 251）。
+4. **对象/数组 state 更新要逐层展开**：修改嵌套字段时每一层都要复制（示例 70）。
+
+### 二、useEffect 相关
+
+5. **依赖数组要写全**：effect 里用到的每个组件内变量都应列进依赖，漏写会读到过期的闭包值（示例 83）。
+6. **一定要清理副作用**：定时器、事件监听、订阅务必在 effect 的返回函数里清理，否则内存泄漏（示例 78、79）。
+7. **警惕闭包陷阱**：空依赖的 effect 里若直接用 state，读到的永远是初始值；改用函数式更新（示例 82）。
+8. **请求要防竞态**：快速变化的依赖会发多个请求，用 `ignore` 标志避免旧响应覆盖新数据（示例 81）。
+
+### 三、渲染 / JSX 相关
+
+9. **列表 key 要稳定唯一**：尽量用数据自带的 `id`，避免用数组下标（示例 53）。
+10. **`&&` 短路要小心数字 0**：`0 && <X/>` 会渲染出"0"，左边要用明确的布尔值 `arr.length > 0 && ...`（示例 39）。
+11. **`class` 要写成 `className`，`for` 写成 `htmlFor`**（示例 14）。
+12. **事件绑定传函数引用，不要加括号调用**：`onClick={fn}` 对，`onClick={fn()}` 会在渲染时立即执行（示例 75）。
+13. **组件名必须大写开头**，否则被当成原生 HTML 标签（示例 31）。
+
+### 四、性能相关
+
+14. **别过早优化**：先用 React DevTools Profiler 测量，确认瓶颈再动手（示例 202）。
+15. **memo 常因引用失效**：给 memo 子组件传对象/函数时，要用 `useMemo`/`useCallback` 稳定引用（示例 206、209）。
+16. **优先结构优化**：状态下放、组件拆分、children 传递，往往比到处加 memo 更有效（示例 212-214）。
+17. **Context 的 value 用 useMemo 稳定**，否则消费它的组件会频繁重渲染（示例 232）。
+
+### 五、React 18 相关
+
+18. **用 `createRoot` 取代 `ReactDOM.render`**：这是启用并发特性的标准入口（示例 2）。
+19. **StrictMode 下开发环境副作用执行两次**：这是有意的，用来暴露不干净的副作用；生产环境只执行一次，不要为此关掉它（示例 4）。
+20. **区分紧急与非紧急更新**：昂贵的派生更新用 `startTransition`/`useDeferredValue`，保证输入等紧急交互流畅（第八章）。
+
+### 六、推荐的学习路径
+
+- **打好基础**：JSX → 组件与 Props → State 与事件 → 条件/列表渲染（第二~五章）。
+- **掌握 Hooks**：useState、useEffect 是重中之重，再逐步掌握 useRef、useContext、useReducer、useMemo/useCallback（第七章）。
+- **进阶**：表单、Context、性能优化、错误边界（第六、十、十一、十二章）。
+- **React 18 特性**：并发、useTransition、Suspense（第八、九章），用到再深入。
+- **下一步生态**：React Router（路由）、状态管理（Zustand/Redux）、数据请求（React Query/SWR）、TypeScript、以及 Next.js 等框架。
 
 ---
 
-至此共 243 个示例，涵盖 React 18 从入门到进阶的核心用法。建议边读边动手运行，效果更佳。
+至此全文共 251 个示例，覆盖 React 18 从入门到进阶实战的核心内容。**最好的学习方式是边读边动手敲**——把示例改一改、跑一跑，遇到报错去查、去想为什么，进步最快。祝你学得顺利！
