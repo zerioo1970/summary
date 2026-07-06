@@ -4576,11 +4576,11 @@ mindmap
     参数校验
       @Valid / @Validated
       @NotNull / @NotBlank 等
-    数据 JPA
-      @Entity / @Table
-      @Id / @Column
-      @OneToMany 等关系
-      @Query
+    数据 MyBatis-Flex
+      @Table / @Id
+      @Column
+      BaseMapper
+      QueryWrapper
     事务
       @Transactional
     AOP 切面
@@ -4863,64 +4863,73 @@ public Result<Void> create(@Valid @RequestBody UserDTO dto) { ... }
 
 ---
 
-## 12.8 数据访问与 JPA 注解
+## 12.8 数据访问注解（MyBatis-Flex）
+
+> 本教程数据访问层使用 **MyBatis-Flex**（详见第 07 章）。以下注解均在 `com.mybatisflex.annotation` 包下。
 
 ### 实体映射
 
 | 注解 | 作用 |
 | --- | --- |
-| `@Entity` | 声明实体类（对应一张表） |
-| `@Table(name=)` | 指定表名 |
-| `@Id` | 主键 |
-| `@GeneratedValue` | 主键生成策略（如自增 `IDENTITY`） |
-| `@Column` | 字段与列的映射（名称、长度、可空等） |
-| `@Transient` | 该字段不映射到数据库 |
-| `@Enumerated` | 枚举类型映射 |
-| `@Temporal` | 日期类型映射（老式 Date） |
-| `@Lob` | 大对象（长文本/二进制） |
+| `@Table("表名")` | 声明实体类对应的数据库表 |
+| `@Id` | 标记主键 |
+| `@Id(keyType = KeyType.Auto)` | 主键 + 生成策略（`Auto` 自增 / `None` / `Generator`） |
+| `@Column("列名")` | 字段与列映射（**默认驼峰↔下划线自动映射，一般不用写**） |
+| `@Column(ignore = true)` | 该字段不参与数据库映射 |
+| `@Column(isLogicDelete = true)` | 逻辑删除字段（删除变为改标记，非物理删除） |
+| `@Column(version = true)` | 乐观锁版本字段 |
+| `@Column(typeHandler = Xxx.class)` | 自定义类型处理器（如 JSON、加密） |
+| `@ColumnMask("规则")` | 数据脱敏（如手机号、邮箱打码） |
 
-> ⚠️ **Spring Boot 3.x 用 `jakarta.persistence.*` 包，不是 `javax`！**
+> ⚠️ MyBatis-Flex 的注解在 `com.mybatisflex.annotation.*` 包下，**不是** JPA 的 `jakarta.persistence.*`。
 
-### 表关系映射
+### 关系映射（多表关联查询）
 
 | 注解 | 关系 |
 | --- | --- |
-| `@OneToOne` | 一对一 |
-| `@OneToMany` | 一对多 |
-| `@ManyToOne` | 多对一 |
-| `@ManyToMany` | 多对多 |
-| `@JoinColumn` | 指定外键列 |
-| `@JoinTable` | 指定中间关联表 |
+| `@RelationOneToOne` | 一对一 |
+| `@RelationOneToMany` | 一对多 |
+| `@RelationManyToOne` | 多对一 |
+| `@RelationManyToMany` | 多对多 |
 
-### Spring Data 查询
+### 数据操作相关（接口 / 扫描，非注解也一并列出）
 
-| 注解 | 作用 |
+| 名称 | 作用 |
 | --- | --- |
-| `@Query` | 自定义 JPQL 或原生 SQL 查询 |
-| `@Modifying` | 声明是增删改操作（配合 `@Query`） |
-| `@Param` | 绑定命名参数 |
+| `BaseMapper<T>` | Mapper 接口继承它，即免费获得全套 CRUD |
+| `@MapperScan("包名")` | 启动类上，扫描 Mapper 接口所在包 |
+| `@Mapper` | 标注单个 Mapper 接口（与 `@MapperScan` 二选一） |
 
 ```java
-@Entity
-@Table(name = "user")
+import com.mybatisflex.annotation.*;
+import com.mybatisflex.core.BaseMapper;
+import lombok.Data;
+
+@Data
+@Table("tb_user")                 // 类 ↔ 表
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id(keyType = KeyType.Auto)    // 主键，数据库自增
     private Long id;
 
-    @Column(name = "name", length = 50, nullable = false)
-    private String name;
+    private String userName;       // 自动映射到 user_name 列（驼峰↔下划线）
 
-    @OneToMany(mappedBy = "user")   // 一个用户有多个订单
-    private List<Order> orders;
+    @Column("email_addr")          // 列名与字段名不一致时显式指定
+    private String email;
+
+    @Column(isLogicDelete = true)  // 逻辑删除标记
+    private Boolean deleted;
+
+    @Column(version = true)        // 乐观锁版本号
+    private Integer version;
 }
 
-public interface UserRepository extends JpaRepository<User, Long> {
-
-    @Query("select u from User u where u.name = :name")   // 自定义查询
-    List<User> searchByName(@Param("name") String name);
+// Mapper 接口继承 BaseMapper，即可免费获得增删改查
+public interface UserMapper extends BaseMapper<User> {
 }
 ```
+
+> 💡 查询条件用 `QueryWrapper` 构建（配合 APT 生成的 `TableDef`，如 `USER.USER_NAME`），完整用法见 **第 07 章**。
 
 ---
 
@@ -5254,7 +5263,7 @@ mindmap
       @GetMapping / @PostMapping
       @PathVariable / @RequestParam / @RequestBody
     数据
-      @Entity / @Id / @Column
+      @Table / @Id / @Column
       @Transactional
     健壮性
       @RestControllerAdvice + @ExceptionHandler
@@ -5268,7 +5277,7 @@ mindmap
 | 分层 | `@Service`、`@Repository` |
 | 注入 | 构造方法注入（`@Autowired` 可省）、`@Value`、`@ConfigurationProperties` |
 | 手动 Bean | `@Configuration`、`@Bean` |
-| 数据库 | `@Entity`、`@Id`、`@GeneratedValue`、`@Column`、`@Transactional` |
+| 数据库（MyBatis-Flex） | `@Table`、`@Id`、`@Column`、`@Transactional` |
 | 异常/校验 | `@RestControllerAdvice`、`@ExceptionHandler`、`@Valid`、`@NotBlank` |
 
 ---
