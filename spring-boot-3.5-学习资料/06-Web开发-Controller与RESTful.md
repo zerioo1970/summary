@@ -1147,4 +1147,4 @@ mindmap
 
 ---
 
-➡️ 接口有了，但数据从哪来？下一章我们连接真正的数据库，学习 **[数据访问：Spring Data JPA](./07-数据访问-SpringDataJPA.md)**。
+➡️ 接口有了，但数据从哪来？下一章我们连接真正的数据库，学习 **[数据访问：MyBatis-Flex](./07-数据访问-MyBatisFlex.md)**。

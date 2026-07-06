@@ -17,7 +17,7 @@ flowchart TD
     C --> D[第04章<br/>自动配置与起步依赖]
     D --> E[第05章<br/>配置文件详解]
     E --> F[第06章<br/>Web 开发：Controller 与 REST]
-    F --> G[第07章<br/>数据访问：Spring Data JPA]
+    F --> G[第07章<br/>数据访问：MyBatis-Flex]
     G --> H[第08章<br/>异常处理 / 日志 / 拦截器]
     H --> I[第09章<br/>测试]
     I --> J[第10章<br/>打包与部署]
@@ -39,7 +39,7 @@ flowchart TD
 | [第 04 章](./04-自动配置与起步依赖.md) | 自动配置与起步依赖 | 搞懂 Spring Boot "开箱即用"的魔法 |
 | [第 05 章](./05-配置文件详解.md) | 配置文件详解 | application.yml、多环境、类型安全配置 |
 | [第 06 章](./06-Web开发-Controller与RESTful.md) | Web 开发：Controller 与 REST | 写接口、收参数、返回 JSON |
-| [第 07 章](./07-数据访问-SpringDataJPA.md) | 数据访问：Spring Data JPA | 连数据库、增删改查、实体映射 |
+| [第 07 章](./07-数据访问-MyBatisFlex.md) | 数据访问：MyBatis-Flex | 连数据库、BaseMapper、QueryWrapper、分页 |
 | [第 08 章](./08-常用功能-异常处理与日志.md) | 异常处理 / 日志 / 拦截器 | 让项目更健壮、更专业 |
 | [第 09 章](./09-测试.md) | 测试 | 单元测试、Web 层测试、集成测试 |
 | [第 10 章](./10-打包与部署.md) | 打包与部署 | 打成 jar、用 Docker 部署 |
