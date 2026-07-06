@@ -31,7 +31,7 @@ flowchart LR
 | Group | `com.example` | 公司/组织的域名倒写 |
 | Artifact | `demo` | 项目名 |
 | Packaging | **Jar** | 打包方式 |
-| Java | **17**（或 21） | JDK 版本 |
+| Java | **21** | JDK 版本 |
 | Dependencies | **Spring Web** | 先加这一个，用来写 Web 接口 |
 
 > 💡 **IntelliJ IDEA 也内置了 Spring Initializr**：`File → New → Project → Spring Boot`，参数一模一样，更方便。

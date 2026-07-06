@@ -5,7 +5,7 @@
 ## 📖 关于本教程
 
 - **适合人群**：有一点 Java 基础（懂类、方法、变量即可），想入门 Spring Boot 的同学。
-- **版本**：Spring Boot **3.5.x**（要求 **JDK 17+**，推荐 JDK 17 或 21 LTS）。
+- **版本**：Spring Boot **3.5.x**，**本教程统一使用 JDK 21 LTS**（框架最低要求 JDK 17）。
 - **配图说明**：本教程中的所有图表都用 [Mermaid](https://mermaid.js.org/) 绘制。在 **GitHub**、**VS Code（装 Mermaid 插件）**、**Typora**、**语雀** 等工具中打开本 `.md` 文件时，图表会自动渲染成真正的图形；如果用纯文本编辑器打开，看到的会是图表的源码。
 
 ## 🗺️ 学习路线图
@@ -182,7 +182,7 @@ mindmap
 
 ```mermaid
 flowchart LR
-    A[① JDK 17 或更高<br/>推荐 JDK 17 / 21] --> D[开始开发]
+    A[① JDK 21 LTS<br/>推荐使用 JDK 21] --> D[开始开发]
     B[② 构建工具<br/>Maven 或 Gradle] --> D
     C[③ 开发工具 IDE<br/>推荐 IntelliJ IDEA] --> D
 
@@ -192,7 +192,7 @@ flowchart LR
     style D fill:#c8e6c9,stroke:#2e7d32
 ```
 
-> ⚠️ **重点：Spring Boot 3.x 要求 JDK 17 起步！** 如果你还在用 JDK 8 或 11，必须升级，否则项目无法运行。
+> ⚠️ **重点：本教程统一使用 JDK 21 LTS！**（Spring Boot 3.x 最低要求 JDK 17，我们直接选用更新、更稳的 21）如果你还在用 JDK 8 或 11，必须升级，否则项目无法运行。
 
 ### ① 安装并检查 JDK
 
@@ -202,12 +202,12 @@ flowchart LR
 java -version
 ```
 
-如果看到类似下面的输出（版本号 ≥ 17），说明 JDK 装好了：
+如果看到类似下面的输出（版本号 ≥ 21），说明 JDK 装好了：
 
 ```text
-openjdk version "17.0.10" 2024-01-16
-OpenJDK Runtime Environment (build 17.0.10+7)
-OpenJDK 64-Bit Server VM (build 17.0.10+7, mixed mode, sharing)
+openjdk version "21.0.5" 2024-10-15
+OpenJDK Runtime Environment (build 21.0.5+11)
+OpenJDK 64-Bit Server VM (build 21.0.5+11, mixed mode, sharing)
 ```
 
 > 💡 JDK 下载推荐：[Eclipse Temurin (Adoptium)](https://adoptium.net/) 或 [Oracle JDK](https://www.oracle.com/java/technologies/downloads/)。
@@ -259,7 +259,7 @@ flowchart LR
     A[Spring Boot 是什么] --> A1[让 Spring 开箱即用的脚手架]
     B[解决了什么] --> B1[配置多/依赖乱/部署烦]
     C[核心特性] --> C1[自动配置/Starter/内嵌服务器]
-    D[环境要求] --> D1[JDK 17+ / Maven / IDEA]
+    D[环境要求] --> D1[JDK 21 / Maven / IDEA]
 
     style A1 fill:#e3f2fd
     style B1 fill:#fff3e0
@@ -268,7 +268,7 @@ flowchart LR
 ```
 
 - Spring Boot 是简化 Spring 开发的框架，核心是**自动配置**、**起步依赖**和**内嵌服务器**。
-- 开发环境需要 **JDK 17+**、**Maven（或 Gradle）** 和一个 **IDE**。
+- 开发环境需要 **JDK 21**、**Maven（或 Gradle）** 和一个 **IDE**。
 - 应用打包成 jar，内嵌服务器，可直接运行。
 
 ---
@@ -312,7 +312,7 @@ flowchart LR
 | Group | `com.example` | 公司/组织的域名倒写 |
 | Artifact | `demo` | 项目名 |
 | Packaging | **Jar** | 打包方式 |
-| Java | **17**（或 21） | JDK 版本 |
+| Java | **21** | JDK 版本 |
 | Dependencies | **Spring Web** | 先加这一个，用来写 Web 接口 |
 
 > 💡 **IntelliJ IDEA 也内置了 Spring Initializr**：`File → New → Project → Spring Boot`，参数一模一样，更方便。
@@ -2520,7 +2520,7 @@ flowchart LR
 
 ## 10.3 运行 jar
 
-拿到 jar 后，任何装了 JDK 17+ 的机器都能直接运行：
+拿到 jar 后，任何装了 JDK 21 的机器都能直接运行：
 
 ```bash
 java -jar demo-0.0.1-SNAPSHOT.jar
@@ -2574,8 +2574,8 @@ flowchart LR
 在项目根目录建一个名为 `Dockerfile` 的文件：
 
 ```dockerfile
-# 1. 基础镜像：一个精简的 JDK 17 运行环境
-FROM eclipse-temurin:17-jre
+# 1. 基础镜像：一个精简的 JDK 21 运行环境
+FROM eclipse-temurin:21-jre
 
 # 2. 设置工作目录
 WORKDIR /app
@@ -2667,7 +2667,7 @@ timeline
     3.5 : 本章主角 : 在 3.4 基础上继续增强
 ```
 
-- Spring Boot **3.x 全系要求 JDK 17+**（推荐 17 或 21 LTS）。
+- Spring Boot **3.x 全系要求 JDK 17+**（**本教程统一使用 JDK 21 LTS**）。
 - 3.5 的**最低环境要求相比 3.4 没有变化**，升级门槛低。
 - 3.5 更多是"稳步增强"，没有 3.0 那种颠覆性变化，升级相对平滑。
 

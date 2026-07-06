@@ -102,7 +102,7 @@ mindmap
 
 ```mermaid
 flowchart LR
-    A[① JDK 17 或更高<br/>推荐 JDK 17 / 21] --> D[开始开发]
+    A[① JDK 21 LTS<br/>推荐使用 JDK 21] --> D[开始开发]
     B[② 构建工具<br/>Maven 或 Gradle] --> D
     C[③ 开发工具 IDE<br/>推荐 IntelliJ IDEA] --> D
 
@@ -112,7 +112,7 @@ flowchart LR
     style D fill:#c8e6c9,stroke:#2e7d32
 ```
 
-> ⚠️ **重点：Spring Boot 3.x 要求 JDK 17 起步！** 如果你还在用 JDK 8 或 11，必须升级，否则项目无法运行。
+> ⚠️ **重点：本教程统一使用 JDK 21 LTS！**（Spring Boot 3.x 最低要求 JDK 17，我们直接选用更新、更稳的 21）如果你还在用 JDK 8 或 11，必须升级，否则项目无法运行。
 
 ### ① 安装并检查 JDK
 
@@ -122,12 +122,12 @@ flowchart LR
 java -version
 ```
 
-如果看到类似下面的输出（版本号 ≥ 17），说明 JDK 装好了：
+如果看到类似下面的输出（版本号 ≥ 21），说明 JDK 装好了：
 
 ```text
-openjdk version "17.0.10" 2024-01-16
-OpenJDK Runtime Environment (build 17.0.10+7)
-OpenJDK 64-Bit Server VM (build 17.0.10+7, mixed mode, sharing)
+openjdk version "21.0.5" 2024-10-15
+OpenJDK Runtime Environment (build 21.0.5+11)
+OpenJDK 64-Bit Server VM (build 21.0.5+11, mixed mode, sharing)
 ```
 
 > 💡 JDK 下载推荐：[Eclipse Temurin (Adoptium)](https://adoptium.net/) 或 [Oracle JDK](https://www.oracle.com/java/technologies/downloads/)。
@@ -179,7 +179,7 @@ flowchart LR
     A[Spring Boot 是什么] --> A1[让 Spring 开箱即用的脚手架]
     B[解决了什么] --> B1[配置多/依赖乱/部署烦]
     C[核心特性] --> C1[自动配置/Starter/内嵌服务器]
-    D[环境要求] --> D1[JDK 17+ / Maven / IDEA]
+    D[环境要求] --> D1[JDK 21 / Maven / IDEA]
 
     style A1 fill:#e3f2fd
     style B1 fill:#fff3e0
@@ -188,7 +188,7 @@ flowchart LR
 ```
 
 - Spring Boot 是简化 Spring 开发的框架，核心是**自动配置**、**起步依赖**和**内嵌服务器**。
-- 开发环境需要 **JDK 17+**、**Maven（或 Gradle）** 和一个 **IDE**。
+- 开发环境需要 **JDK 21**、**Maven（或 Gradle）** 和一个 **IDE**。
 - 应用打包成 jar，内嵌服务器，可直接运行。
 
 ---
