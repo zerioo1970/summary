@@ -22,9 +22,11 @@ flowchart TD
     H --> I[第09章<br/>测试]
     I --> J[第10章<br/>打包与部署]
     J --> K[第11章<br/>Spring Boot 3.5 新特性]
+    K --> L[第12章<br/>注解大全 速查手册]
 
     style A fill:#d4f8d4,stroke:#2e7d32
     style K fill:#ffe0b2,stroke:#e65100
+    style L fill:#e1bee7,stroke:#6a1b9a
 ```
 
 ## 📚 章节目录
@@ -42,6 +44,7 @@ flowchart TD
 | [第 09 章](./09-测试.md) | 测试 | 单元测试、Web 层测试、集成测试 |
 | [第 10 章](./10-打包与部署.md) | 打包与部署 | 打成 jar、用 Docker 部署 |
 | [第 11 章](./11-SpringBoot3.5新特性.md) | Spring Boot 3.5 新特性 | 官方 3.5 版本的新变化 |
+| [第 12 章](./12-注解大全.md) | 注解大全（速查手册） | 全部常用注解分类速查表 + 示例 |
 
 ## 💡 学习建议
 
