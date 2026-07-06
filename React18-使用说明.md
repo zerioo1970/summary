@@ -1142,9 +1142,19 @@ function ProductList({ products }) {
 
 ## 四、State 与事件
 
+> **State（状态）是什么？** state 是组件"自己的、会变化的数据"。props 是父组件传进来的（只读），而 state 是组件内部管理、可以随用户交互而改变的数据（比如计数器的数字、输入框的内容、开关的开/关）。
+>
+> **核心机制**：当你用 React 提供的方法更新 state 时，React 会**自动重新渲染**这个组件，让界面反映最新的数据。这就是 React"数据驱动界面"的精髓——你只管改数据，界面自动更新。
+>
+> **事件（Event）**：用户的点击、输入、按键等操作。React 用 `onClick`、`onChange` 等属性来绑定事件处理函数。state 通常在事件处理函数里被更新。
+>
+> 本章从"最简单的计数器"讲到"完整的交互组件"，共 28 个示例。
+
+### （A）State 基础
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 58：useState 计数器</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 58：最简单的 state（计数器）</h3>
 
 ```jsx
 import { useState } from 'react';
@@ -1159,9 +1169,163 @@ function Counter() {
 }
 ```
 
+**详解**：`useState` 是最常用的 Hook，用来给组件添加一个状态。`useState(0)` 表示"创建一个初始值为 0 的状态"。它返回一个包含两项的数组：第一项 `count` 是当前状态值，第二项 `setCount` 是"更新它的函数"。点击按钮时调用 `setCount(count + 1)`，React 就会把 `count` 加 1 并**重新渲染**，界面上的数字随之更新。这就是一个完整的交互闭环。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 59：函数式更新（依赖旧值时的正确写法）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 59：为什么要用 state，而不是普通变量</h3>
+
+```jsx
+// ❌ 用普通变量：点击时变量确实变了，但界面不会更新
+function Broken() {
+  let count = 0;
+  return <button onClick={() => { count++; console.log(count); }}>{count}</button>;
+}
+
+// ✅ 用 state：更新会触发重新渲染，界面才会变
+function Works() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(count + 1)}>{count}</button>;
+}
+```
+
+**详解**：这是理解 state 的关键。普通变量 `let count` 改了之后，① 界面不会重新渲染（React 不知道数据变了）；② 而且组件每次重新渲染时，普通变量都会被重新初始化为 0，无法"记住"上次的值。而 state 有两个特殊能力：**更新它会触发重新渲染**，且 **React 会在多次渲染之间"记住"它的值**。所以凡是"变化后需要反映到界面上"的数据，都必须用 state。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 60：useState 语法详解</h3>
+
+```jsx
+const [count, setCount] = useState(0);
+//     ↑当前值  ↑更新函数        ↑初始值
+
+// 命名约定：更新函数用 set + 状态名（驼峰）
+const [name, setName] = useState('');
+const [isOpen, setIsOpen] = useState(false);
+```
+
+**详解**：`useState` 用到了 JS 的"数组解构"语法。它返回的其实是一个两元素数组 `[值, 更新函数]`，用 `[count, setCount]` 把它们取出来。名字可以随便起，但社区有强约定：**更新函数用 `set` + 状态名的驼峰形式**（`count` → `setCount`，`isOpen` → `setIsOpen`）。初始值作为 `useState()` 的参数传入，只在**第一次渲染**时用一次。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 61：state 可以是任意类型</h3>
+
+```jsx
+function Types() {
+  const [count, setCount] = useState(0);        // 数字
+  const [name, setName] = useState('张三');      // 字符串
+  const [isOn, setIsOn] = useState(false);      // 布尔
+  const [list, setList] = useState([]);         // 数组
+  const [user, setUser] = useState({ id: 1 });  // 对象
+  return <p>{count}-{name}-{String(isOn)}</p>;
+}
+```
+
+**详解**：state 的值可以是任何 JavaScript 类型：数字、字符串、布尔、数组、对象，甚至 `null`。你根据要存的数据选择合适的类型。简单值（数字、字符串、布尔）更新起来最直接；数组和对象因为是"引用类型"，更新时有讲究（见后面的示例 66–73）。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 62：使用多个 state</h3>
+
+```jsx
+function Form() {
+  const [name, setName] = useState('');
+  const [age, setAge] = useState(0);
+  return (
+    <>
+      <input value={name} onChange={e => setName(e.target.value)} />
+      <input value={age} onChange={e => setAge(Number(e.target.value))} />
+      <p>{name}，{age} 岁</p>
+    </>
+  );
+}
+```
+
+**详解**：一个组件里可以调用多次 `useState`，声明多个互相独立的状态。这里 `name` 和 `age` 各管各的，更新其中一个不影响另一个。**建议按"关注点"拆分 state**——把不相关的数据分开放，而不是硬塞进一个大对象。（当多个 state 关系紧密、更新逻辑复杂时，可考虑用第七章的 `useReducer`。）
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 63：布尔 state 与切换（toggle）</h3>
+
+```jsx
+function Toggle() {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div>
+      <button onClick={() => setIsOpen(!isOpen)}>
+        {isOpen ? '收起' : '展开'}
+      </button>
+      {isOpen && <p>这是展开的内容</p>}
+    </div>
+  );
+}
+```
+
+**详解**：布尔 state 用于表示"开/关"类状态（展开/收起、显示/隐藏、选中/未选中）。切换时用 `setIsOpen(!isOpen)` 取反当前值。配合条件渲染 `{isOpen && ...}`，就能实现"点击切换显示"的常见交互。这是最基础也最高频的 state 用法之一。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 64：惰性初始化 state（初始值来自昂贵计算）</h3>
+
+```jsx
+function Expensive() {
+  // 传"函数"而不是"值"，这个函数只在首次渲染执行一次
+  const [value, setValue] = useState(() => {
+    console.log('只计算一次');
+    return computeExpensiveValue();
+  });
+  return <p>{value}</p>;
+}
+function computeExpensiveValue() { return 42; }
+```
+
+**详解**：`useState` 的初始值如果需要一次昂贵的计算（比如读 localStorage、大量运算），不要直接写 `useState(computeExpensiveValue())`——那样**每次渲染都会调用它**（虽然结果只有第一次被采用，但计算白白执行了）。正确做法是**传一个函数** `useState(() => computeExpensiveValue())`，React 只在首次渲染时调用它一次。这叫"惰性初始化"。
+
+### （B）正确地更新 state
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 65：更新 state 会触发重新渲染</h3>
+
+```jsx
+function Clock() {
+  const [time, setTime] = useState(new Date().toLocaleTimeString());
+  return (
+    <div>
+      <p>当前时间：{time}</p>
+      <button onClick={() => setTime(new Date().toLocaleTimeString())}>
+        刷新
+      </button>
+    </div>
+  );
+}
+```
+
+**详解**：每次调用 `setTime(...)`，React 都会做两件事：① 把 state 更新成新值；② **重新执行整个组件函数**（重新渲染），用新的 state 值生成新界面。理解"更新 state → 组件重跑 → 界面更新"这条链路，是理解 React 的核心。组件函数会被反复调用，所以别在函数体里写会产生副作用的代码（那属于 `useEffect` 的活，见第七章）。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 66：不要直接修改 state（不可变原则）</h3>
+
+```jsx
+function Demo() {
+  const [user, setUser] = useState({ name: '张三', age: 20 });
+
+  // ❌ 错误：直接改 state，React 检测不到变化，界面不更新
+  const wrong = () => { user.age = 21; };
+
+  // ✅ 正确：用 setUser 传入一个新对象
+  const right = () => setUser({ ...user, age: 21 });
+
+  return <button onClick={right}>{user.name}: {user.age}</button>;
+}
+```
+
+**详解**：这是最重要的 state 规则——**永远不要直接修改 state，而要用更新函数传入新值**。原因：React 靠比较"新旧值的引用是否相同"来判断要不要重新渲染。直接改 `user.age`，对象引用没变，React 以为没变化，界面不更新。必须用 `{ ...user, age: 21 }` 创建一个**新对象**再 `setUser`。这条原则对对象和数组尤其关键（数字/字符串是原始值，本身不可变，不受影响）。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 67：函数式更新（依赖旧值时）</h3>
 
 ```jsx
 function Counter() {
@@ -1176,27 +1340,71 @@ function Counter() {
 }
 ```
 
+**详解**：当新值依赖旧值时，推荐用**函数式更新** `setCount(c => c + 1)`——参数 `c` 是 React 保证的"最新的 state 值"。为什么这里必须用它？因为下一个示例会讲：在同一个事件里连续调用 `setCount(count + 1)` 三次，`count` 都是同一个旧值（比如 0），三次都算成 0+1=1，结果只加了 1。而用 `c => c + 1`，React 会依次拿上一次的结果，最终正确地加到 3。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 60：state 为对象</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 68：为什么连续 setCount(count+1) 不生效</h3>
 
 ```jsx
-function Profile() {
-  const [user, setUser] = useState({ name: '张三', age: 20 });
-  // 更新对象要展开旧值
-  const grow = () => setUser({ ...user, age: user.age + 1 });
-  return <button onClick={grow}>{user.name}: {user.age}</button>;
+function Counter() {
+  const [count, setCount] = useState(0);
+  const wrong = () => {
+    setCount(count + 1); // count 是 0 → 设成 1
+    setCount(count + 1); // count 还是 0 → 又设成 1
+    setCount(count + 1); // count 还是 0 → 又设成 1，最终只 +1
+  };
+  return <button onClick={wrong}>{count}</button>;
 }
 ```
 
+**详解**：这解释了示例 67 的原因。在一次事件处理中，`count` 的值是"这次渲染时被冻结的快照"，整个函数里它都是同一个值（0）。所以三次 `setCount(count + 1)` 都是 `setCount(0 + 1)`，等于设了三次 1。而且 React 会把同一事件里的多次更新**批处理**（合并成一次渲染），最终 `count` 只变成 1。要连续基于最新值更新，就必须用函数式更新 `c => c + 1`（示例 67）。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 61：state 为数组（添加元素）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 69：state 为对象（更新要展开旧值）</h3>
+
+```jsx
+function Profile() {
+  const [user, setUser] = useState({ name: '张三', age: 20, city: '北京' });
+  // 只想改 age，但要把其它字段一起带上
+  const grow = () => setUser({ ...user, age: user.age + 1 });
+  return <button onClick={grow}>{user.name} {user.age} {user.city}</button>;
+}
+```
+
+**详解**：更新对象型 state 时，因为要遵守"不可变原则"（示例 66），得创建新对象。用展开运算符 `{ ...user }` 先复制旧对象的所有字段，再覆盖要改的字段（`age: user.age + 1`）。如果只写 `setUser({ age: 21 })`，会丢掉 `name` 和 `city`！记住这个模式：**`{ ...旧对象, 要改的字段: 新值 }`**。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 70：更新嵌套对象</h3>
+
+```jsx
+function Settings() {
+  const [config, setConfig] = useState({
+    theme: 'light',
+    notify: { email: true, sms: false },
+  });
+  // 修改嵌套的 notify.sms，每一层都要展开
+  const toggleSms = () =>
+    setConfig({
+      ...config,
+      notify: { ...config.notify, sms: !config.notify.sms },
+    });
+  return <button onClick={toggleSms}>短信：{String(config.notify.sms)}</button>;
+}
+```
+
+**详解**：嵌套对象更新时，**每一层都要展开复制**。修改 `config.notify.sms`，既要 `{ ...config }` 复制外层，又要 `{ ...config.notify }` 复制内层，再改 `sms`。层级太深时这会很啰嗦——这也是为什么 state 结构不宜嵌套过深，或可借助 Immer 这类库来简化。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 71：state 为数组（添加元素）</h3>
 
 ```jsx
 function TodoList() {
   const [items, setItems] = useState(['学习']);
-  const add = () => setItems([...items, '新任务']);
+  const add = () => setItems([...items, '新任务']); // 展开旧数组 + 新元素
   return (
     <div>
       <button onClick={add}>添加</button>
@@ -1206,9 +1414,11 @@ function TodoList() {
 }
 ```
 
+**详解**：给数组型 state 添加元素，同样要遵守不可变原则——**不要用 `items.push()`**（那是原地修改）。正确做法是用展开语法创建新数组：`[...items, 新元素]`（加到末尾）或 `[新元素, ...items]`（加到开头）。React 看到是新数组引用，才会重新渲染。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 62：state 为数组（删除元素）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 72：state 为数组（删除元素）</h3>
 
 ```jsx
 function List() {
@@ -1224,121 +1434,239 @@ function List() {
 }
 ```
 
+**详解**：删除数组元素用 `filter`——它返回一个**新数组**，只保留满足条件的项。这里保留"下标不等于要删除下标"的所有项。`filter` 天然符合不可变原则（不改原数组），是删除的首选。若按 id 删，则写 `items.filter(item => item.id !== targetId)`。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 63：惰性初始化 state</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 73：state 为数组（修改某一项）</h3>
 
 ```jsx
-function Expensive() {
-  // 传函数，只在首次渲染时执行一次
-  const [value] = useState(() => {
-    console.log('只计算一次');
-    return computeExpensiveValue();
-  });
-  return <p>{value}</p>;
+function TodoList() {
+  const [todos, setTodos] = useState([
+    { id: 1, text: '学习', done: false },
+    { id: 2, text: '运动', done: false },
+  ]);
+  const toggle = (id) =>
+    setTodos(todos.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  return (
+    <ul>
+      {todos.map(t => (
+        <li key={t.id} onClick={() => toggle(t.id)}
+            style={{ textDecoration: t.done ? 'line-through' : 'none' }}>
+          {t.text}
+        </li>
+      ))}
+    </ul>
+  );
 }
-function computeExpensiveValue() { return 42; }
 ```
 
+**详解**：修改数组里的某一项用 `map`——遍历每一项，命中目标（`t.id === id`）就返回一个"改过的新对象"（`{ ...t, done: !t.done }`），其余原样返回。`map` 返回新数组，且被改的那一项也是新对象，完全符合不可变原则。**增删改分别对应 `[...arr, x]` / `filter` / `map`**，记住这三板斧就能应对绝大多数数组 state 操作。
+
+### （C）事件处理
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 64：多个 state</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 74：事件处理基础（onClick）</h3>
 
 ```jsx
-function Form() {
-  const [name, setName] = useState('');
-  const [age, setAge] = useState(0);
+function Button() {
+  const handleClick = () => {
+    alert('按钮被点击了');
+  };
+  return <button onClick={handleClick}>点我</button>;
+}
+```
+
+**详解**：React 用 `onClick`、`onChange` 这类**驼峰命名**的属性来绑定事件（注意不是 HTML 的全小写 `onclick`）。属性值是一个函数——事件发生时 React 会调用它。这里把 `handleClick` 函数传给 `onClick`。事件处理函数常写成箭头函数，命名习惯是 `handle + 事件名`。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 75：传递函数 vs 调用函数（高频错误）</h3>
+
+```jsx
+function Demo() {
+  const handleClick = () => alert('点击');
+
   return (
     <>
-      <input value={name} onChange={e => setName(e.target.value)} />
-      <input value={age} onChange={e => setAge(+e.target.value)} />
+      <button onClick={handleClick}>✅ 正确：传函数引用</button>
+      {/* ❌ 错误：加了括号 = 渲染时立即执行，而不是点击时 */}
+      {/* <button onClick={handleClick()}>错误</button> */}
+      {/* ✅ 需要传参时用箭头函数包一层 */}
+      <button onClick={() => handleClick()}>✅ 正确：箭头函数包裹</button>
     </>
   );
 }
 ```
 
+**详解**：这是新手最常犯的错误。`onClick={handleClick}` 传的是"函数本身"（点击时才调用），正确；而 `onClick={handleClick()}` 带了括号，意思是"**立即执行** `handleClick`，把它的返回值给 onClick"——这会在渲染时就弹窗，且行为错误。**规则**：绑定事件传函数引用（不加括号）；如果需要传参，用箭头函数包一层 `() => handleClick(参数)`（见示例 77）。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 65：事件对象</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 76：事件对象 event</h3>
 
 ```jsx
-function ClickInfo() {
+function Link() {
   const handle = (e) => {
-    console.log('点击坐标：', e.clientX, e.clientY);
-    e.preventDefault(); // 阻止默认行为
+    console.log('事件类型：', e.type);       // 'click'
+    console.log('目标元素：', e.target);      // 被点击的 DOM
+    console.log('坐标：', e.clientX, e.clientY);
   };
   return <a href="/" onClick={handle}>点我</a>;
 }
 ```
 
+**详解**：事件处理函数会自动收到一个"事件对象" `e`（习惯命名为 `e` 或 `event`），里面包含这次事件的详细信息：`e.type`（事件类型）、`e.target`（触发事件的元素）、鼠标坐标、按键信息等。React 的事件对象是"合成事件"（SyntheticEvent），对各浏览器做了统一封装，用法和原生基本一致。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 66：传参给事件处理函数</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 77：传参给事件处理函数</h3>
 
 ```jsx
 function Buttons() {
-  const handle = (id) => alert('按钮 ' + id);
+  const handle = (id) => alert('点了按钮 ' + id);
   return (
     <>
-      <button onClick={() => handle(1)}>按钮1</button>
-      <button onClick={() => handle(2)}>按钮2</button>
+      <button onClick={() => handle(1)}>按钮 1</button>
+      <button onClick={() => handle(2)}>按钮 2</button>
     </>
   );
 }
 ```
 
+**详解**：想给事件处理函数传自定义参数时，用箭头函数包一层：`onClick={() => handle(1)}`。这样传给 `onClick` 的是"一个点击时才会执行 `handle(1)` 的新函数"，符合示例 75 的规则。如果既要传参又要用事件对象，写成 `onClick={(e) => handle(1, e)}`。列表里给每一项绑事件时，这个模式极其常用。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 67：阻止事件冒泡</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 78：阻止默认行为（preventDefault）</h3>
+
+```jsx
+function Form() {
+  const handleSubmit = (e) => {
+    e.preventDefault(); // 阻止表单提交导致的页面刷新
+    console.log('用 JS 处理提交，不刷新页面');
+  };
+  return (
+    <form onSubmit={handleSubmit}>
+      <button type="submit">提交</button>
+    </form>
+  );
+}
+```
+
+**详解**：某些元素有"默认行为"——表单提交会刷新页面、点链接会跳转、右键会弹出菜单。调用 `e.preventDefault()` 可以阻止这些默认行为，改由你的 JS 代码接管。表单场景最典型：不加它，点提交按钮页面会整个刷新，破坏单页应用体验。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 79：阻止事件冒泡（stopPropagation）</h3>
 
 ```jsx
 function Box() {
   return (
-    <div onClick={() => console.log('外层')}>
-      <button onClick={(e) => { e.stopPropagation(); console.log('内层'); }}>
-        点我不冒泡
+    <div onClick={() => console.log('外层 div 被点击')}>
+      <button onClick={(e) => {
+        e.stopPropagation(); // 阻止事件向上冒泡到外层 div
+        console.log('只有按钮被点击');
+      }}>
+        点我不触发外层
       </button>
     </div>
   );
 }
 ```
 
+**详解**：事件默认会"冒泡"——点击内层按钮，事件会依次向上传播到外层 `div`，导致两个 `onClick` 都触发。调用 `e.stopPropagation()` 能阻止事件继续向上冒泡，这样点按钮时只执行按钮自己的处理函数。常用于弹窗（点内容区不关闭，点遮罩才关闭）等场景。注意区分：`preventDefault` 阻止默认行为，`stopPropagation` 阻止冒泡传播，两者不同。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 68：键盘事件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 80：键盘事件</h3>
 
 ```jsx
 function SearchBox() {
   const onKeyDown = (e) => {
-    if (e.key === 'Enter') alert('搜索：' + e.target.value);
+    if (e.key === 'Enter') {
+      alert('搜索：' + e.target.value);
+    }
+    if (e.key === 'Escape') {
+      e.target.value = '';
+    }
   };
-  return <input onKeyDown={onKeyDown} placeholder="回车搜索" />;
+  return <input onKeyDown={onKeyDown} placeholder="回车搜索，Esc 清空" />;
 }
 ```
 
+**详解**：键盘事件（`onKeyDown`、`onKeyUp`）的事件对象里，`e.key` 表示按下的键名（`'Enter'`、`'Escape'`、`'a'`、`'ArrowUp'` 等）。通过判断 `e.key` 实现快捷键、回车提交等交互。此外 `e.ctrlKey`、`e.shiftKey` 可判断是否同时按了组合键。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 69：自动批处理（React 18 新行为）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 81：常见事件类型一览</h3>
+
+```jsx
+function EventsDemo() {
+  return (
+    <div
+      onClick={() => console.log('点击')}
+      onDoubleClick={() => console.log('双击')}
+      onMouseEnter={() => console.log('鼠标移入')}
+      onMouseLeave={() => console.log('鼠标移出')}
+    >
+      <input
+        onChange={(e) => console.log('输入变化', e.target.value)}
+        onFocus={() => console.log('获得焦点')}
+        onBlur={() => console.log('失去焦点')}
+      />
+    </div>
+  );
+}
+```
+
+**详解**：React 支持大量事件，都是驼峰命名。常见的有：鼠标类 `onClick`/`onDoubleClick`/`onMouseEnter`/`onMouseLeave`；表单类 `onChange`（输入变化）/`onFocus`（聚焦）/`onBlur`（失焦）/`onSubmit`（提交）；键盘类 `onKeyDown`/`onKeyUp`。其中 `onChange` 是表单开发的核心（下一节和第六章详讲）。
+
+### （D）State + 事件综合与 React 18 特性
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 82：输入框与 state 联动（受控组件基础）</h3>
+
+```jsx
+function NameInput() {
+  const [name, setName] = useState('');
+  return (
+    <div>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <p>你好，{name || '陌生人'}</p>
+    </div>
+  );
+}
+```
+
+**详解**：这是 state 和事件结合的经典模式，也是"受控组件"的雏形。输入框的 `value` 绑定到 state（`value={name}`），用户每次输入触发 `onChange`，从 `e.target.value` 拿到最新输入值再 `setName` 更新 state，state 一变界面就刷新。数据流形成闭环：**state 决定输入框显示什么，输入又更新 state**。（表单的完整用法见第六章。）
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 83：自动批处理（React 18 新行为）</h3>
 
 ```jsx
 function Batching() {
   const [a, setA] = useState(0);
   const [b, setB] = useState(0);
-  // React 18 中，即使在 setTimeout / Promise 里，
-  // 下面两次更新也会被合并成一次重新渲染
   const handle = () => {
     setTimeout(() => {
       setA(x => x + 1);
-      setB(x => x + 1); // 只触发一次渲染
+      setB(x => x + 1); // React 18：这两次更新合并成一次重新渲染
     }, 100);
   };
+  console.log('渲染');
   return <button onClick={handle}>{a}-{b}</button>;
 }
 ```
 
+**详解**："批处理"指 React 把同一时机的多次 state 更新**合并成一次重新渲染**，以提升性能。在 React 17，只有事件处理函数内的更新才会批处理；而在 `setTimeout`、Promise、原生事件里则不会（会渲染多次）。**React 18 的改进**：无论更新发生在哪里（包括 `setTimeout`、异步回调），都会自动批处理。上面点击后控制台只打印一次"渲染"，而不是两次。这是 React 18 开箱即用的性能优化。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 70：退出批处理（flushSync）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 84：退出批处理（flushSync）</h3>
 
 ```jsx
 import { flushSync } from 'react-dom';
@@ -1346,12 +1674,64 @@ import { flushSync } from 'react-dom';
 function Demo() {
   const [count, setCount] = useState(0);
   const handle = () => {
-    flushSync(() => setCount(c => c + 1)); // 立即同步更新 DOM
-    console.log('DOM 已更新');
+    flushSync(() => setCount(c => c + 1)); // 强制立即同步更新并重渲染
+    console.log('此时 DOM 已经更新了');
   };
   return <button onClick={handle}>{count}</button>;
 }
 ```
+
+**详解**：极少数情况下，你需要"立即"更新 DOM，而不想等批处理结束（比如更新后马上要读取新的 DOM 尺寸、或控制滚动位置）。`flushSync(() => {...})` 会强制里面的更新同步执行并立刻重新渲染 DOM。**注意**：它会打断批处理、影响性能，属于"逃生舱"，只在确有需要时使用，绝大多数场景不需要它。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 85：综合实战——带增删的任务清单</h3>
+
+```jsx
+import { useState } from 'react';
+
+function TodoApp() {
+  const [todos, setTodos] = useState([]);
+  const [text, setText] = useState('');
+
+  const add = () => {
+    if (!text.trim()) return;                 // 空输入不添加
+    setTodos([...todos, { id: Date.now(), text }]); // 添加（示例 71）
+    setText('');                              // 清空输入框
+  };
+  const remove = (id) =>
+    setTodos(todos.filter(t => t.id !== id)); // 删除（示例 72）
+
+  return (
+    <div>
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value)}      // 受控输入（示例 82）
+        onKeyDown={(e) => e.key === 'Enter' && add()}  // 回车添加（示例 80）
+      />
+      <button onClick={add}>添加</button>
+      <ul>
+        {todos.map(t => (                              // 列表渲染
+          <li key={t.id}>
+            {t.text}
+            <button onClick={() => remove(t.id)}>删除</button>
+          </li>
+        ))}
+      </ul>
+      <p>共 {todos.length} 项</p>
+    </div>
+  );
+}
+```
+
+**详解**：这个小应用综合了本章的核心知识：
+1. **两个 state**：任务列表 `todos`（数组）和输入框内容 `text`（字符串）；
+2. **受控输入**：`value` + `onChange` 双向联动（示例 82）；
+3. **数组不可变更新**：添加用 `[...todos, 新项]`（示例 71），删除用 `filter`（示例 72）；
+4. **事件处理**：点击添加、回车添加（示例 80）、点击删除并传参（示例 77）；
+5. **边界处理**：空输入不添加、添加后清空输入框。
+
+把这个例子亲手敲一遍并理解每一行，就真正掌握了 state 与事件的配合——这是几乎所有 React 交互功能的基础。
 
 ---
 
@@ -1364,7 +1744,7 @@ function Demo() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 71：最简单的条件——提前 return</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 86：最简单的条件——提前 return</h3>
 
 ```jsx
 function Greeting({ isLoggedIn }) {
@@ -1379,7 +1759,7 @@ function Greeting({ isLoggedIn }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 72：三元运算符（内联在 JSX 里）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 87：三元运算符（内联在 JSX 里）</h3>
 
 ```jsx
 function Status({ online }) {
@@ -1391,7 +1771,7 @@ function Status({ online }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 73：三元里返回 JSX 元素</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 88：三元里返回 JSX 元素</h3>
 
 ```jsx
 function LoginButton({ isLoggedIn }) {
@@ -1405,11 +1785,11 @@ function LoginButton({ isLoggedIn }) {
 }
 ```
 
-**详解**：三元的两个分支不仅能返回字符串，也能返回完整的 JSX 元素。相比示例 71 的提前 return，这种写法能让"页面大部分相同、只有局部不同"的结构写在一起，一眼看清差异在哪。
+**详解**：三元的两个分支不仅能返回字符串，也能返回完整的 JSX 元素。相比示例 86 的提前 return，这种写法能让"页面大部分相同、只有局部不同"的结构写在一起，一眼看清差异在哪。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 74：`&&` 短路渲染（有则显示，无则不显示）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 89：`&&` 短路渲染（有则显示，无则不显示）</h3>
 
 ```jsx
 function Inbox({ count }) {
@@ -1425,7 +1805,7 @@ function Inbox({ count }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 75：`&&` 的经典陷阱——数字 0 会被显示出来</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 90：`&&` 的经典陷阱——数字 0 会被显示出来</h3>
 
 ```jsx
 function List({ items }) {
@@ -1443,7 +1823,7 @@ function ListFixed({ items }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 76：`||` 提供默认内容（兜底）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 91：`||` 提供默认内容（兜底）</h3>
 
 ```jsx
 function UserName({ name }) {
@@ -1451,11 +1831,11 @@ function UserName({ name }) {
 }
 ```
 
-**详解**：`A || B` 表示 `A` 为真用 `A`，否则用 `B`。当 `name` 是空字符串、`null`、`undefined` 等假值时，就显示"匿名用户"。这是给缺省数据做兜底的简洁写法。若你希望 `0` 或 `''` 也算有效值，应改用空值合并 `??`（见示例 85）。
+**详解**：`A || B` 表示 `A` 为真用 `A`，否则用 `B`。当 `name` 是空字符串、`null`、`undefined` 等假值时，就显示"匿名用户"。这是给缺省数据做兜底的简洁写法。若你希望 `0` 或 `''` 也算有效值，应改用空值合并 `??`（见示例 100）。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 77：用 null 隐藏整个组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 92：用 null 隐藏整个组件</h3>
 
 ```jsx
 function Warning({ show }) {
@@ -1464,11 +1844,11 @@ function Warning({ show }) {
 }
 ```
 
-**详解**：组件返回 `null` 是完全合法的，表示"这个组件此刻不显示任何东西"。它和示例 74 的 `&&` 效果类似，但写在组件内部，适合"组件自己决定要不要显示"的封装场景（比如一个通用的提示框组件）。
+**详解**：组件返回 `null` 是完全合法的，表示"这个组件此刻不显示任何东西"。它和示例 89 的 `&&` 效果类似，但写在组件内部，适合"组件自己决定要不要显示"的封装场景（比如一个通用的提示框组件）。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 78：先把 JSX 存进变量，再渲染</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 93：先把 JSX 存进变量，再渲染</h3>
 
 ```jsx
 function Page({ isLoading, data }) {
@@ -1488,7 +1868,7 @@ function Page({ isLoading, data }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 79：多分支 if / else if</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 94：多分支 if / else if</h3>
 
 ```jsx
 function Grade({ score }) {
@@ -1502,7 +1882,7 @@ function Grade({ score }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 80：用 switch 处理多状态</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 95：用 switch 处理多状态</h3>
 
 ```jsx
 function StatusText({ status }) {
@@ -1519,7 +1899,7 @@ function StatusText({ status }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 81：用对象映射代替 switch（推荐）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 96：用对象映射代替 switch（推荐）</h3>
 
 ```jsx
 function Icon({ type }) {
@@ -1536,7 +1916,7 @@ function Icon({ type }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 82：在 JSX 中用立即执行函数写复杂逻辑（IIFE）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 97：在 JSX 中用立即执行函数写复杂逻辑（IIFE）</h3>
 
 ```jsx
 function Dashboard({ role }) {
@@ -1552,11 +1932,11 @@ function Dashboard({ role }) {
 }
 ```
 
-**详解**：JSX 的 `{}` 里只能放表达式、不能放语句。当你确实想在此处写 `if/switch` 这类语句，可以用"立即执行函数"`(() => { ... })()` 把语句包起来——它整体是一个表达式。不过多数情况下，示例 78（变量存 JSX）更易读，IIFE 应谨慎使用。
+**详解**：JSX 的 `{}` 里只能放表达式、不能放语句。当你确实想在此处写 `if/switch` 这类语句，可以用"立即执行函数"`(() => { ... })()` 把语句包起来——它整体是一个表达式。不过多数情况下，示例 93（变量存 JSX）更易读，IIFE 应谨慎使用。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 83：把条件判断抽成子组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 98：把条件判断抽成子组件</h3>
 
 ```jsx
 function AuthButton({ isLoggedIn, onLogin, onLogout }) {
@@ -1573,7 +1953,7 @@ function LogoutButton({ onClick }) { return <button onClick={onClick}>退出</bu
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 84：加载 / 错误 / 成功三态渲染（实战常见）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 99：加载 / 错误 / 成功三态渲染（实战常见）</h3>
 
 ```jsx
 function UserProfile({ loading, error, user }) {
@@ -1593,7 +1973,7 @@ function UserProfile({ loading, error, user }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 85：可选链 `?.` 与空值合并 `??` 结合条件渲染</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 100：可选链 `?.` 与空值合并 `??` 结合条件渲染</h3>
 
 ```jsx
 function Profile({ user }) {
@@ -1613,7 +1993,7 @@ function Profile({ user }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 86：最简单的列表——map 渲染字符串数组</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 101：最简单的列表——map 渲染字符串数组</h3>
 
 ```jsx
 function Fruits() {
@@ -1630,7 +2010,7 @@ function Fruits() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 87：map 带索引参数</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 102：map 带索引参数</h3>
 
 ```jsx
 function RankList() {
@@ -1645,11 +2025,11 @@ function RankList() {
 }
 ```
 
-**详解**：`map` 的回调第二个参数是当前项的下标 `index`（从 0 开始）。这里用 `index + 1` 显示排名。注意：**用 index 来显示序号没问题，但用它当 `key` 要谨慎**（见示例 89）。
+**详解**：`map` 的回调第二个参数是当前项的下标 `index`（从 0 开始）。这里用 `index + 1` 显示排名。注意：**用 index 来显示序号没问题，但用它当 `key` 要谨慎**（见示例 104）。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 88：渲染对象数组</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 103：渲染对象数组</h3>
 
 ```jsx
 function ProductList() {
@@ -1671,7 +2051,7 @@ function ProductList() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 89：key 的作用与"不要用 index 当 key"</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 104：key 的作用与"不要用 index 当 key"</h3>
 
 ```jsx
 function TodoList({ todos }) {
@@ -1692,7 +2072,7 @@ function TodoList({ todos }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 90：用 filter 过滤后再渲染</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 105：用 filter 过滤后再渲染</h3>
 
 ```jsx
 function ActiveUsers({ users }) {
@@ -1710,7 +2090,7 @@ function ActiveUsers({ users }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 91：用 sort 排序后渲染（先拷贝再排序）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 106：用 sort 排序后渲染（先拷贝再排序）</h3>
 
 ```jsx
 function ScoreBoard({ scores }) {
@@ -1728,7 +2108,7 @@ function ScoreBoard({ scores }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 92：一次返回多个元素——带 key 的 Fragment</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 107：一次返回多个元素——带 key 的 Fragment</h3>
 
 ```jsx
 function DefinitionList({ items }) {
@@ -1749,7 +2129,7 @@ function DefinitionList({ items }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 93：列表 + 条件——每一项内部再做条件渲染</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 108：列表 + 条件——每一项内部再做条件渲染</h3>
 
 ```jsx
 function TaskList({ tasks }) {
@@ -1771,7 +2151,7 @@ function TaskList({ tasks }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 94：空列表的友好提示</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 109：空列表的友好提示</h3>
 
 ```jsx
 function MessageList({ messages }) {
@@ -1790,7 +2170,7 @@ function MessageList({ messages }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 95：嵌套列表（列表里再套列表）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 110：嵌套列表（列表里再套列表）</h3>
 
 ```jsx
 function CategoryList({ categories }) {
@@ -1815,7 +2195,7 @@ function CategoryList({ categories }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 96：斑马纹 / 高亮——用 index 决定样式</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 111：斑马纹 / 高亮——用 index 决定样式</h3>
 
 ```jsx
 function StripedList({ rows }) {
@@ -1838,7 +2218,7 @@ function StripedList({ rows }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 97：列表项绑定事件并传递该项数据</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 112：列表项绑定事件并传递该项数据</h3>
 
 ```jsx
 function UserList({ users, onSelect }) {
@@ -1858,7 +2238,7 @@ function UserList({ users, onSelect }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 98：把数据转成组件数组（渲染子组件列表）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 113：把数据转成组件数组（渲染子组件列表）</h3>
 
 ```jsx
 function ProductGrid({ products }) {
@@ -1885,7 +2265,7 @@ function ProductCard({ product }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 99：分组渲染（先用 reduce 分组，再渲染）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 114：分组渲染（先用 reduce 分组，再渲染）</h3>
 
 ```jsx
 function GroupedContacts({ contacts }) {
@@ -1915,7 +2295,7 @@ function GroupedContacts({ contacts }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 100：综合实战——搜索过滤 + 排序 + 空态 + 计数</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 115：综合实战——搜索过滤 + 排序 + 空态 + 计数</h3>
 
 ```jsx
 import { useState } from 'react';
@@ -1975,7 +2355,7 @@ function SearchableList({ items }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 101：受控输入框</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 116：受控输入框</h3>
 
 ```jsx
 function NameInput() {
@@ -1991,7 +2371,7 @@ function NameInput() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 102：受控 textarea</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 117：受控 textarea</h3>
 
 ```jsx
 function Comment() {
@@ -2002,7 +2382,7 @@ function Comment() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 103：受控 select 下拉框</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 118：受控 select 下拉框</h3>
 
 ```jsx
 function CitySelect() {
@@ -2018,7 +2398,7 @@ function CitySelect() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 104：复选框（checkbox）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 119：复选框（checkbox）</h3>
 
 ```jsx
 function Agree() {
@@ -2035,7 +2415,7 @@ function Agree() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 105：单选按钮（radio）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 120：单选按钮（radio）</h3>
 
 ```jsx
 function Gender() {
@@ -2053,7 +2433,7 @@ function Gender() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 106：一个函数处理多个字段</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 121：一个函数处理多个字段</h3>
 
 ```jsx
 function Form() {
@@ -2072,7 +2452,7 @@ function Form() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 107：表单提交</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 122：表单提交</h3>
 
 ```jsx
 function LoginForm() {
@@ -2092,7 +2472,7 @@ function LoginForm() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 108：非受控组件（用 ref 读取值）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 123：非受控组件（用 ref 读取值）</h3>
 
 ```jsx
 import { useRef } from 'react';
@@ -2111,7 +2491,7 @@ function UncontrolledForm() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 109：文件上传</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 124：文件上传</h3>
 
 ```jsx
 function FileUpload() {
@@ -2136,7 +2516,7 @@ function FileUpload() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 110：useEffect 最简单的样子（每次渲染后执行）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 125：useEffect 最简单的样子（每次渲染后执行）</h3>
 
 ```jsx
 import { useState, useEffect } from 'react';
@@ -2154,7 +2534,7 @@ function Title() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 111：空依赖数组（只在挂载时执行一次）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 126：空依赖数组（只在挂载时执行一次）</h3>
 
 ```jsx
 function OnMount() {
@@ -2169,7 +2549,7 @@ function OnMount() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 112：指定依赖（依赖变化时才执行）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 127：指定依赖（依赖变化时才执行）</h3>
 
 ```jsx
 function Watcher({ userId }) {
@@ -2184,7 +2564,7 @@ function Watcher({ userId }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 113：依赖数组的三种形态对比（重点总结）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 128：依赖数组的三种形态对比（重点总结）</h3>
 
 ```jsx
 useEffect(() => { /* ... */ });          // ① 不传：每次渲染后都执行
@@ -2197,11 +2577,11 @@ useEffect(() => { /* ... */ }, [a, b]);  // ③ 有依赖：a 或 b 变化时执
 - **`[]`** → 仅挂载时执行一次，卸载时执行清理；
 - **`[a, b]`** → 挂载时执行，之后每当 `a` 或 `b` 变化时再执行。
 
-选哪种，取决于你的副作用"依赖了哪些数据"。原则是：**effect 内部用到的每一个组件内变量（props、state、函数），都应出现在依赖数组里**（见示例 119）。
+选哪种，取决于你的副作用"依赖了哪些数据"。原则是：**effect 内部用到的每一个组件内变量（props、state、函数），都应出现在依赖数组里**（见示例 134）。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 114：清理函数（以定时器为例）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 129：清理函数（以定时器为例）</h3>
 
 ```jsx
 function Timer() {
@@ -2218,7 +2598,7 @@ function Timer() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 115：清理事件监听</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 130：清理事件监听</h3>
 
 ```jsx
 function WindowSize() {
@@ -2236,7 +2616,7 @@ function WindowSize() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 116：在 useEffect 中请求数据（基础版）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 131：在 useEffect 中请求数据（基础版）</h3>
 
 ```jsx
 function UserProfile({ id }) {
@@ -2254,7 +2634,7 @@ function UserProfile({ id }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 117：请求数据的竞态问题与 ignore 标志</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 132：请求数据的竞态问题与 ignore 标志</h3>
 
 ```jsx
 function UserProfile({ id }) {
@@ -2276,7 +2656,7 @@ function UserProfile({ id }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 118：闭包陷阱——读到"过期"的 state</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 133：闭包陷阱——读到"过期"的 state</h3>
 
 ```jsx
 function Counter() {
@@ -2296,7 +2676,7 @@ function Counter() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 119：不要漏写依赖（并理解为什么）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 134：不要漏写依赖（并理解为什么）</h3>
 
 ```jsx
 function Search({ query, onResult }) {
@@ -2308,13 +2688,13 @@ function Search({ query, onResult }) {
 }
 ```
 
-**详解**：ESLint 的 `react-hooks/exhaustive-deps` 规则会提醒你补全依赖。漏写依赖的后果是：effect 内部读到的是某次渲染时"冻结"的旧值，行为难以预测。原则是**诚实地列出 effect 用到的每一个组件内变量**。如果某个依赖变化太频繁导致 effect 反复执行，正确做法不是删依赖，而是用 `useCallback`/`useMemo` 稳定它，或用函数式更新绕开（如示例 118）。
+**详解**：ESLint 的 `react-hooks/exhaustive-deps` 规则会提醒你补全依赖。漏写依赖的后果是：effect 内部读到的是某次渲染时"冻结"的旧值，行为难以预测。原则是**诚实地列出 effect 用到的每一个组件内变量**。如果某个依赖变化太频繁导致 effect 反复执行，正确做法不是删依赖，而是用 `useCallback`/`useMemo` 稳定它，或用函数式更新绕开（如示例 133）。
 
 ### （B）useRef —— 引用 DOM 与保存可变值
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 120：useRef 引用 DOM 元素</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 135：useRef 引用 DOM 元素</h3>
 
 ```jsx
 import { useRef, useEffect } from 'react';
@@ -2332,7 +2712,7 @@ function AutoFocus() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 121：useRef 保存可变值（修改它不会触发渲染）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 136：useRef 保存可变值（修改它不会触发渲染）</h3>
 
 ```jsx
 function Stopwatch() {
@@ -2354,7 +2734,7 @@ function Stopwatch() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 122：useRef vs useState 的区别（对照理解）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 137：useRef vs useState 的区别（对照理解）</h3>
 
 ```jsx
 function Demo() {
@@ -2376,7 +2756,7 @@ function Demo() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 123：useRef 保存上一次的值（自定义 usePrevious）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 138：useRef 保存上一次的值（自定义 usePrevious）</h3>
 
 ```jsx
 function usePrevious(value) {
@@ -2399,7 +2779,7 @@ function PriceDisplay({ price }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 124：useContext 基础用法</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 139：useContext 基础用法</h3>
 
 ```jsx
 import { createContext, useContext } from 'react';
@@ -2424,7 +2804,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 125：useContext 解决"逐层传递 props"（prop drilling）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 140：useContext 解决"逐层传递 props"（prop drilling）</h3>
 
 ```jsx
 const UserContext = createContext(null);
@@ -2452,7 +2832,7 @@ function UserBadge() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 126：useReducer 计数器（入门）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 141：useReducer 计数器（入门）</h3>
 
 ```jsx
 import { useReducer } from 'react';
@@ -2481,7 +2861,7 @@ function Counter() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 127：useReducer 管理复杂表单</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 142：useReducer 管理复杂表单</h3>
 
 ```jsx
 function formReducer(state, action) {
@@ -2510,7 +2890,7 @@ function Form() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 128：useReducer 管理列表</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 143：useReducer 管理列表</h3>
 
 ```jsx
 function todoReducer(todos, action) {
@@ -2545,7 +2925,7 @@ function Todos() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 129：useReducer vs useState 如何选择</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 144：useReducer vs useState 如何选择</h3>
 
 ```jsx
 // 简单、独立的状态 → useState
@@ -2564,7 +2944,7 @@ const [state, dispatch] = useReducer(reducer, initialState);
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 130：useMemo 缓存昂贵的计算结果</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 145：useMemo 缓存昂贵的计算结果</h3>
 
 ```jsx
 import { useMemo } from 'react';
@@ -2582,7 +2962,7 @@ function ExpensiveList({ items, keyword }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 131：useMemo 稳定对象引用（配合 React.memo）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 146：useMemo 稳定对象引用（配合 React.memo）</h3>
 
 ```jsx
 function Parent({ userId }) {
@@ -2607,7 +2987,7 @@ const Child = React.memo(({ config }) => {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 132：useCallback 缓存函数</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 147：useCallback 缓存函数</h3>
 
 ```jsx
 import { useCallback } from 'react';
@@ -2631,11 +3011,11 @@ const Child = React.memo(({ onClick }) => {
 });
 ```
 
-**详解**：`useCallback(fn, deps)` 相当于 `useMemo(() => fn, deps)`，专门用来缓存"函数"。道理同示例 131：函数每次渲染都是新引用，会让接收它的 `memo` 子组件失效。用 `useCallback` 固定函数引用后，父组件计数变化不再连累 `Child` 重渲染。依赖数组里要放函数内部用到的会变化的变量。
+**详解**：`useCallback(fn, deps)` 相当于 `useMemo(() => fn, deps)`，专门用来缓存"函数"。道理同示例 146：函数每次渲染都是新引用，会让接收它的 `memo` 子组件失效。用 `useCallback` 固定函数引用后，父组件计数变化不再连累 `Child` 重渲染。依赖数组里要放函数内部用到的会变化的变量。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 133：不要滥用 useMemo / useCallback</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 148：不要滥用 useMemo / useCallback</h3>
 
 ```jsx
 // ❌ 没必要：加法本身极快，缓存的开销比计算还大
@@ -2655,7 +3035,7 @@ const onClick2 = () => setOpen(true);
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 134：useLayoutEffect 同步测量避免闪烁</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 149：useLayoutEffect 同步测量避免闪烁</h3>
 
 ```jsx
 import { useLayoutEffect, useRef, useState } from 'react';
@@ -2675,7 +3055,7 @@ function Tooltip() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 135：useLayoutEffect 与 useEffect 的区别</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 150：useLayoutEffect 与 useEffect 的区别</h3>
 
 ```jsx
 useEffect(() => { /* 绘制后异步执行，不阻塞渲染，99% 情况用它 */ });
@@ -2686,7 +3066,7 @@ useLayoutEffect(() => { /* 绘制前同步执行，会阻塞渲染，仅测量/�
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 136：useImperativeHandle 向父组件暴露方法</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 151：useImperativeHandle 向父组件暴露方法</h3>
 
 ```jsx
 import { forwardRef, useImperativeHandle, useRef } from 'react';
@@ -2718,7 +3098,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 137：自定义 Hook：useToggle</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 152：自定义 Hook：useToggle</h3>
 
 ```jsx
 import { useState, useCallback } from 'react';
@@ -2739,7 +3119,7 @@ function Switch() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 138：自定义 Hook：useFetch（含加载态与竞态处理）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 153：自定义 Hook：useFetch（含加载态与竞态处理）</h3>
 
 ```jsx
 import { useState, useEffect } from 'react';
@@ -2768,11 +3148,11 @@ function Users() {
 }
 ```
 
-**详解**：这个 `useFetch` 把"请求数据"这套通用逻辑——加载态、错误态、竞态处理（示例 117 的 `ignore` 标志）——全部封装。任何组件只要 `const { data, loading, error } = useFetch(url)` 就能拿到完整的请求状态，组件本身只关心怎么渲染。这正是自定义 Hook 的威力：把重复的副作用逻辑抽象成一个可复用的"能力"。
+**详解**：这个 `useFetch` 把"请求数据"这套通用逻辑——加载态、错误态、竞态处理（示例 132 的 `ignore` 标志）——全部封装。任何组件只要 `const { data, loading, error } = useFetch(url)` 就能拿到完整的请求状态，组件本身只关心怎么渲染。这正是自定义 Hook 的威力：把重复的副作用逻辑抽象成一个可复用的"能力"。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 139：自定义 Hook：useLocalStorage（与浏览器存储同步）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 154：自定义 Hook：useLocalStorage（与浏览器存储同步）</h3>
 
 ```jsx
 import { useState, useEffect } from 'react';
@@ -2802,7 +3182,7 @@ function Settings() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 140：useId 生成唯一 id</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 155：useId 生成唯一 id</h3>
 
 ```jsx
 import { useId } from 'react';
@@ -2820,7 +3200,7 @@ function Field() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 141：useId 生成多个相关 id</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 156：useId 生成多个相关 id</h3>
 
 ```jsx
 function Form() {
@@ -2838,7 +3218,7 @@ function Form() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 142：useTransition 标记非紧急更新</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 157：useTransition 标记非紧急更新</h3>
 
 ```jsx
 import { useState, useTransition } from 'react';
@@ -2869,7 +3249,7 @@ function SearchList({ allItems }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 143：useDeferredValue 延迟值</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 158：useDeferredValue 延迟值</h3>
 
 ```jsx
 import { useState, useDeferredValue, useMemo } from 'react';
@@ -2894,7 +3274,7 @@ function Search({ allItems }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 144：startTransition（非 Hook 版本）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 159：startTransition（非 Hook 版本）</h3>
 
 ```jsx
 import { startTransition } from 'react';
@@ -2911,7 +3291,7 @@ function TabButton({ onSelect }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 145：useSyncExternalStore 订阅外部数据源</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 160：useSyncExternalStore 订阅外部数据源</h3>
 
 ```jsx
 import { useSyncExternalStore } from 'react';
@@ -2940,7 +3320,7 @@ function StatusBar() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 146：useSyncExternalStore 订阅自定义 store</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 161：useSyncExternalStore 订阅自定义 store</h3>
 
 ```jsx
 // 一个极简的外部 store
@@ -2963,7 +3343,7 @@ function Counter() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 147：useInsertionEffect（用于 CSS-in-JS 库）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 162：useInsertionEffect（用于 CSS-in-JS 库）</h3>
 
 ```jsx
 import { useInsertionEffect } from 'react';
@@ -2985,7 +3365,7 @@ function useCss(rule) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 148：Suspense 配合 lazy 懒加载</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 163：Suspense 配合 lazy 懒加载</h3>
 
 ```jsx
 import { Suspense, lazy } from 'react';
@@ -3003,7 +3383,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 149：多个 lazy 组件共享一个 Suspense</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 164：多个 lazy 组件共享一个 Suspense</h3>
 
 ```jsx
 const Chart = lazy(() => import('./Chart'));
@@ -3021,7 +3401,7 @@ function Dashboard() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 150：嵌套 Suspense</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 165：嵌套 Suspense</h3>
 
 ```jsx
 function Page() {
@@ -3038,7 +3418,7 @@ function Page() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 151：Suspense + 数据请求（配合支持 Suspense 的库）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 166：Suspense + 数据请求（配合支持 Suspense 的库）</h3>
 
 ```jsx
 // 需要配合 React Query、Relay 等支持 Suspense 的数据方案
@@ -3054,7 +3434,7 @@ function Profile() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 152：hydrateRoot（服务端渲染注水）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 167：hydrateRoot（服务端渲染注水）</h3>
 
 ```jsx
 import { hydrateRoot } from 'react-dom/client';
@@ -3066,7 +3446,7 @@ hydrateRoot(document.getElementById('root'), <App />);
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 153：并发渲染避免卡顿的完整对比</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 168：并发渲染避免卡顿的完整对比</h3>
 
 ```jsx
 function App() {
@@ -3095,7 +3475,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 154：React.memo 缓存组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 169：React.memo 缓存组件</h3>
 
 ```jsx
 const Item = React.memo(function Item({ text }) {
@@ -3107,7 +3487,7 @@ const Item = React.memo(function Item({ text }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 155：React.memo 自定义比较函数</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 170：React.memo 自定义比较函数</h3>
 
 ```jsx
 const User = React.memo(
@@ -3120,7 +3500,7 @@ const User = React.memo(
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 156：拆分组件减少渲染范围</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 171：拆分组件减少渲染范围</h3>
 
 ```jsx
 // 把频繁变化的部分独立成小组件，避免整棵树重渲染
@@ -3145,7 +3525,7 @@ function LiveClock() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 157：useMemo 缓存传给子组件的对象</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 172：useMemo 缓存传给子组件的对象</h3>
 
 ```jsx
 function Parent({ id }) {
@@ -3157,7 +3537,7 @@ function Parent({ id }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 158：懒加载路由组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 173：懒加载路由组件</h3>
 
 ```jsx
 import { lazy, Suspense } from 'react';
@@ -3180,7 +3560,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 159：列表虚拟化思路（只渲染可见项）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 174：列表虚拟化思路（只渲染可见项）</h3>
 
 ```jsx
 // 大列表建议用 react-window / react-virtualized
@@ -3211,7 +3591,7 @@ function VirtualList({ items, itemHeight = 30, height = 300 }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 160：创建可切换的主题 Context</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 175：创建可切换的主题 Context</h3>
 
 ```jsx
 const ThemeContext = createContext();
@@ -3234,7 +3614,7 @@ function ThemeButton() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 161：用 Context + useReducer 做全局状态</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 176：用 Context + useReducer 做全局状态</h3>
 
 ```jsx
 const StoreContext = createContext();
@@ -3260,7 +3640,7 @@ function CounterDisplay() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 162：多个 Context 组合</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 177：多个 Context 组合</h3>
 
 ```jsx
 function App() {
@@ -3278,7 +3658,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 163：子传父（回调函数）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 178：子传父（回调函数）</h3>
 
 ```jsx
 function Child({ onSend }) {
@@ -3298,7 +3678,7 @@ function Parent() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 164：兄弟组件通信（状态提升）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 179：兄弟组件通信（状态提升）</h3>
 
 ```jsx
 function Parent() {
@@ -3324,7 +3704,7 @@ function Display({ value }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 165：完整的 Todo 应用</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 180：完整的 Todo 应用</h3>
 
 ```jsx
 import { useState } from 'react';
@@ -3364,7 +3744,7 @@ function TodoApp() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 166：防抖搜索（自定义 Hook）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 181：防抖搜索（自定义 Hook）</h3>
 
 ```jsx
 function useDebounce(value, delay = 500) {
@@ -3388,7 +3768,7 @@ function Search() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 167：错误边界（Error Boundary）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 182：错误边界（Error Boundary）</h3>
 
 ```jsx
 import { Component } from 'react';
@@ -3419,7 +3799,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 168：Portal 渲染到 body（弹窗）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 183：Portal 渲染到 body（弹窗）</h3>
 
 ```jsx
 import { createPortal } from 'react-dom';
@@ -3448,7 +3828,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 169：分页数据加载</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 184：分页数据加载</h3>
 
 ```jsx
 function PagedList() {
@@ -3470,7 +3850,7 @@ function PagedList() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 170：倒计时组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 185：倒计时组件</h3>
 
 ```jsx
 function Countdown({ seconds = 60 }) {
@@ -3486,7 +3866,7 @@ function Countdown({ seconds = 60 }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 171：Tab 切换组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 186：Tab 切换组件</h3>
 
 ```jsx
 function Tabs() {
@@ -3506,7 +3886,7 @@ function Tabs() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 172：受控 + 校验的表单</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 187：受控 + 校验的表单</h3>
 
 ```jsx
 function SignupForm() {
@@ -3533,7 +3913,7 @@ function SignupForm() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 173：主题切换 + localStorage 持久化</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 188：主题切换 + localStorage 持久化</h3>
 
 ```jsx
 function ThemedApp() {
@@ -3562,4 +3942,4 @@ function ThemedApp() {
 
 ---
 
-至此共 173 个示例，涵盖 React 18 从入门到进阶的核心用法。建议边读边动手运行，效果更佳。
+至此共 188 个示例，涵盖 React 18 从入门到进阶的核心用法。建议边读边动手运行，效果更佳。
