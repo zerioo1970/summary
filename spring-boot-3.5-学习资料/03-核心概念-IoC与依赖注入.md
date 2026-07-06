@@ -68,15 +68,15 @@ Spring 提供了一个 **IoC 容器**（也叫 Spring 容器）。它做两件�
 
 ```mermaid
 flowchart TD
-    subgraph IoC 容器
+    subgraph IOC["IoC 容器"]
         direction TB
         B1[UserService 实例]
         B2[OrderService 实例]
         B3[PaymentService 实例]
     end
 
-    A[① 创建对象<br/>把对象都造好放进容器] --> IoC 容器
-    IoC 容器 --> C[② 组装对象<br/>谁需要谁，自动注入进去]
+    A[① 创建对象<br/>把对象都造好放进容器] --> IOC
+    IOC --> C[② 组装对象<br/>谁需要谁，自动注入进去]
 
     style A fill:#e3f2fd,stroke:#1565c0
     style C fill:#e8f5e9,stroke:#2e7d32
