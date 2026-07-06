@@ -4387,42 +4387,232 @@ const { pipe } = renderToPipeableStream(<App />, {
 
 ## 十、性能优化
 
+> **先记住一句话：不要过早优化。** React 本身已经很快，大多数应用无需刻意优化。优化的正确顺序是——**先测量，找到真正的瓶颈，再针对性地优化**，而不是到处套 `memo`、`useMemo`。盲目优化不仅让代码变复杂，有时反而更慢。
+>
+> **优化的核心思路**：React 慢，通常是因为"**不必要的重新渲染**"或"**一次渲染做了太多昂贵的工作**"。本章的技术都围绕这两点：减少重渲染次数（`memo`/`useMemo`/`useCallback`/组件拆分）、减少每次渲染的工作量（虚拟化/代码分割/防抖）。
+>
+> 本章从"如何认识重渲染"讲到具体优化手段和 checklist，共 17 个示例。
+
+### （A）优化前的认知
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 202：React.memo 缓存组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 202：先测量，别凭感觉优化</h3>
 
 ```jsx
-const Item = React.memo(function Item({ text }) {
-  console.log('渲染 Item：', text);
-  return <li>{text}</li>;
-});
-// props 不变时，Item 不会重新渲染
+// 用 React DevTools 的 Profiler 面板录制一次交互，
+// 看哪些组件渲染了、耗时多少，再决定优化谁。
+
+// 也可以用 Profiler 组件在代码里测量：
+import { Profiler } from 'react';
+
+<Profiler id="List" onRender={(id, phase, actualDuration) => {
+  console.log(id, phase, actualDuration + 'ms'); // 本次渲染耗时
+}}>
+  <List />
+</Profiler>
 ```
+
+**详解**：优化的第一步永远是**测量**，而不是猜。安装浏览器的 **React DevTools** 扩展，用它的 **Profiler（性能分析器）** 录制一次操作，就能看到每个组件渲染了几次、各耗时多少，一眼定位瓶颈。代码里也可用 `<Profiler>` 组件包住某块，通过 `onRender` 回调拿到渲染耗时。**没有数据支撑的优化就是在浪费时间**——先找到真正慢的那 20%，集中火力。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 203：React.memo 自定义比较函数</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 203：理解 React 何时重新渲染</h3>
+
+```jsx
+function Parent() {
+  const [count, setCount] = useState(0);
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>{count}</button>
+      <Child /> {/* 父每次重渲染，Child 默认也会跟着重渲染 */}
+    </div>
+  );
+}
+
+function Child() {
+  console.log('Child 渲染了'); // 点按钮会发现它也在打印
+  return <p>我是子组件</p>;
+}
+```
+
+**详解**：搞懂"何时重渲染"是优化的基础。一个组件会在以下情况重新渲染：① 它自己的 state 变了；② 它收到的 props 变了；③ **它的父组件重渲染了**（无论 props 变没变）。第③点最关键——上例点按钮改的是 `Parent` 的 state，但 `Child` 明明没接收任何会变的 props，却也跟着重渲染了。大多数"不必要的重渲染"都源于此。`React.memo` 就是用来打断这种连锁的。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 204：重新渲染 ≠ 操作真实 DOM</h3>
+
+```jsx
+// "重新渲染"只是 React 重新执行组件函数、生成新的虚拟 DOM 并对比，
+// 只有对比出差异的部分，才会真正更新到浏览器 DOM。
+// 所以：并非每次重渲染都很慢，也不是所有重渲染都需要优化。
+```
+
+**详解**：别把"重新渲染"想得太可怕。它指的是 React 重新调用组件函数、生成新的虚拟 DOM，然后和旧的对比（diff）——**只有真正变化的节点才会更新到真实 DOM**（真实 DOM 操作才是最贵的）。很多重渲染其实很轻量、无需优化。所以优化的目标不是"消灭一切重渲染"，而是"消灭那些**又频繁又昂贵**的重渲染"。这也是为什么要先测量（示例 202）。
+
+### （B）React.memo —— 跳过不必要的重渲染
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 205：React.memo 基础</h3>
+
+```jsx
+const Child = React.memo(function Child({ text }) {
+  console.log('Child 渲染：', text);
+  return <li>{text}</li>;
+});
+
+// 现在：只有 text 这个 prop 变化时，Child 才会重渲染；
+// 父组件因别的原因重渲染时，Child 会被跳过。
+```
+
+**详解**：`React.memo` 是一个"高阶组件"——把组件包起来后，React 会在每次父组件重渲染时**浅比较它的 props**：如果所有 props 都没变，就**跳过**这次重渲染，复用上次结果。这正好解决示例 203 的问题：父组件 state 变化不再连累无关的子组件。它适合"渲染较重、且 props 不常变"的组件。注意：props 频繁变化的组件用 memo 反而多做了比较，得不偿失。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 206：React.memo 为什么会"失效"</h3>
+
+```jsx
+const Child = React.memo(function Child({ config, onClick }) {
+  return <button onClick={onClick}>{config.label}</button>;
+});
+
+function Parent() {
+  const [n, setN] = useState(0);
+  // ❌ 每次渲染都新建对象和函数，引用都变了，memo 形同虚设
+  return (
+    <>
+      <button onClick={() => setN(n + 1)}>{n}</button>
+      <Child config={{ label: '按钮' }} onClick={() => console.log('click')} />
+    </>
+  );
+}
+```
+
+**详解**：这是 memo 最大的坑。`React.memo` 靠**浅比较**判断 props 是否变化，而对象、数组、函数每次渲染都是**新创建的、引用不同**。上例每次渲染 `Parent` 都新建了 `{ label: '按钮' }` 和 `() => ...`，浅比较认为"props 变了"，于是 `Child` 照样重渲染——memo 白加了。解决办法就是用 `useMemo` 缓存对象、`useCallback` 缓存函数（见示例 209、210），让引用保持稳定。**memo + useMemo/useCallback 通常要配套使用**。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 207：React.memo 自定义比较函数</h3>
 
 ```jsx
 const User = React.memo(
   function User({ user }) {
     return <p>{user.name}</p>;
   },
-  (prev, next) => prev.user.id === next.user.id // 返回 true 表示不重渲染
+  (prevProps, nextProps) => {
+    // 返回 true：视为"相同"，跳过重渲染
+    // 返回 false：视为"不同"，重新渲染
+    return prevProps.user.id === nextProps.user.id;
+  }
 );
 ```
 
+**详解**：`React.memo` 的第二个参数可以传一个自定义比较函数，你自己决定"props 算不算变了"。这里只关心 `user.id`——只要 id 没变就跳过重渲染，哪怕 `user` 对象引用变了。适合"props 是复杂对象，但只有某些字段真正影响渲染"的场景。**注意比较逻辑本身别写得太重**，否则比较的开销可能超过省下的渲染开销。多数情况下默认的浅比较就够了。
+
+### （C）useMemo / useCallback —— 稳定引用与缓存计算
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 204：拆分组件减少渲染范围</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 208：useMemo 缓存昂贵计算</h3>
 
 ```jsx
-// 把频繁变化的部分独立成小组件，避免整棵树重渲染
+import { useMemo } from 'react';
+
+function ProductList({ products, keyword }) {
+  const filtered = useMemo(() => {
+    console.log('执行过滤（昂贵）'); // 依赖不变就不会打印
+    return products.filter(p => p.name.includes(keyword));
+  }, [products, keyword]); // 只有这两个变化时才重新计算
+  return <ul>{filtered.map(p => <li key={p.id}>{p.name}</li>)}</ul>;
+}
+```
+
+**详解**：`useMemo(fn, deps)` 会"记住" `fn` 的返回值，只有依赖 `deps` 变化时才重新计算，否则直接复用上次结果。它用来避免"每次渲染都重复做昂贵计算"（大数组过滤/排序、复杂派生数据）。上例中，如果组件因别的 state 重渲染但 `products`/`keyword` 没变，过滤就不会重跑。**判断要不要用**：这个计算是否真的慢、是否每次渲染都要跑——是才用。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 209：useMemo 稳定对象引用（配合 memo）</h3>
+
+```jsx
+const Child = React.memo(({ config }) => {
+  console.log('Child 渲染');
+  return <p>{config.theme}</p>;
+});
+
+function Parent({ userId }) {
+  const [n, setN] = useState(0);
+  // 用 useMemo 缓存对象，userId 不变时引用就不变
+  const config = useMemo(() => ({ userId, theme: 'dark' }), [userId]);
+  return (
+    <>
+      <button onClick={() => setN(n + 1)}>{n}</button>
+      <Child config={config} /> {/* 点按钮时不再重渲染 */}
+    </>
+  );
+}
+```
+
+**详解**：这是对示例 206 的修复。用 `useMemo` 把传给子组件的对象缓存起来——只要依赖 `userId` 不变，`config` 就始终是同一个引用，`Child` 的 memo 浅比较才判定"没变"，成功跳过重渲染。点计数按钮时，`Child` 不再打印。**记住这个组合**：给 memo 子组件传对象/数组 prop 时，用 useMemo 稳定它。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 210：useCallback 稳定函数引用（配合 memo）</h3>
+
+```jsx
+import { useCallback } from 'react';
+
+const Child = React.memo(({ onClick }) => {
+  console.log('Child 渲染');
+  return <button onClick={onClick}>子按钮</button>;
+});
+
+function Parent() {
+  const [n, setN] = useState(0);
+  // useCallback 缓存函数，引用保持稳定
+  const handleClick = useCallback(() => console.log('click'), []);
+  return (
+    <>
+      <button onClick={() => setN(n + 1)}>{n}</button>
+      <Child onClick={handleClick} />
+    </>
+  );
+}
+```
+
+**详解**：`useCallback(fn, deps)` 专门缓存**函数**（等价于 `useMemo(() => fn, deps)`）。道理同示例 209：函数每次渲染都是新引用，会让 memo 子组件失效。用 `useCallback` 固定引用后，父组件计数变化不再连累 `Child`。依赖数组里要放函数内部用到的会变化的变量。**只有当这个函数会传给 memo 子组件、或作为其它 Hook 的依赖时，useCallback 才有意义**（否则纯属多余）。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 211：不要滥用 memo / useMemo / useCallback</h3>
+
+```jsx
+// ❌ 没必要：加法极快，缓存的成本比计算还高
+const sum = useMemo(() => a + b, [a, b]);
+// ❌ 没必要：这个函数没传给 memo 子组件，也没进依赖
+const onClick = useCallback(() => setOpen(true), []);
+// ❌ 没必要：一个只显示静态文字的小组件包 memo，收益几乎为零
+const Label = React.memo(() => <span>标题</span>);
+
+// ✅ 直接写就好
+const sum2 = a + b;
+const onClick2 = () => setOpen(true);
+```
+
+**详解**：这三个 API 本身都有成本（要缓存值、比较依赖/props）。**只在真正需要时使用**：① 计算确实昂贵（useMemo）；② 值/函数要传给 memo 优化过的子组件、或作为其它 Hook 依赖（useMemo/useCallback）；③ 组件渲染重且 props 不常变（memo）。除此之外一律直接写普通变量和函数——更简单、更可读。**过早、无脑的优化是常见反模式**，先测量（示例 202）再决定。
+
+### （D）结构性优化 —— 改变组件结构
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 212：组件拆分减少渲染范围</h3>
+
+```jsx
 function Page() {
   return (
     <div>
-      <ExpensiveStaticPart />
-      <LiveClock /> {/* 只有这里在不停更新 */}
+      <ExpensiveStaticPart /> {/* 静态的重内容，不该跟着时钟重渲染 */}
+      <LiveClock />           {/* 把频繁变化的部分独立出来 */}
     </div>
   );
 }
@@ -4437,21 +4627,69 @@ function LiveClock() {
 }
 ```
 
+**详解**：一个很有效但常被忽视的手段——**把频繁变化的 state 关进一个尽量小的组件里**。如果把时钟的 state 放在 `Page` 里，那么每秒 `Page` 及其所有子组件（包括昂贵的 `ExpensiveStaticPart`）都会重渲染。而把它独立成 `LiveClock`，每秒重渲染的就只有这个小组件。**state 影响的重渲染范围 = 拥有该 state 的组件及其子树**，把它下放到越小的组件，波及面越小。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 205：useMemo 缓存传给子组件的对象</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 213：状态下放（把 state 移到真正用它的地方）</h3>
 
 ```jsx
-function Parent({ id }) {
-  // 避免每次渲染生成新对象引用，导致 memo 子组件失效
-  const config = useMemo(() => ({ id, theme: 'dark' }), [id]);
-  return <Child config={config} />;
+// ❌ 输入框的 state 放在顶层，每次输入整个 App 都重渲染
+function App() {
+  const [text, setText] = useState('');
+  return (
+    <>
+      <input value={text} onChange={e => setText(e.target.value)} />
+      <HugeTree /> {/* 被无辜连累 */}
+    </>
+  );
+}
+
+// ✅ 把输入框和它的 state 一起下放到子组件
+function SearchBox() {
+  const [text, setText] = useState('');
+  return <input value={text} onChange={e => setText(e.target.value)} />;
+}
+function App2() {
+  return <><SearchBox /><HugeTree /></>;
 }
 ```
 
+**详解**：这是示例 212 思路的延伸。如果一个 state 只被局部使用，就**别把它放在高层组件**。上例把输入框 state 放在 `App`，导致每敲一个字整棵 `HugeTree` 都重渲染。把输入框连同其 state 一起抽到 `SearchBox`，`text` 变化就只影响 `SearchBox`，`HugeTree` 完全不受影响。**"状态应该住得离用它的地方尽量近"**——这往往比到处加 memo 更根本、更有效。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 206：懒加载路由组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 214：内容提升（用 children 避免重渲染）</h3>
+
+```jsx
+// 当 state 必须放在高层、但有一大块内容不依赖它时，
+// 把那块内容作为 children 传入，它就不会因该 state 变化而重渲染。
+function Wrapper({ children }) {
+  const [n, setN] = useState(0);
+  return (
+    <div onClick={() => setN(n + 1)}>
+      <p>点击次数：{n}</p>
+      {children} {/* children 是外部传入的，不会因 n 变化而重渲染 */}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Wrapper>
+      <ExpensiveTree /> {/* 在 App 里创建，不受 Wrapper 的 n 影响 */}
+    </Wrapper>
+  );
+}
+```
+
+**详解**：一个巧妙的技巧。当某个 state 必须待在父组件里，但父组件里又有一大块内容不依赖这个 state 时，可以把那块内容**作为 `children` 从外部传入**。因为 `children`（`<ExpensiveTree />`）是在 `App` 里创建的、其引用不随 `Wrapper` 的 `n` 变化，所以 `n` 更新时 React 会复用同一个 `children` 元素，`ExpensiveTree` 不会重渲染。这叫"内容提升/传递 children"，是一种不靠 memo 就能避免重渲染的结构技巧。
+
+### （E）加载与列表优化
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 215：代码分割 / 路由懒加载</h3>
 
 ```jsx
 import { lazy, Suspense } from 'react';
@@ -4472,18 +4710,20 @@ function App() {
 }
 ```
 
+**详解**：这是**首屏加载**性能的关键优化（原理见第九章示例 190、193）。用 `lazy` + 动态 `import()` 把每个路由页面单独打包，用户访问哪个页才下载哪个页的代码，首屏只加载当前页所需的 JS，大幅减小初始包体积、加快首屏。除了按路由，也可对"体积大且非首屏必需"的组件（富文本编辑器、图表、弹窗等）做懒加载。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 207：列表虚拟化思路（只渲染可见项）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 216：长列表虚拟化（只渲染可见项）</h3>
 
 ```jsx
-// 大列表建议用 react-window / react-virtualized
-// 这里演示基本思想：根据滚动位置切片
+// 大列表（成千上万条）建议用 react-window / react-virtualized 库。
+// 下面演示核心思想：只渲染视口内可见的那几条
 function VirtualList({ items, itemHeight = 30, height = 300 }) {
   const [scrollTop, setScrollTop] = useState(0);
   const start = Math.floor(scrollTop / itemHeight);
   const count = Math.ceil(height / itemHeight);
-  const visible = items.slice(start, start + count);
+  const visible = items.slice(start, start + count); // 只切出可见片段
   return (
     <div style={{ height, overflow: 'auto' }}
       onScroll={e => setScrollTop(e.target.scrollTop)}>
@@ -4499,13 +4739,69 @@ function VirtualList({ items, itemHeight = 30, height = 300 }) {
 }
 ```
 
+**详解**：渲染上万条 DOM 会严重卡顿。"**虚拟化（Virtualization）**"的思想是——不管数据有多少，**只渲染当前屏幕能看到的那十几条**，其余的不生成 DOM，滚动时动态替换。外层撑起总高度（保证滚动条正确），内层根据滚动位置切出可见片段绝对定位。实际项目**别自己造轮子**，用成熟库 `react-window`（轻量）或 `react-virtualized`（功能全）即可。这是长列表性能的终极方案。
+
+### （F）减少更新频率与小结
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 217：防抖 / 节流减少高频更新</h3>
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function useDebounce(value, delay = 500) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id); // 值又变了就取消上一次
+  }, [value, delay]);
+  return debounced;
+}
+
+function Search() {
+  const [text, setText] = useState('');
+  const debouncedText = useDebounce(text, 500); // 停止输入 500ms 后才更新
+  useEffect(() => {
+    if (debouncedText) console.log('发起搜索：', debouncedText);
+  }, [debouncedText]);
+  return <input value={text} onChange={e => setText(e.target.value)} />;
+}
+```
+
+**详解**：有些操作触发得非常频繁（输入、滚动、resize），如果每次都执行昂贵逻辑（发请求、重算）会造成浪费和卡顿。**防抖（debounce）**：等操作"停下来"一段时间后才执行一次（适合搜索联想——停止打字才搜索）；**节流（throttle）**：固定时间间隔最多执行一次（适合滚动）。上例的 `useDebounce` 让搜索只在用户停止输入 500ms 后才发起，大幅减少无效请求。这是从"源头"减少更新的有效手段。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 218：性能优化 Checklist（小结）</h3>
+
+```text
+优化决策顺序（从上到下）：
+1. 先用 React DevTools Profiler 测量，确认瓶颈真实存在
+2. 结构优化优先：状态下放、组件拆分、children 传递（示例 212-214）
+3. 用 React.memo 跳过无关子组件的重渲染（示例 205）
+4. 配套用 useMemo/useCallback 稳定传给 memo 的对象/函数（示例 209-210）
+5. 昂贵计算用 useMemo 缓存（示例 208）
+6. 首屏大：代码分割 / 路由懒加载（示例 215）
+7. 长列表：虚拟化（示例 216）
+8. 高频事件：防抖 / 节流（示例 217）
+```
+
+**详解**：把本章串成一份可执行的清单。**关键原则**：
+- **测量先行**——没有数据别动手（第 1 步）；
+- **结构优化优于 memo**——能通过"状态下放、组件拆分、children"解决的，就别急着套 `memo`（第 2 步往往最有效且最简单）；
+- **memo 与 useMemo/useCallback 配套使用**，单独用 memo 常因引用问题失效（第 3-4 步）；
+- **别过早优化**——先把功能写对、写清晰，遇到实际性能问题再按此清单逐项排查。
+
+记住：**可读性和正确性永远优先于性能**，只有测量证明有瓶颈时才优化。
+
 ---
 
 ## 十一、Context 与组件通信
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 208：创建可切换的主题 Context</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 219：创建可切换的主题 Context</h3>
 
 ```jsx
 const ThemeContext = createContext();
@@ -4528,7 +4824,7 @@ function ThemeButton() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 209：用 Context + useReducer 做全局状态</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 220：用 Context + useReducer 做全局状态</h3>
 
 ```jsx
 const StoreContext = createContext();
@@ -4554,7 +4850,7 @@ function CounterDisplay() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 210：多个 Context 组合</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 221：多个 Context 组合</h3>
 
 ```jsx
 function App() {
@@ -4572,7 +4868,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 211：子传父（回调函数）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 222：子传父（回调函数）</h3>
 
 ```jsx
 function Child({ onSend }) {
@@ -4592,7 +4888,7 @@ function Parent() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 212：兄弟组件通信（状态提升）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 223：兄弟组件通信（状态提升）</h3>
 
 ```jsx
 function Parent() {
@@ -4618,7 +4914,7 @@ function Display({ value }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 213：完整的 Todo 应用</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 224：完整的 Todo 应用</h3>
 
 ```jsx
 import { useState } from 'react';
@@ -4658,7 +4954,7 @@ function TodoApp() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 214：防抖搜索（自定义 Hook）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 225：防抖搜索（自定义 Hook）</h3>
 
 ```jsx
 function useDebounce(value, delay = 500) {
@@ -4682,7 +4978,7 @@ function Search() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 215：错误边界（Error Boundary）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 226：错误边界（Error Boundary）</h3>
 
 ```jsx
 import { Component } from 'react';
@@ -4713,7 +5009,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 216：Portal 渲染到 body（弹窗）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 227：Portal 渲染到 body（弹窗）</h3>
 
 ```jsx
 import { createPortal } from 'react-dom';
@@ -4742,7 +5038,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 217：分页数据加载</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 228：分页数据加载</h3>
 
 ```jsx
 function PagedList() {
@@ -4764,7 +5060,7 @@ function PagedList() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 218：倒计时组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 229：倒计时组件</h3>
 
 ```jsx
 function Countdown({ seconds = 60 }) {
@@ -4780,7 +5076,7 @@ function Countdown({ seconds = 60 }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 219：Tab 切换组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 230：Tab 切换组件</h3>
 
 ```jsx
 function Tabs() {
@@ -4800,7 +5096,7 @@ function Tabs() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 220：受控 + 校验的表单</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 231：受控 + 校验的表单</h3>
 
 ```jsx
 function SignupForm() {
@@ -4827,7 +5123,7 @@ function SignupForm() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 221：主题切换 + localStorage 持久化</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 232：主题切换 + localStorage 持久化</h3>
 
 ```jsx
 function ThemedApp() {
@@ -4856,4 +5152,4 @@ function ThemedApp() {
 
 ---
 
-至此共 221 个示例，涵盖 React 18 从入门到进阶的核心用法。建议边读边动手运行，效果更佳。
+至此共 232 个示例，涵盖 React 18 从入门到进阶的核心用法。建议边读边动手运行，效果更佳。
