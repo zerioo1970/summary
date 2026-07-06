@@ -1,6 +1,6 @@
 # React 18 详细使用说明（100+ 示例）
 
-> 本文档面向已了解 JavaScript / ES6 的开发者，通过 100 多个由浅入深的小示例，系统讲解 React 18 的用法。
+> 本文档面向已了解 JavaScript / ES6 的开发者，通过 280 多个由浅入深的小示例，系统讲解 React 18 的用法，并覆盖 React Router 路由与 React Query 数据请求两大常用生态库。
 > 每个示例都尽量短小、独立，方便直接复制运行。
 
 ---
@@ -2859,7 +2859,7 @@ function MultiUpload() {
   return (
     <div>
       <input type="file" accept="image/*" multiple onChange={onChange} />
-      <div>{previews.map((url, i) => <img key={i} src={url} width={80} />)}</div>
+      <div>{previews.map((url, i) => <img key={i} src={url} width={80} alt={`预览 ${i + 1}`} />)}</div>
     </div>
   );
 }
@@ -6534,7 +6534,8 @@ const m = useMutation({ mutationFn, onSuccess: () => qc.invalidateQueries({ quer
 - **掌握 Hooks**：useState、useEffect 是重中之重，再逐步掌握 useRef、useContext、useReducer、useMemo/useCallback（第七章）。
 - **进阶**：表单、Context、性能优化、错误边界（第六、十、十一、十二章）。
 - **React 18 特性**：并发、useTransition、Suspense（第八、九章），用到再深入。
-- **下一步生态**：React Router（路由）、状态管理（Zustand/Redux）、数据请求（React Query/SWR）、TypeScript、以及 Next.js 等框架。
+- **常用生态库**：React Router 路由（第十三章）、React Query 数据请求（第十四章）——真实项目几乎必用，本文档已覆盖。
+- **再下一步**：状态管理（Zustand / Redux）、TypeScript + React、测试（Vitest / React Testing Library）、以及 Next.js 等全栈框架。
 
 ---
 
