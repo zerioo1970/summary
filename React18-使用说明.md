@@ -19,6 +19,8 @@
 10. [性能优化](#十性能优化)
 11. [Context 与组件通信](#十一context-与组件通信)
 12. [进阶与实战](#十二进阶与实战)
+13. [React Router 路由](#十三react-router-路由)
+14. [数据请求（React Query）](#十四数据请求react-query)
 
 ---
 
@@ -5730,6 +5732,763 @@ function TodoApp() {
 
 ---
 
+## 十三、React Router 路由
+
+> **为什么需要路由？** React 默认是"单页应用（SPA）"——整个网站只有一个 HTML 页面。但用户仍希望有"多个页面"的体验：不同的 URL 显示不同内容、能前进后退、能分享某个页面的链接。**路由（Router）** 就是负责"根据当前 URL 显示对应组件"的库。
+>
+> **React Router 是什么？** 它是 React 生态最主流的路由库（本章基于 **React Router v7**，其声明式 API 与 v6 完全兼容；v7 于 2024 年底发布，已与 Remix 合并）。它让你把"URL 路径"和"要渲染的组件"对应起来，并提供导航、参数、嵌套布局等能力。
+>
+> 本章从"最简单的两页切换"讲到"受保护路由、懒加载"，共 16 个示例。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 252：安装与基本配置</h3>
+
+```bash
+npm install react-router-dom
+```
+
+```jsx
+// main.jsx —— 用 BrowserRouter 把整个应用包起来
+import { BrowserRouter } from 'react-router-dom';
+import { createRoot } from 'react-dom/client';
+import App from './App';
+
+createRoot(document.getElementById('root')).render(
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>
+);
+```
+
+**详解**：使用 React Router 的第一步，是在应用最外层包一个 **`<BrowserRouter>`**。它负责监听浏览器地址栏的变化、并把"当前 URL"提供给内部所有组件——就像第十一章的 Context Provider 一样。`BrowserRouter` 使用 HTML5 的 History API，URL 形如 `/about`（干净、无 `#`）。包好之后，内部才能使用 `<Routes>`、`<Link>`、`useNavigate` 等路由功能。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 253：Routes 与 Route（URL → 组件）</h3>
+
+```jsx
+import { Routes, Route } from 'react-router-dom';
+
+function Home()  { return <h1>首页</h1>; }
+function About() { return <h1>关于我们</h1>; }
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+    </Routes>
+  );
+}
+```
+
+**详解**：路由的核心是 `<Routes>` 和 `<Route>`。`<Route path="路径" element={<组件 />} />` 定义一条规则："当 URL 匹配 `path` 时，渲染 `element` 里的组件"。`<Routes>` 是所有 `Route` 的容器，它会**从中挑出与当前 URL 最匹配的那一条**来渲染。上例中访问 `/` 显示首页、访问 `/about` 显示关于页。注意 `element` 接收的是 JSX 元素（`<Home />`），不是组件本身。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 254：Link 导航（不刷新页面）</h3>
+
+```jsx
+import { Link } from 'react-router-dom';
+
+function Nav() {
+  return (
+    <nav>
+      <Link to="/">首页</Link>
+      <Link to="/about">关于</Link>
+    </nav>
+  );
+}
+```
+
+**详解**：页面间跳转要用 **`<Link>`** 而不是普通的 `<a>` 标签。区别很关键：`<a href>` 会让浏览器**重新加载整个页面**（白屏一下、丢失应用状态），而 `<Link to>` 由 React Router 拦截，只是**在前端切换组件、更新 URL，不刷新页面**——这才是 SPA 流畅体验的关键。`to` 属性写目标路径。渲染到页面上它最终还是个 `<a>`，但点击行为被接管了。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 255：NavLink（高亮当前链接）</h3>
+
+```jsx
+import { NavLink } from 'react-router-dom';
+
+function Nav() {
+  return (
+    <nav>
+      <NavLink to="/" style={({ isActive }) => ({ color: isActive ? 'red' : 'black' })}>
+        首页
+      </NavLink>
+      <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : ''}>
+        关于
+      </NavLink>
+    </nav>
+  );
+}
+```
+
+**详解**：`<NavLink>` 是 `<Link>` 的增强版，专门用于导航菜单——它能**自动知道自己是否是"当前页"**。它的 `style` 或 `className` 可以接收一个函数，参数里的 `isActive` 表示"当前 URL 是否匹配这个链接"。据此给当前项加高亮样式（变色、加下划线等），让用户知道自己在哪个页面。这是做导航栏"当前项高亮"的标准方式。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 256：动态路由参数（useParams）</h3>
+
+```jsx
+import { Routes, Route, useParams } from 'react-router-dom';
+
+function UserDetail() {
+  const { id } = useParams();      // 取出 URL 里的 :id
+  return <h1>用户 ID：{id}</h1>;
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/user/:id" element={<UserDetail />} /> {/* :id 是动态段 */}
+    </Routes>
+  );
+}
+// 访问 /user/42 → 显示"用户 ID：42"
+```
+
+**详解**：路径里用 **`:参数名`** 定义"动态段"，比如 `/user/:id` 能匹配 `/user/1`、`/user/42` 等任意值。组件内用 **`useParams()`** 这个 Hook 拿到这些参数（返回一个对象，键就是参数名）。这是"详情页"最常见的模式——列表点某一项，跳到 `/user/该项id`，详情页据此 `id` 请求并展示对应数据。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 257：编程式导航（useNavigate）</h3>
+
+```jsx
+import { useNavigate } from 'react-router-dom';
+
+function LoginForm() {
+  const navigate = useNavigate();
+  const handleLogin = () => {
+    // ...登录成功后
+    navigate('/dashboard');       // 跳转到某个页面
+    // navigate(-1);              // 后退一步（相当于浏览器返回）
+    // navigate('/home', { replace: true }); // 替换当前历史记录，不能再后退回来
+  };
+  return <button onClick={handleLogin}>登录</button>;
+}
+```
+
+**详解**：除了用户点 `<Link>`，有时需要**在代码里主动跳转**（如登录成功后自动进入首页、提交后返回列表）。用 `useNavigate()` 拿到一个 `navigate` 函数：`navigate('/路径')` 跳转到指定页面；`navigate(-1)` 相当于点浏览器后退；加 `{ replace: true }` 会替换当前历史记录（用户按后退键回不到这一页，适合登录页跳转后）。这是"编程式导航"。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 258：查询参数（useSearchParams）</h3>
+
+```jsx
+import { useSearchParams } from 'react-router-dom';
+
+function ProductList() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const category = searchParams.get('category') || 'all'; // 读取 ?category=xxx
+  return (
+    <div>
+      <p>当前分类：{category}</p>
+      <button onClick={() => setSearchParams({ category: 'books' })}>看图书</button>
+    </div>
+  );
+}
+// URL 形如 /products?category=books
+```
+
+**详解**：查询参数（URL 里 `?` 后面的部分，如 `?category=books&sort=price`）用 **`useSearchParams()`** 处理，用法很像 `useState`：返回 `[searchParams, setSearchParams]`。用 `searchParams.get('键')` 读取某个参数；用 `setSearchParams({...})` 修改它（会更新 URL）。它适合存放"页面状态"——筛选条件、排序、页码、搜索词等，好处是这些状态**体现在 URL 里**，可分享、可刷新恢复、可前进后退。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 259：嵌套路由与 Outlet</h3>
+
+```jsx
+import { Routes, Route, Outlet, Link } from 'react-router-dom';
+
+function Layout() {
+  return (
+    <div>
+      <nav><Link to="/">首页</Link> | <Link to="/about">关于</Link></nav>
+      <hr />
+      <Outlet /> {/* 子路由的内容渲染在这里 */}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Home />} />       {/* 匹配 / */}
+        <Route path="about" element={<About />} /> {/* 匹配 /about */}
+      </Route>
+    </Routes>
+  );
+}
+```
+
+**详解**：真实应用里很多页面共享同一套"外壳"（导航栏、侧边栏、页脚），只有中间内容不同。**嵌套路由**能优雅实现：把 `<Route>` 嵌套起来，父路由渲染布局组件（`Layout`），子路由的内容通过父组件里的 **`<Outlet />`** 占位符渲染出来。这样切换子页面时，外层导航栏不会重新渲染。`<Outlet>` 就是"子路由内容的插槽"。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 260：index 路由（默认子页面）</h3>
+
+```jsx
+<Route path="/dashboard" element={<DashboardLayout />}>
+  <Route index element={<Overview />} />          {/* /dashboard */}
+  <Route path="stats" element={<Stats />} />       {/* /dashboard/stats */}
+  <Route path="settings" element={<Settings />} /> {/* /dashboard/settings */}
+</Route>
+```
+
+**详解**：`<Route index element={...} />` 定义"**索引路由**"——当 URL 正好匹配父路径（这里 `/dashboard`）、还没有更深的子路径时，渲染它。可以理解为"这个布局的默认首页"。它没有 `path`，用 `index` 关键字标记。上例访问 `/dashboard` 显示概览，访问 `/dashboard/stats` 显示统计。嵌套路由 + index 路由是搭建"带侧边栏的后台管理界面"的标准结构。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 261：404 页面（通配符 *）</h3>
+
+```jsx
+function NotFound() { return <h1>404 - 页面不存在</h1>; }
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+      <Route path="*" element={<NotFound />} /> {/* 匹配所有未定义的路径 */}
+    </Routes>
+  );
+}
+```
+
+**详解**：当用户访问一个没有定义的路径时，应该显示友好的"404 未找到"页面，而不是空白。用 `path="*"`（通配符）定义一条"兜底路由"——它匹配所有前面都没匹配上的 URL。`<Routes>` 总是选择最匹配的那条，所以 `*` 只在其它都不匹配时才生效。把它放在路由列表最后。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 262：重定向（Navigate 组件）</h3>
+
+```jsx
+import { Navigate } from 'react-router-dom';
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/home" replace />} /> {/* 访问 / 自动跳到 /home */}
+      <Route path="/home" element={<Home />} />
+    </Routes>
+  );
+}
+```
+
+**详解**：有时需要"重定向"——访问某路径时自动跳到另一个路径（比如把旧地址跳到新地址，或把 `/` 跳到 `/home`）。在路由里渲染 **`<Navigate to="目标" replace />`** 组件即可：它一旦被渲染，就会立即导航到 `to` 指定的路径。加 `replace` 表示替换历史记录（用户按后退不会回到这个中转地址）。它也常用于"未登录就跳到登录页"（见示例 265）。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 263：读取当前位置（useLocation）</h3>
+
+```jsx
+import { useLocation } from 'react-router-dom';
+
+function PageTracker() {
+  const location = useLocation();
+  useEffect(() => {
+    console.log('访问了页面：', location.pathname); // 如 '/about'
+    // 这里可以上报页面访问统计（埋点）
+  }, [location.pathname]);
+  return null;
+}
+```
+
+**详解**：`useLocation()` 返回当前 URL 的详细信息对象，常用字段有 `pathname`（路径，如 `/about`）、`search`（查询串，如 `?id=1`）、`hash`、`state`。典型用途是**监听路由变化做统计埋点**（页面切换时上报）、或读取通过 `navigate('/x', { state })` 传递的额外数据。配合 `useEffect` 监听 `location.pathname` 就能在每次页面切换时执行逻辑。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 264：受保护路由（登录验证）</h3>
+
+```jsx
+import { Navigate } from 'react-router-dom';
+
+function RequireAuth({ children }) {
+  const isLoggedIn = Boolean(localStorage.getItem('token'));
+  // 未登录就重定向到登录页，否则正常渲染子内容
+  return isLoggedIn ? children : <Navigate to="/login" replace />;
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/dashboard" element={
+        <RequireAuth><Dashboard /></RequireAuth>
+      } />
+    </Routes>
+  );
+}
+```
+
+**详解**：很多页面需要"登录后才能访问"。做法是封装一个 `RequireAuth` 组件当"守卫"：它检查登录状态，已登录就渲染 `children`（真正的页面），未登录就用 `<Navigate>` 重定向到登录页。把需要保护的路由用它包起来即可。这是"路由守卫/权限控制"的常见实现思路，实际项目里 `isLoggedIn` 通常来自 Context 里的全局登录状态（第十一章）。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 265：路由懒加载（配合 Suspense）</h3>
+
+```jsx
+import { lazy, Suspense } from 'react';
+import { Routes, Route } from 'react-router-dom';
+
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+
+function App() {
+  return (
+    <Suspense fallback={<p>页面加载中...</p>}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+      </Routes>
+    </Suspense>
+  );
+}
+```
+
+**详解**：路由是做"代码分割"最理想的边界——每个页面单独打包，用户访问哪个页才下载哪个页的代码，大幅减小首屏体积（第九章示例 193、第十章示例 215 讲过原理）。用 `React.lazy` 包裹每个页面组件，再用一个 `<Suspense>` 包住 `<Routes>` 提供加载中占位。这是中大型 React 应用几乎必备的性能优化。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 266：数据路由 createBrowserRouter（v6.4+ / v7 新方式）</h3>
+
+```jsx
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Layout />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: 'about', element: <About /> },
+      { path: 'user/:id', element: <UserDetail />, loader: userLoader },
+    ],
+  },
+]);
+
+function App() {
+  return <RouterProvider router={router} />;
+}
+
+// loader 在渲染组件"之前"就把数据准备好
+async function userLoader({ params }) {
+  const res = await fetch(`/api/users/${params.id}`);
+  return res.json();
+}
+```
+
+**详解**：React Router v6.4 起（v7 主推）引入了"**数据路由**"——用 `createBrowserRouter` 以**配置对象数组**的方式定义路由（而非 JSX），再用 `<RouterProvider>` 渲染。它最大的新能力是 **`loader`**：在页面组件渲染**之前**就先加载好数据，避免"先渲染空壳再请求"的瀑布式加载，配合组件里的 `useLoaderData()` 读取。它还支持 `action`（处理表单提交）等。这是官方推荐的现代方式，但声明式的 `<Routes>`（前面示例）依然完全可用、上手更简单。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 267：React Router 常用 API 小结</h3>
+
+```jsx
+// 配置
+<BrowserRouter>          // 应用最外层包裹
+<Routes> / <Route>       // 定义"路径 → 组件"
+<Route path=":id">       // 动态参数
+<Route index>            // 默认子路由
+<Route path="*">         // 404 兜底
+<Outlet />               // 嵌套路由的子内容占位
+
+// 导航
+<Link to="/x">           // 声明式跳转（不刷新）
+<NavLink to="/x">        // 带"当前项高亮"的 Link
+<Navigate to="/x" />     // 重定向
+
+// Hooks
+useNavigate()   // 编程式跳转
+useParams()     // 读取路径参数 :id
+useSearchParams() // 读取/修改查询参数 ?a=b
+useLocation()   // 当前 URL 信息
+```
+
+**详解**：把本章的 API 汇总成速查表。**学习建议**：先熟练掌握"声明式"这套（`BrowserRouter` + `Routes` + `Route` + `Link` + `useNavigate` + `useParams`），它能覆盖绝大多数需求、也最好理解。等做复杂应用（需要在渲染前加载数据、处理表单提交）时，再学 `createBrowserRouter` 的数据路由与 `loader`/`action`。React Router 是学 React 之后**最应该掌握的第一个生态库**。
+
+---
+
+## 十四、数据请求（React Query）
+
+> **为什么需要 React Query？** 回顾第十二章示例 242——用 `useEffect` + 三个 state 手写数据请求，要处理加载态、错误态、竞态，还没有缓存、重试、后台刷新。每个组件都重复这套样板，很繁琐。**React Query（现名 TanStack Query）** 专门管理"**服务端状态**"（来自后端、你不完全掌控、会过期的数据），把这些都封装好了。
+>
+> **它解决什么？** 缓存、自动重新请求、加载/错误状态、请求去重、后台刷新、分页、乐观更新……让你用几行声明式代码就搞定复杂的数据请求逻辑。
+>
+> 本章基于 **TanStack Query v5**（需 React 18+），从"最简单的一次查询"讲到"变更数据与缓存更新"，共 16 个示例。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 268：安装与配置 QueryClientProvider</h3>
+
+```bash
+npm install @tanstack/react-query
+```
+
+```jsx
+// main.jsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createRoot } from 'react-dom/client';
+import App from './App';
+
+const queryClient = new QueryClient(); // 缓存等都存在这里
+
+createRoot(document.getElementById('root')).render(
+  <QueryClientProvider client={queryClient}>
+    <App />
+  </QueryClientProvider>
+);
+```
+
+**详解**：使用前要做两步配置：① 创建一个 `QueryClient` 实例——它是"大脑"，管理所有查询的缓存、状态；② 用 `<QueryClientProvider client={queryClient}>` 把应用包起来（又是 Context 模式），这样内部所有组件才能使用 `useQuery`、`useMutation`。`queryClient` 通常在应用里只创建一个、全局共享。配置好后就能在任意组件里请求数据了。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 269：useQuery 基础</h3>
+
+```jsx
+import { useQuery } from '@tanstack/react-query';
+
+function UserList() {
+  const { data, isPending, isError } = useQuery({
+    queryKey: ['users'],                                   // 这份数据的唯一标识
+    queryFn: () => fetch('/api/users').then(r => r.json()), // 怎么获取数据
+  });
+
+  if (isPending) return <p>加载中...</p>;
+  if (isError)   return <p>加载失败</p>;
+  return <ul>{data.map(u => <li key={u.id}>{u.name}</li>)}</ul>;
+}
+```
+
+**详解**：这就是 React Query 的核心 `useQuery`，对比第十二章示例 242 的手写版本，代码大幅简化。它接收一个对象：
+- **`queryKey`**：这份数据的唯一标识（数组形式），React Query 用它做缓存的键；
+- **`queryFn`**：一个返回 Promise 的函数，负责实际获取数据（可用 fetch、axios 等）。
+
+它自动返回 `data`（数据）、`isPending`（是否加载中）、`isError`（是否出错）等状态——加载、错误、竞态处理全部内置，你只管根据状态渲染。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 270：查询的几种状态</h3>
+
+```jsx
+function Todos() {
+  const { data, status, error, isFetching } = useQuery({
+    queryKey: ['todos'],
+    queryFn: fetchTodos,
+  });
+
+  // status 有三种：'pending'（加载中）| 'error'（出错）| 'success'（成功）
+  if (status === 'pending') return <p>加载中...</p>;
+  if (status === 'error')   return <p>出错了：{error.message}</p>;
+  return (
+    <div>
+      {isFetching && <span>后台刷新中...</span>}
+      <ul>{data.map(t => <li key={t.id}>{t.title}</li>)}</ul>
+    </div>
+  );
+}
+```
+
+**详解**：`useQuery` 返回丰富的状态字段，理解它们很重要：
+- **`status`**：`'pending'`（首次加载、还没数据）、`'error'`（出错）、`'success'`（有数据）；也可用布尔快捷方式 `isPending`/`isError`/`isSuccess`。
+- **`isFetching`**：是否正在请求（**包括后台的重新验证**）。区别在于——首次加载时 `isPending` 和 `isFetching` 都为真；但已有缓存数据、正在后台悄悄刷新时，`isPending` 为假、`isFetching` 为真。据此可显示"后台刷新中"的轻提示，同时仍展示旧数据。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 271：带参数的查询（queryKey 依赖）</h3>
+
+```jsx
+function UserDetail({ userId }) {
+  const { data, isPending } = useQuery({
+    queryKey: ['user', userId],                              // userId 是 key 的一部分
+    queryFn: () => fetch(`/api/users/${userId}`).then(r => r.json()),
+  });
+  if (isPending) return <p>加载中...</p>;
+  return <h3>{data.name}</h3>;
+}
+```
+
+**详解**：当请求依赖某个变量（如 `userId`）时，把它**放进 `queryKey` 数组**。这有两个作用：① 不同 `userId` 会被当作**不同的查询分别缓存**（`['user', 1]` 和 `['user', 2]` 各存各的）；② 当 `userId` 变化时，React Query **自动重新请求**新数据——你不用像 `useEffect` 那样手动管理依赖。可以把 `queryKey` 理解为"这份数据的身份 + 它依赖的参数"。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 272：条件查询（enabled）</h3>
+
+```jsx
+function UserPosts({ userId }) {
+  const { data } = useQuery({
+    queryKey: ['posts', userId],
+    queryFn: () => fetch(`/api/users/${userId}/posts`).then(r => r.json()),
+    enabled: !!userId, // 只有 userId 存在时才发请求
+  });
+  return <div>{data?.length ?? 0} 篇文章</div>;
+}
+```
+
+**详解**：有时需要"等某个条件满足了才发请求"——比如 `userId` 还没拿到时不该请求它的文章。用 **`enabled`** 选项控制：`enabled: false` 时该查询暂停、不会执行 `queryFn`；变为 `true` 时才自动发起。常见于"依赖上一个请求结果"的链式查询（等第一个查询成功拿到 id，再启用第二个查询）。这比手写一堆 if 判断优雅得多。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 273：缓存与自动重新请求（staleTime / gcTime）</h3>
+
+```jsx
+const { data } = useQuery({
+  queryKey: ['config'],
+  queryFn: fetchConfig,
+  staleTime: 5 * 60 * 1000, // 5 分钟内数据视为"新鲜"，不重新请求
+  gcTime: 10 * 60 * 1000,   // 数据无人使用后，缓存再保留 10 分钟才回收
+});
+```
+
+**详解**：React Query 最强大的地方是自动缓存。两个关键配置（注意 v5 里 `cacheTime` 已改名为 `gcTime`）：
+- **`staleTime`（新鲜时间）**：数据保持"新鲜"的时长。这段时间内再次使用同一 `queryKey`，**直接用缓存、不重新请求**。默认是 0（即数据立刻过期，一有机会就后台刷新）。
+- **`gcTime`（垃圾回收时间）**：数据不再被任何组件使用后，缓存在内存里保留多久才被清除。默认 5 分钟。
+
+默认情况下，React Query 还会在"窗口重新获得焦点""网络重连"时自动后台刷新数据——保证用户看到的数据尽量新。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 274：请求去重与共享缓存</h3>
+
+```jsx
+// 三个组件同时用相同的 queryKey，只会发一次请求，共享同一份缓存
+function A() { const { data } = useQuery({ queryKey: ['me'], queryFn: fetchMe }); /* ... */ }
+function B() { const { data } = useQuery({ queryKey: ['me'], queryFn: fetchMe }); /* ... */ }
+function C() { const { data } = useQuery({ queryKey: ['me'], queryFn: fetchMe }); /* ... */ }
+```
+
+**详解**：这是 React Query 相对手写请求的一大优势——**自动去重和共享**。上面三个组件都请求 `['me']`，如果它们同时挂载，React Query **只会真正发起一次网络请求**，然后三个组件共享这份缓存结果。手写 `useEffect` 版本则会发三次重复请求。这个特性让你可以放心地"在需要数据的每个组件里各自 `useQuery`"，而不必把数据提升到顶层再层层传递——大大简化了数据共享。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 275：手动刷新（refetch）</h3>
+
+```jsx
+function Dashboard() {
+  const { data, refetch, isFetching } = useQuery({
+    queryKey: ['stats'],
+    queryFn: fetchStats,
+  });
+  return (
+    <div>
+      <button onClick={() => refetch()} disabled={isFetching}>
+        {isFetching ? '刷新中...' : '刷新数据'}
+      </button>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  );
+}
+```
+
+**详解**：除了自动刷新，`useQuery` 还返回一个 **`refetch`** 函数，让你手动触发重新请求（比如给个"刷新"按钮）。配合 `isFetching` 在刷新期间禁用按钮、显示"刷新中"。这适合用户主动要求获取最新数据的场景。注意：多数时候你**不需要**手动 refetch——React Query 的自动刷新和缓存失效机制（见下例）已经能覆盖绝大部分刷新需求。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 276：useMutation 基础（增删改）</h3>
+
+```jsx
+import { useMutation } from '@tanstack/react-query';
+
+function AddTodo() {
+  const mutation = useMutation({
+    mutationFn: (newTodo) =>
+      fetch('/api/todos', {
+        method: 'POST',
+        body: JSON.stringify(newTodo),
+      }).then(r => r.json()),
+  });
+
+  return (
+    <button
+      onClick={() => mutation.mutate({ title: '新任务' })}
+      disabled={mutation.isPending}
+    >
+      {mutation.isPending ? '提交中...' : '添加任务'}
+    </button>
+  );
+}
+```
+
+**详解**：`useQuery` 用于**读取**数据；**修改**数据（增、删、改，即"写操作"）则用 **`useMutation`**。它接收 `mutationFn`（执行修改的函数，通常是 POST/PUT/DELETE 请求），返回一个对象，其中 `mutate(参数)` 用来触发这次修改，`isPending` 表示"正在提交"。和 `useQuery` 不同，mutation **不会自动执行**，只有你调用 `mutate()` 时才发起。这里点按钮时提交新任务，提交期间按钮禁用。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 277：变更后使缓存失效（invalidateQueries）</h3>
+
+```jsx
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+function AddTodo() {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (newTodo) => postTodo(newTodo),
+    onSuccess: () => {
+      // 提交成功后，让 ['todos'] 缓存失效 → 自动重新请求最新列表
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+    },
+  });
+  return <button onClick={() => mutation.mutate({ title: '任务' })}>添加</button>;
+}
+```
+
+**详解**：这是 React Query 最核心的模式之一——**增删改之后，如何让列表自动更新？** 答案是"使相关缓存失效"。通过 `useQueryClient()` 拿到 `queryClient`，在 mutation 的 `onSuccess` 回调里调用 `invalidateQueries({ queryKey: ['todos'] })`——它会把 `['todos']` 标记为过期，React Query 随即**自动重新请求**该列表，界面就显示出刚添加的数据了。你不用手动改本地状态，"改完让缓存失效、由 React Query 重新拉取"是最省心、最不易出错的做法。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 278：mutation 的成功/失败回调</h3>
+
+```jsx
+const mutation = useMutation({
+  mutationFn: saveUser,
+  onSuccess: (data) => {
+    alert('保存成功！');            // 成功时
+  },
+  onError: (error) => {
+    alert('保存失败：' + error.message); // 失败时
+  },
+  onSettled: () => {
+    console.log('无论成功失败都会执行'); // 结束时（类似 finally）
+  },
+});
+
+// 也可以在调用时传回调：
+// mutation.mutate(user, { onSuccess: () => navigate('/list') });
+```
+
+**详解**：`useMutation` 提供了几个生命周期回调：`onSuccess`（成功后，能拿到返回数据）、`onError`（失败后，能拿到错误）、`onSettled`（无论成败都执行，类似 `try/finally`）。它们适合做提示、跳转、失效缓存等副作用。回调既可以定义在 `useMutation` 配置里（每次都触发），也可以在调用 `mutate(数据, { onSuccess })` 时传入（仅本次触发）。**注意**：v5 里已移除了 `useQuery` 的 `onSuccess/onError`，这类回调现在只用于 mutation。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 279：乐观更新（先改界面，再等服务器）</h3>
+
+```jsx
+const queryClient = useQueryClient();
+const toggleTodo = useMutation({
+  mutationFn: updateTodo,
+  onMutate: async (newTodo) => {
+    await queryClient.cancelQueries({ queryKey: ['todos'] });
+    const previous = queryClient.getQueryData(['todos']); // 备份旧数据
+    // 立即乐观地更新缓存（界面马上变化，不等服务器）
+    queryClient.setQueryData(['todos'], (old) =>
+      old.map(t => t.id === newTodo.id ? newTodo : t)
+    );
+    return { previous }; // 传给 onError 用于回滚
+  },
+  onError: (err, newTodo, context) => {
+    queryClient.setQueryData(['todos'], context.previous); // 出错回滚
+  },
+  onSettled: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
+});
+```
+
+**详解**："乐观更新"是一种提升体验的高级技巧——**不等服务器返回，先立即更新界面**（假设操作会成功），让交互瞬间响应；万一服务器返回失败，再把界面回滚到操作前。实现靠 `onMutate`（发请求前：备份旧数据、乐观改缓存）、`onError`（失败：用备份回滚）、`onSettled`（结束：让缓存失效以和服务器同步）。常用于点赞、勾选待办等"几乎总会成功"的高频操作。这是进阶内容，理解思路即可。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 280：分页查询（placeholderData 保留上页）</h3>
+
+```jsx
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useState } from 'react';
+
+function PagedList() {
+  const [page, setPage] = useState(1);
+  const { data, isFetching } = useQuery({
+    queryKey: ['items', page],
+    queryFn: () => fetch(`/api/items?page=${page}`).then(r => r.json()),
+    placeholderData: keepPreviousData, // 翻页时保留上一页数据，避免闪烁
+  });
+  return (
+    <div>
+      <ul>{data?.map(i => <li key={i.id}>{i.name}</li>)}</ul>
+      <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>上一页</button>
+      <span>第 {page} 页 {isFetching && '（加载中）'}</span>
+      <button onClick={() => setPage(p => p + 1)}>下一页</button>
+    </div>
+  );
+}
+```
+
+**详解**：分页时把 `page` 放进 `queryKey`（`['items', page]`），`page` 变化就自动请求对应页（每页数据分别缓存，翻回已看过的页会秒开）。关键选项 **`placeholderData: keepPreviousData`**（v5 写法，替代 v4 的 `keepPreviousData: true`）——翻页加载新数据时，**先继续显示上一页的数据**，而不是闪现空白/loading，等新数据到了再替换，体验更平滑。用 `isFetching` 给个"加载中"提示即可。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 281：无限滚动（useInfiniteQuery）</h3>
+
+```jsx
+import { useInfiniteQuery } from '@tanstack/react-query';
+
+function Feed() {
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ['feed'],
+      queryFn: ({ pageParam }) =>
+        fetch(`/api/feed?cursor=${pageParam}`).then(r => r.json()),
+      initialPageParam: 0,
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined, // 返回下一页游标
+    });
+
+  return (
+    <div>
+      {data?.pages.map((page, i) =>
+        page.items.map(item => <p key={item.id}>{item.text}</p>)
+      )}
+      <button onClick={() => fetchNextPage()} disabled={!hasNextPage || isFetchingNextPage}>
+        {isFetchingNextPage ? '加载中...' : hasNextPage ? '加载更多' : '没有更多了'}
+      </button>
+    </div>
+  );
+}
+```
+
+**详解**："加载更多/无限滚动"用专门的 `useInfiniteQuery`。它和 `useQuery` 的区别：数据以"**分页累积**"形式保存在 `data.pages`（一个数组，每项是一页）。关键配置：`initialPageParam`（首页参数）、`getNextPageParam`（从上一页数据里算出"下一页的参数"，返回 `undefined` 表示没有更多了）。`fetchNextPage()` 加载下一页并追加，`hasNextPage` 判断是否还有更多。配合滚动到底部自动调用 `fetchNextPage` 即可实现无限滚动（v5 要求显式提供 `initialPageParam`）。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 282：预取数据（prefetch，鼠标悬停时提前加载）</h3>
+
+```jsx
+function UserLink({ userId }) {
+  const queryClient = useQueryClient();
+  const prefetch = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['user', userId],
+      queryFn: () => fetch(`/api/users/${userId}`).then(r => r.json()),
+    });
+  };
+  // 鼠标悬停时就提前请求，等用户真正点进去时数据已就绪
+  return <Link to={`/user/${userId}`} onMouseEnter={prefetch}>查看用户</Link>;
+}
+```
+
+**详解**：`prefetchQuery` 让你**提前**把数据请求好并放进缓存，等真正需要时直接命中缓存、瞬间显示。经典用法是"鼠标悬停在链接上时就预取目标页数据"——等用户点击进入，数据往往已经加载好了，几乎没有等待。这是 React Query 用来"消除感知加载时间"的实用技巧，能显著提升体验。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 283：React Query 小结与 SWR 对比</h3>
+
+```jsx
+// 读数据：useQuery（自动缓存、状态、后台刷新、去重）
+const { data, isPending, isError } = useQuery({ queryKey, queryFn });
+
+// 写数据：useMutation + 失效缓存
+const m = useMutation({ mutationFn, onSuccess: () => qc.invalidateQueries({ queryKey }) });
+
+// 分页：placeholderData: keepPreviousData
+// 无限滚动：useInfiniteQuery
+// 提前加载：queryClient.prefetchQuery
+```
+
+**详解**：本章要点回顾——**用 `useQuery` 读、`useMutation` 写、改完让缓存失效**，这三招覆盖了日常绝大多数数据请求需求，其余（分页、无限滚动、预取、乐观更新）按需使用。
+
+**核心心智**：React Query 管理的是"**服务端状态**"（远程、会过期的数据），它和 `useState`（管理本地 UI 状态）职责不同、互补使用——**别再用 `useState` + `useEffect` 手写请求了**。
+
+**和 SWR 的对比**：SWR（由 Vercel 出品）是另一个流行的数据请求库，理念相似、更轻量、API 更精简（`useSWR(key, fetcher)`）；React Query 功能更全面（mutation、无限查询、更强的缓存控制、开发者工具）。中小项目用 SWR 足够，功能需求多则选 React Query。两者都远胜于手写请求。至此，你已经掌握了现代 React 应用最重要的两个生态库——路由与数据请求。
+
+---
+
 ## 附录：常见易错点与学习建议
 
 > 这份速查表汇总了初学 React 时最容易踩的坑，按主题分类。遇到"改了数据界面不动""effect 反复执行""列表行为异常"等问题时，先回来对照检查。
@@ -5779,4 +6538,4 @@ function TodoApp() {
 
 ---
 
-至此全文共 251 个示例，覆盖 React 18 从入门到进阶实战的核心内容。**最好的学习方式是边读边动手敲**——把示例改一改、跑一跑，遇到报错去查、去想为什么，进步最快。祝你学得顺利！
+至此全文共 283 个示例，覆盖 React 18 从入门到进阶实战的核心内容。**最好的学习方式是边读边动手敲**——把示例改一改、跑一跑，遇到报错去查、去想为什么，进步最快。祝你学得顺利！
