@@ -585,9 +585,17 @@ function RichText() {
 
 ## 三、组件与 Props
 
+> **组件（Component）是什么？** 组件是 React 的核心——它是一个"返回 JSX 的函数"，代表界面上一块可复用的部分（一个按钮、一张卡片、一个导航栏，乃至整个页面）。你把界面拆成一个个组件，再像搭积木一样把它们组合起来。
+>
+> **Props 是什么？** Props（properties 的缩写）是"父组件传给子组件的数据"，好比给函数传参数。它让同一个组件能根据不同数据显示不同内容，从而实现复用。
+>
+> **一条重要原则——单向数据流**：数据只能从父组件通过 props 往子组件流动，子组件不能反过来修改收到的 props。本章从"最简单的组件"讲到"组件之间如何组合与通信"，共 28 个示例。
+
+### （A）组件的定义
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 30：函数组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 30：最简单的函数组件</h3>
 
 ```jsx
 function Welcome() {
@@ -595,82 +603,396 @@ function Welcome() {
 }
 ```
 
+**详解**：这就是一个组件——一个**返回 JSX 的普通 JavaScript 函数**。定义好之后，就能像标签一样使用它：`<Welcome />`。可以把组件理解为"自定义的 HTML 标签"，只不过它的内容由你用 JS 决定。这是 React 一切的基础：**界面 = 一堆组件的组合**。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 31：箭头函数组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 31：组件名必须以大写字母开头</h3>
 
 ```jsx
-const Welcome = () => <h1>欢迎光临</h1>;
+// ✅ 正确：大写开头，React 当作组件
+function UserCard() { return <div>卡片</div>; }
+const el1 = <UserCard />;
+
+// ❌ 错误：小写开头，React 会当作普通 HTML 标签 <usercard>
+function usercard() { return <div>卡片</div>; }
+// const el2 = <usercard />;  // 不会渲染你的组件
 ```
+
+**详解**：这是一条必须记住的硬性规则——**组件名首字母要大写**。原因回到 JSX 的本质：`<UserCard />` 会编译成 `React.createElement(UserCard, ...)`（把大写的当变量，即你的组件），而 `<div />`、`<usercard />` 会编译成 `React.createElement('div', ...)`（把小写的当字符串，即原生 HTML 标签）。所以组件小写开头会被误认为不存在的 HTML 标签，导致渲染失败。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 32：接收 props</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 32：箭头函数组件</h3>
+
+```jsx
+const Welcome = () => {
+  return <h1>欢迎光临</h1>;
+};
+
+// 单行返回可以省略 return 和大括号：
+const Hello = () => <h1>你好</h1>;
+```
+
+**详解**：组件既可以用 `function` 声明，也可以用箭头函数赋值给一个变量。两者功能完全一样，选哪种看团队习惯。箭头函数在只返回一个表达式时，可以省略 `{}` 和 `return`（如 `Hello`），写法更简洁。注意变量名同样要大写开头。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 33：组件的返回值规则</h3>
+
+```jsx
+function A() { return <p>单个元素</p>; }              // ✅
+function B() { return <><p>1</p><p>2</p></>; }        // ✅ 用 Fragment 包多个
+function C() { return null; }                          // ✅ 什么都不渲染
+function D() { return 123; }                           // ✅ 也可返回字符串/数字
+// function E() { return <p>1</p><p>2</p>; }           // ❌ 多个并列元素没包裹
+```
+
+**详解**：组件的返回值有几种合法情况：① 单个 JSX 元素；② 用 Fragment（`<>...</>`）包裹的多个元素；③ `null`（表示不渲染任何内容，常用于条件隐藏）；④ 字符串或数字（直接作为文本渲染）。**不合法**的是直接返回多个并列元素而不包裹——原因见第二章示例 21（一个函数只能返回一个值）。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 34：组件可以重复使用</h3>
+
+```jsx
+function Star() { return <span>⭐</span>; }
+
+function Rating() {
+  return (
+    <div>
+      <Star />
+      <Star />
+      <Star />
+    </div>
+  );
+}
+```
+
+**详解**：组件最大的价值是**复用**。定义一次 `Star`，就能在任何地方用任意多次。这里 `Rating` 里放了三个 `<Star />`。每一次使用都是一个独立的实例（后面学了 state 会知道，它们各自的状态互不干扰）。想改所有星星的样子，只需改 `Star` 一处。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 35：把界面拆分成多个组件</h3>
+
+```jsx
+function Header()  { return <header>页头</header>; }
+function Content() { return <main>正文</main>; }
+function Footer()  { return <footer>页脚</footer>; }
+
+function Page() {
+  return (
+    <div>
+      <Header />
+      <Content />
+      <Footer />
+    </div>
+  );
+}
+```
+
+**详解**：真实项目里，一个页面会拆成许多小组件，再由一个"父组件"把它们组装起来。好处是：每个组件职责单一、易读、易维护、可单独复用。拆分的经验法则是"**一个组件只做一件事**"——当一个组件变得又长又杂时，就是该拆分的信号。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 36：组件的导出与导入</h3>
+
+```jsx
+// Button.jsx —— 每个组件通常单独放一个文件
+export default function Button() {
+  return <button>按钮</button>;
+}
+
+// App.jsx —— 在别处导入使用
+import Button from './Button';
+
+function App() {
+  return <Button />;
+}
+```
+
+**详解**：工程中习惯把每个组件放在单独的文件里，用 `export` 导出、`import` 导入。`export default`（默认导出）在导入时名字可以随意起，一个文件只能有一个；也可以用命名导出 `export function Button() {}`，导入时要用 `import { Button }` 并保持同名，一个文件可以有多个。合理的文件拆分让项目结构清晰。
+
+### （B）Props：父组件向子组件传数据
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 37：接收 props（父传子）</h3>
 
 ```jsx
 function Welcome(props) {
   return <h1>你好，{props.name}</h1>;
 }
 
-// 使用：<Welcome name="李四" />
+// 使用时像写 HTML 属性一样传值：
+// <Welcome name="李四" />   → 渲染 "你好，李四"
+// <Welcome name="王五" />   → 渲染 "你好，王五"
 ```
+
+**详解**：props 就是父组件传进来的数据。React 会把使用组件时写的所有属性（`name="李四"`）收集成一个对象，作为**第一个参数** `props` 传给组件函数。于是组件内部通过 `props.name` 读取。这就是复用的关键：同一个 `Welcome`，传不同的 `name` 就显示不同的问候语。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 33：解构 props</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 38：解构 props（推荐写法）</h3>
 
 ```jsx
 function Welcome({ name, age }) {
   return <p>{name}，{age} 岁</p>;
 }
+
+// 等价于：
+function Welcome2(props) {
+  const { name, age } = props;
+  return <p>{name}，{age} 岁</p>;
+}
 ```
+
+**详解**：与其每次都写 `props.name`、`props.age`，不如在函数参数里直接用对象解构 `{ name, age }` 把需要的字段取出来。这是社区最主流的写法——一眼就能看出这个组件用到了哪些 props，代码也更简洁。两种写法完全等价，推荐用解构。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 34：props 默认值</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 39：传递不同类型的值（引号 vs 大括号）</h3>
 
 ```jsx
-function Button({ text = '点击' }) {
-  return <button>{text}</button>;
+function Demo({ title, count, active }) {
+  return <p>{title} / {count} / {active ? '开' : '关'}</p>;
 }
-// 不传 text 时显示"点击"
+
+// 字符串用引号，其它类型（数字、布尔、变量）用大括号：
+// <Demo title="标题" count={5} active={true} />
 ```
+
+**详解**：传 props 时要区分值的类型：
+- **字符串**：可以直接用引号 `title="标题"`；
+- **数字、布尔、数组、对象、变量、表达式**：必须用大括号 `count={5}`、`active={true}`。
+
+常见错误是 `count="5"`——这样传进去的是字符串 `"5"` 而不是数字 `5`，做数学运算时会出问题。记住：**除了写死的字符串，其余一律用大括号**。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 35：children 属性</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 40：传递对象和数组</h3>
+
+```jsx
+function UserCard({ user, tags }) {
+  return (
+    <div>
+      <h3>{user.name}</h3>
+      <p>标签：{tags.join('、')}</p>
+    </div>
+  );
+}
+
+// 使用：
+const user = { name: '张三', age: 20 };
+const tags = ['前端', 'React'];
+// <UserCard user={user} tags={tags} />
+```
+
+**详解**：props 不仅能传简单值，也能传对象、数组等复杂数据。传的时候用大括号包住变量（`user={user}`），组件内部就能像操作普通对象/数组那样使用它们（`user.name`、`tags.join()`）。这在传递一整条数据记录时非常常用。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 41：props 默认值</h3>
+
+```jsx
+function Button({ text = '点击', type = 'default' }) {
+  return <button className={type}>{text}</button>;
+}
+
+// <Button />                    → 显示"点击"，type 为 default
+// <Button text="提交" />         → 显示"提交"，type 仍为 default
+```
+
+**详解**：在解构时用 `=` 给 props 设默认值，当父组件**没传**该 prop（值为 `undefined`）时就用默认值。这让组件更健壮、更好用——调用者只需传关心的 props，其余走默认。注意：只有 `undefined` 会触发默认值，如果显式传了 `null`，默认值不会生效。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 42：props 是只读的（不能修改）</h3>
+
+```jsx
+function Welcome({ name }) {
+  // ❌ 绝对不要这样做：修改 props 会破坏单向数据流
+  // name = name.toUpperCase();
+
+  // ✅ 需要加工时，用一个新变量
+  const upperName = name.toUpperCase();
+  return <h1>你好，{upperName}</h1>;
+}
+```
+
+**详解**：这是 React 的铁律——**props 是只读的，组件绝不能修改自己收到的 props**。React 遵循"单向数据流"：数据从父流向子，子只能读、不能改。如果子组件想改变数据，应该由父组件传一个"回调函数"下来，子组件调用它通知父组件去改（见示例 52、53）。需要基于 props 计算新值时，创建一个新变量即可。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 43：布尔 props 的简写</h3>
+
+```jsx
+function Modal({ visible, closable }) {
+  return <div>{visible ? '显示' : '隐藏'}，{closable ? '可关闭' : '不可关闭'}</div>;
+}
+
+// 只写属性名，等价于传 true：
+// <Modal visible closable />
+// 等价于 <Modal visible={true} closable={true} />
+```
+
+**详解**：当 prop 是布尔值且想传 `true` 时，可以**只写属性名**，省略 `={true}`。这和 HTML 里 `<input disabled>` 是一个道理。要传 `false` 则必须显式写 `visible={false}`。这种简写在传递开关类 props（如 `disabled`、`loading`、`visible`）时很常见。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 44：props 重命名与默认值组合</h3>
+
+```jsx
+function Avatar({ src: imageUrl, size = 40 }) {
+  // 把 src 重命名为 imageUrl，size 默认 40
+  return <img src={imageUrl} width={size} height={size} alt="头像" />;
+}
+
+// <Avatar src="a.jpg" />          → 用默认 size 40
+// <Avatar src="b.jpg" size={80} />
+```
+
+**详解**：解构时可以用 `原名: 新名` 给 prop 改一个组件内部更合适的名字（这里把 `src` 改成 `imageUrl`），也能同时设默认值。这利用的是 JS 对象解构的能力。重命名在避免命名冲突或让内部代码更清晰时有用，但不必滥用——多数时候保持原名即可。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 45：用展开运算符透传所有 props</h3>
+
+```jsx
+function Input(props) {
+  return <input {...props} />;
+}
+
+// 外部传的所有属性都会转发给内部的 input：
+// <Input type="text" placeholder="请输入" maxLength={10} disabled />
+```
+
+**详解**：`{...props}` 把 `props` 对象里的所有字段一次性"摊开"成属性传给内部元素，省去逐个转发。这在**封装原生元素**（如自定义 Input、Button）时特别有用——你不用预先知道调用者会传哪些属性，全部原样透传即可。这体现了组件封装的灵活性。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 46：透传并覆盖/扩展部分 props</h3>
+
+```jsx
+function PrimaryButton({ className, ...rest }) {
+  // 把 className 单独取出来合并，其余用 rest 透传
+  return <button className={`btn-primary ${className || ''}`} {...rest} />;
+}
+
+// <PrimaryButton onClick={fn} disabled>提交</PrimaryButton>
+```
+
+**详解**：常见需求是"我要固定某些属性，同时把其余属性透传下去"。用**剩余参数** `...rest` 把除已解构字段外的所有 props 收集起来，再 `{...rest}` 展开。这里组件强制加上 `btn-primary` 类，又允许调用者补充自己的 `className` 和其它属性（`onClick`、`disabled`）。注意展开的先后顺序会影响同名属性的覆盖结果。
+
+### （C）children：组件的"内容"
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 47：children 属性基础</h3>
 
 ```jsx
 function Card({ children }) {
   return <div className="card">{children}</div>;
 }
 
-// 使用：
-// <Card><p>卡片内容</p></Card>
+// 使用：标签中间的内容会作为 children 传入
+// <Card>
+//   <p>这是卡片里的内容</p>
+// </Card>
 ```
+
+**详解**：`children` 是一个特殊的 prop——它代表**组件开、闭标签之间的内容**。当你写 `<Card><p>...</p></Card>` 时，中间的 `<p>...</p>` 会自动作为 `children` 传给 `Card`。组件用 `{children}` 决定把这些内容渲染在哪里。这是打造"容器型组件"（卡片、弹窗、布局）的基础。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 36：组件组合（嵌套）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 48：children 可以是任意内容</h3>
 
 ```jsx
-function Avatar({ url }) {
-  return <img src={url} alt="头像" />;
+function Box({ children }) {
+  return <div className="box">{children}</div>;
 }
 
-function UserInfo({ user }) {
+// children 可以是文本、单个元素、多个元素，甚至其它组件：
+// <Box>纯文本</Box>
+// <Box><h1>标题</h1><p>段落</p></Box>
+// <Box><Avatar src="a.jpg" /></Box>
+```
+
+**详解**：`children` 的内容非常灵活——可以是纯文本、一个元素、多个并列元素、其它组件，或它们的任意混合。组件不需要关心传进来的具体是什么，只管把 `{children}` 放到合适的位置。正是这种灵活性，让容器组件可以包裹任何内容，实现高度复用。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 49：通过具名 props 传递 JSX（多个"插槽"）</h3>
+
+```jsx
+function Layout({ header, sidebar, content }) {
   return (
-    <div>
-      <Avatar url={user.avatar} />
-      <span>{user.name}</span>
+    <div className="layout">
+      <div className="header">{header}</div>
+      <div className="sidebar">{sidebar}</div>
+      <div className="content">{content}</div>
     </div>
+  );
+}
+
+// 使用：把 JSX 作为不同的 prop 传入
+// <Layout
+//   header={<h1>标题</h1>}
+//   sidebar={<nav>菜单</nav>}
+//   content={<p>正文</p>}
+// />
+```
+
+**详解**：`children` 只有一个"位置"。如果组件需要**多个可填充的区域**（比如布局的头部、侧栏、正文），可以把 JSX 作为普通 props 传进去（值用大括号包住 JSX）。这相当于给组件开了多个"插槽"。这是构建灵活布局组件的常用技巧。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 50：组件组合（Composition）</h3>
+
+```jsx
+function Card({ children }) {
+  return <div className="card">{children}</div>;
+}
+function Avatar({ src }) { return <img src={src} alt="" />; }
+
+function UserCard({ user }) {
+  return (
+    <Card>
+      <Avatar src={user.avatar} />
+      <h3>{user.name}</h3>
+    </Card>
   );
 }
 ```
 
+**详解**：把小组件放进别的组件里组装出更复杂的界面，这叫"组合"。这里 `UserCard` 复用了通用的 `Card` 容器，往里面塞了 `Avatar` 和标题。React 官方提倡"**组合优于继承**"——不需要类的继承，靠组件嵌套 + props/children 就能灵活地复用和扩展 UI。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 37：传递函数作为 prop</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 51：用 children 做通用布局/包裹组件</h3>
+
+```jsx
+function Panel({ title, children }) {
+  return (
+    <section className="panel">
+      <div className="panel-title">{title}</div>
+      <div className="panel-body">{children}</div>
+    </section>
+  );
+}
+
+// <Panel title="用户信息">
+//   <p>姓名：张三</p>
+//   <p>年龄：20</p>
+// </Panel>
+```
+
+**详解**：`children` 常和普通 props 搭配使用：普通 props 传"配置"（如标题 `title`），`children` 传"主体内容"。这样一个 `Panel` 组件就能承载任意内容，同时保持统一的外观结构。这是实现设计系统里"卡片、面板、对话框"等通用组件的标准模式。
+
+### （D）组件通信与进阶
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 52：传递函数作为 prop（子触发父）</h3>
 
 ```jsx
 function Child({ onAction }) {
@@ -678,23 +1000,143 @@ function Child({ onAction }) {
 }
 
 function Parent() {
-  const handle = () => alert('子组件触发了');
+  const handle = () => alert('子组件触发了父组件的函数');
   return <Child onAction={handle} />;
 }
 ```
 
+**详解**：既然数据只能父传子，那子组件怎么"通知"父组件？答案是——**父组件把一个函数当作 prop 传给子组件**，子组件在合适的时机调用它。这里父组件把 `handle` 作为 `onAction` 传下去，子组件点击时调用 `onAction`，实际执行的是父组件的 `handle`。这是子→父通信的核心机制。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 38：透传所有 props（展开运算符）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 53：子组件回传数据给父组件</h3>
 
 ```jsx
-function Input(props) {
-  return <input {...props} />;
+function SearchInput({ onSearch }) {
+  return (
+    <input
+      placeholder="输入后回车"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') onSearch(e.target.value); // 把值回传给父
+      }}
+    />
+  );
 }
 
-// 使用：<Input type="text" placeholder="请输入" disabled />
+function Parent() {
+  const handleSearch = (keyword) => {
+    console.log('父组件收到关键字：', keyword);
+  };
+  return <SearchInput onSearch={handleSearch} />;
+}
 ```
 
+**详解**：子组件调用父传来的回调时，可以**带上参数**，从而把数据"回传"给父组件。这里子组件把输入框的值通过 `onSearch(值)` 传出去，父组件的 `handleSearch` 就能拿到。这就是"数据向上流动"的实现方式——本质仍是单向数据流，只是借助回调函数把数据从子传回父。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 54：把组件作为 prop 传递</h3>
+
+```jsx
+function List({ items, renderItem }) {
+  return <ul>{items.map(renderItem)}</ul>;
+}
+
+// 使用者决定每一项怎么渲染：
+// <List
+//   items={users}
+//   renderItem={(u) => <li key={u.id}>{u.name}</li>}
+// />
+```
+
+**详解**：props 甚至可以是"一个返回 JSX 的函数"（称为 render prop）。这里 `List` 只负责遍历，而"每一项长什么样"交给使用者通过 `renderItem` 决定。这让组件更通用——同一个 `List` 能渲染用户列表、商品列表等任意内容。这是一种高级但很强大的复用模式。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 55：条件性地传递 props</h3>
+
+```jsx
+function Button({ disabled, onClick, children }) {
+  return <button disabled={disabled} onClick={onClick}>{children}</button>;
+}
+
+function Form({ isSubmitting }) {
+  return (
+    <Button
+      disabled={isSubmitting}
+      onClick={isSubmitting ? undefined : () => console.log('提交')}
+    >
+      {isSubmitting ? '提交中...' : '提交'}
+    </Button>
+  );
+}
+```
+
+**详解**：props 的值可以根据条件动态决定。这里根据 `isSubmitting` 状态，动态控制按钮是否禁用、点击行为、以及显示的文字。传 `undefined` 相当于不传该 prop（会走默认或视为没有）。灵活地根据状态传不同 props，是构建交互式 UI 的日常操作。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 56：用 PropTypes 校验 props 类型</h3>
+
+```jsx
+import PropTypes from 'prop-types';
+
+function Greeting({ name, age }) {
+  return <p>{name}，{age} 岁</p>;
+}
+
+Greeting.propTypes = {
+  name: PropTypes.string.isRequired, // 必传的字符串
+  age: PropTypes.number,             // 可选的数字
+};
+```
+
+**详解**：`prop-types` 是一个用于在**开发阶段**校验 props 类型的库。如果父组件传错了类型（比如 `age` 传了字符串），或漏传了 `isRequired` 的必填项，控制台会给出警告，帮你及早发现 bug。它需要单独安装（`npm install prop-types`）。不过在现代项目中，**更推荐用 TypeScript** 来做类型检查——它能在编写代码时就提示错误，比运行时的 PropTypes 更强大。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 57：综合实战——可复用的商品卡片列表</h3>
+
+```jsx
+// 1) 通用容器组件
+function Card({ children }) {
+  return <div className="card">{children}</div>;
+}
+
+// 2) 展示单个商品（纯靠 props 显示，可复用）
+function ProductCard({ product, onBuy }) {
+  const { name, price, tags = [] } = product;
+  return (
+    <Card>
+      <h3>{name}</h3>
+      <p>¥{price.toFixed(2)}</p>
+      <p>{tags.join(' / ')}</p>
+      <button onClick={() => onBuy(product.id)}>购买</button>
+    </Card>
+  );
+}
+
+// 3) 父组件：传数据 + 传回调
+function ProductList({ products }) {
+  const handleBuy = (id) => console.log('购买商品', id);
+  return (
+    <div className="list">
+      {products.map((p) => (
+        <ProductCard key={p.id} product={p} onBuy={handleBuy} />
+      ))}
+    </div>
+  );
+}
+```
+
+**详解**：这个例子综合运用了本章几乎所有知识点：
+1. **组件拆分**：容器 `Card`、展示 `ProductCard`、父级 `ProductList` 各司其职；
+2. **组件组合**：`ProductCard` 复用了 `Card`；
+3. **props 传数据**：把 `product` 对象传给子组件，内部解构并设默认值（`tags = []`）；
+4. **函数 prop 通信**：父组件把 `handleBuy` 传下去，子组件点击时带上 `product.id` 回调；
+5. **列表渲染 + key**：`map` 遍历时给每项加 `key`。
+
+把这个例子看懂、能自己默写出来，就基本掌握了"组件 + Props"这一 React 最核心的部分。
 
 ---
 
@@ -702,7 +1144,7 @@ function Input(props) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 39：useState 计数器</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 58：useState 计数器</h3>
 
 ```jsx
 import { useState } from 'react';
@@ -719,7 +1161,7 @@ function Counter() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 40：函数式更新（依赖旧值时的正确写法）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 59：函数式更新（依赖旧值时的正确写法）</h3>
 
 ```jsx
 function Counter() {
@@ -736,7 +1178,7 @@ function Counter() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 41：state 为对象</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 60：state 为对象</h3>
 
 ```jsx
 function Profile() {
@@ -749,7 +1191,7 @@ function Profile() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 42：state 为数组（添加元素）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 61：state 为数组（添加元素）</h3>
 
 ```jsx
 function TodoList() {
@@ -766,7 +1208,7 @@ function TodoList() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 43：state 为数组（删除元素）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 62：state 为数组（删除元素）</h3>
 
 ```jsx
 function List() {
@@ -784,7 +1226,7 @@ function List() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 44：惰性初始化 state</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 63：惰性初始化 state</h3>
 
 ```jsx
 function Expensive() {
@@ -800,7 +1242,7 @@ function computeExpensiveValue() { return 42; }
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 45：多个 state</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 64：多个 state</h3>
 
 ```jsx
 function Form() {
@@ -817,7 +1259,7 @@ function Form() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 46：事件对象</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 65：事件对象</h3>
 
 ```jsx
 function ClickInfo() {
@@ -831,7 +1273,7 @@ function ClickInfo() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 47：传参给事件处理函数</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 66：传参给事件处理函数</h3>
 
 ```jsx
 function Buttons() {
@@ -847,7 +1289,7 @@ function Buttons() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 48：阻止事件冒泡</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 67：阻止事件冒泡</h3>
 
 ```jsx
 function Box() {
@@ -863,7 +1305,7 @@ function Box() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 49：键盘事件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 68：键盘事件</h3>
 
 ```jsx
 function SearchBox() {
@@ -876,7 +1318,7 @@ function SearchBox() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 50：自动批处理（React 18 新行为）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 69：自动批处理（React 18 新行为）</h3>
 
 ```jsx
 function Batching() {
@@ -896,7 +1338,7 @@ function Batching() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 51：退出批处理（flushSync）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 70：退出批处理（flushSync）</h3>
 
 ```jsx
 import { flushSync } from 'react-dom';
@@ -922,7 +1364,7 @@ function Demo() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 52：最简单的条件——提前 return</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 71：最简单的条件——提前 return</h3>
 
 ```jsx
 function Greeting({ isLoggedIn }) {
@@ -937,7 +1379,7 @@ function Greeting({ isLoggedIn }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 53：三元运算符（内联在 JSX 里）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 72：三元运算符（内联在 JSX 里）</h3>
 
 ```jsx
 function Status({ online }) {
@@ -949,7 +1391,7 @@ function Status({ online }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 54：三元里返回 JSX 元素</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 73：三元里返回 JSX 元素</h3>
 
 ```jsx
 function LoginButton({ isLoggedIn }) {
@@ -963,11 +1405,11 @@ function LoginButton({ isLoggedIn }) {
 }
 ```
 
-**详解**：三元的两个分支不仅能返回字符串，也能返回完整的 JSX 元素。相比示例 52 的提前 return，这种写法能让"页面大部分相同、只有局部不同"的结构写在一起，一眼看清差异在哪。
+**详解**：三元的两个分支不仅能返回字符串，也能返回完整的 JSX 元素。相比示例 71 的提前 return，这种写法能让"页面大部分相同、只有局部不同"的结构写在一起，一眼看清差异在哪。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 55：`&&` 短路渲染（有则显示，无则不显示）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 74：`&&` 短路渲染（有则显示，无则不显示）</h3>
 
 ```jsx
 function Inbox({ count }) {
@@ -983,7 +1425,7 @@ function Inbox({ count }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 56：`&&` 的经典陷阱——数字 0 会被显示出来</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 75：`&&` 的经典陷阱——数字 0 会被显示出来</h3>
 
 ```jsx
 function List({ items }) {
@@ -1001,7 +1443,7 @@ function ListFixed({ items }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 57：`||` 提供默认内容（兜底）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 76：`||` 提供默认内容（兜底）</h3>
 
 ```jsx
 function UserName({ name }) {
@@ -1009,11 +1451,11 @@ function UserName({ name }) {
 }
 ```
 
-**详解**：`A || B` 表示 `A` 为真用 `A`，否则用 `B`。当 `name` 是空字符串、`null`、`undefined` 等假值时，就显示"匿名用户"。这是给缺省数据做兜底的简洁写法。若你希望 `0` 或 `''` 也算有效值，应改用空值合并 `??`（见示例 66）。
+**详解**：`A || B` 表示 `A` 为真用 `A`，否则用 `B`。当 `name` 是空字符串、`null`、`undefined` 等假值时，就显示"匿名用户"。这是给缺省数据做兜底的简洁写法。若你希望 `0` 或 `''` 也算有效值，应改用空值合并 `??`（见示例 85）。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 58：用 null 隐藏整个组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 77：用 null 隐藏整个组件</h3>
 
 ```jsx
 function Warning({ show }) {
@@ -1022,11 +1464,11 @@ function Warning({ show }) {
 }
 ```
 
-**详解**：组件返回 `null` 是完全合法的，表示"这个组件此刻不显示任何东西"。它和示例 55 的 `&&` 效果类似，但写在组件内部，适合"组件自己决定要不要显示"的封装场景（比如一个通用的提示框组件）。
+**详解**：组件返回 `null` 是完全合法的，表示"这个组件此刻不显示任何东西"。它和示例 74 的 `&&` 效果类似，但写在组件内部，适合"组件自己决定要不要显示"的封装场景（比如一个通用的提示框组件）。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 59：先把 JSX 存进变量，再渲染</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 78：先把 JSX 存进变量，再渲染</h3>
 
 ```jsx
 function Page({ isLoading, data }) {
@@ -1046,7 +1488,7 @@ function Page({ isLoading, data }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 60：多分支 if / else if</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 79：多分支 if / else if</h3>
 
 ```jsx
 function Grade({ score }) {
@@ -1060,7 +1502,7 @@ function Grade({ score }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 61：用 switch 处理多状态</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 80：用 switch 处理多状态</h3>
 
 ```jsx
 function StatusText({ status }) {
@@ -1077,7 +1519,7 @@ function StatusText({ status }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 62：用对象映射代替 switch（推荐）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 81：用对象映射代替 switch（推荐）</h3>
 
 ```jsx
 function Icon({ type }) {
@@ -1094,7 +1536,7 @@ function Icon({ type }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 63：在 JSX 中用立即执行函数写复杂逻辑（IIFE）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 82：在 JSX 中用立即执行函数写复杂逻辑（IIFE）</h3>
 
 ```jsx
 function Dashboard({ role }) {
@@ -1110,11 +1552,11 @@ function Dashboard({ role }) {
 }
 ```
 
-**详解**：JSX 的 `{}` 里只能放表达式、不能放语句。当你确实想在此处写 `if/switch` 这类语句，可以用"立即执行函数"`(() => { ... })()` 把语句包起来——它整体是一个表达式。不过多数情况下，示例 59（变量存 JSX）更易读，IIFE 应谨慎使用。
+**详解**：JSX 的 `{}` 里只能放表达式、不能放语句。当你确实想在此处写 `if/switch` 这类语句，可以用"立即执行函数"`(() => { ... })()` 把语句包起来——它整体是一个表达式。不过多数情况下，示例 78（变量存 JSX）更易读，IIFE 应谨慎使用。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 64：把条件判断抽成子组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 83：把条件判断抽成子组件</h3>
 
 ```jsx
 function AuthButton({ isLoggedIn, onLogin, onLogout }) {
@@ -1131,7 +1573,7 @@ function LogoutButton({ onClick }) { return <button onClick={onClick}>退出</bu
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 65：加载 / 错误 / 成功三态渲染（实战常见）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 84：加载 / 错误 / 成功三态渲染（实战常见）</h3>
 
 ```jsx
 function UserProfile({ loading, error, user }) {
@@ -1151,7 +1593,7 @@ function UserProfile({ loading, error, user }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 66：可选链 `?.` 与空值合并 `??` 结合条件渲染</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 85：可选链 `?.` 与空值合并 `??` 结合条件渲染</h3>
 
 ```jsx
 function Profile({ user }) {
@@ -1171,7 +1613,7 @@ function Profile({ user }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 67：最简单的列表——map 渲染字符串数组</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 86：最简单的列表——map 渲染字符串数组</h3>
 
 ```jsx
 function Fruits() {
@@ -1188,7 +1630,7 @@ function Fruits() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 68：map 带索引参数</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 87：map 带索引参数</h3>
 
 ```jsx
 function RankList() {
@@ -1203,11 +1645,11 @@ function RankList() {
 }
 ```
 
-**详解**：`map` 的回调第二个参数是当前项的下标 `index`（从 0 开始）。这里用 `index + 1` 显示排名。注意：**用 index 来显示序号没问题，但用它当 `key` 要谨慎**（见示例 70）。
+**详解**：`map` 的回调第二个参数是当前项的下标 `index`（从 0 开始）。这里用 `index + 1` 显示排名。注意：**用 index 来显示序号没问题，但用它当 `key` 要谨慎**（见示例 89）。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 69：渲染对象数组</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 88：渲染对象数组</h3>
 
 ```jsx
 function ProductList() {
@@ -1229,7 +1671,7 @@ function ProductList() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 70：key 的作用与"不要用 index 当 key"</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 89：key 的作用与"不要用 index 当 key"</h3>
 
 ```jsx
 function TodoList({ todos }) {
@@ -1250,7 +1692,7 @@ function TodoList({ todos }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 71：用 filter 过滤后再渲染</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 90：用 filter 过滤后再渲染</h3>
 
 ```jsx
 function ActiveUsers({ users }) {
@@ -1268,7 +1710,7 @@ function ActiveUsers({ users }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 72：用 sort 排序后渲染（先拷贝再排序）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 91：用 sort 排序后渲染（先拷贝再排序）</h3>
 
 ```jsx
 function ScoreBoard({ scores }) {
@@ -1286,7 +1728,7 @@ function ScoreBoard({ scores }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 73：一次返回多个元素——带 key 的 Fragment</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 92：一次返回多个元素——带 key 的 Fragment</h3>
 
 ```jsx
 function DefinitionList({ items }) {
@@ -1307,7 +1749,7 @@ function DefinitionList({ items }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 74：列表 + 条件——每一项内部再做条件渲染</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 93：列表 + 条件——每一项内部再做条件渲染</h3>
 
 ```jsx
 function TaskList({ tasks }) {
@@ -1329,7 +1771,7 @@ function TaskList({ tasks }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 75：空列表的友好提示</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 94：空列表的友好提示</h3>
 
 ```jsx
 function MessageList({ messages }) {
@@ -1348,7 +1790,7 @@ function MessageList({ messages }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 76：嵌套列表（列表里再套列表）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 95：嵌套列表（列表里再套列表）</h3>
 
 ```jsx
 function CategoryList({ categories }) {
@@ -1373,7 +1815,7 @@ function CategoryList({ categories }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 77：斑马纹 / 高亮——用 index 决定样式</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 96：斑马纹 / 高亮——用 index 决定样式</h3>
 
 ```jsx
 function StripedList({ rows }) {
@@ -1396,7 +1838,7 @@ function StripedList({ rows }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 78：列表项绑定事件并传递该项数据</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 97：列表项绑定事件并传递该项数据</h3>
 
 ```jsx
 function UserList({ users, onSelect }) {
@@ -1416,7 +1858,7 @@ function UserList({ users, onSelect }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 79：把数据转成组件数组（渲染子组件列表）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 98：把数据转成组件数组（渲染子组件列表）</h3>
 
 ```jsx
 function ProductGrid({ products }) {
@@ -1443,7 +1885,7 @@ function ProductCard({ product }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 80：分组渲染（先用 reduce 分组，再渲染）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 99：分组渲染（先用 reduce 分组，再渲染）</h3>
 
 ```jsx
 function GroupedContacts({ contacts }) {
@@ -1473,7 +1915,7 @@ function GroupedContacts({ contacts }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 81：综合实战——搜索过滤 + 排序 + 空态 + 计数</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 100：综合实战——搜索过滤 + 排序 + 空态 + 计数</h3>
 
 ```jsx
 import { useState } from 'react';
@@ -1533,7 +1975,7 @@ function SearchableList({ items }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 82：受控输入框</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 101：受控输入框</h3>
 
 ```jsx
 function NameInput() {
@@ -1549,7 +1991,7 @@ function NameInput() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 83：受控 textarea</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 102：受控 textarea</h3>
 
 ```jsx
 function Comment() {
@@ -1560,7 +2002,7 @@ function Comment() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 84：受控 select 下拉框</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 103：受控 select 下拉框</h3>
 
 ```jsx
 function CitySelect() {
@@ -1576,7 +2018,7 @@ function CitySelect() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 85：复选框（checkbox）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 104：复选框（checkbox）</h3>
 
 ```jsx
 function Agree() {
@@ -1593,7 +2035,7 @@ function Agree() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 86：单选按钮（radio）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 105：单选按钮（radio）</h3>
 
 ```jsx
 function Gender() {
@@ -1611,7 +2053,7 @@ function Gender() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 87：一个函数处理多个字段</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 106：一个函数处理多个字段</h3>
 
 ```jsx
 function Form() {
@@ -1630,7 +2072,7 @@ function Form() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 88：表单提交</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 107：表单提交</h3>
 
 ```jsx
 function LoginForm() {
@@ -1650,7 +2092,7 @@ function LoginForm() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 89：非受控组件（用 ref 读取值）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 108：非受控组件（用 ref 读取值）</h3>
 
 ```jsx
 import { useRef } from 'react';
@@ -1669,7 +2111,7 @@ function UncontrolledForm() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 90：文件上传</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 109：文件上传</h3>
 
 ```jsx
 function FileUpload() {
@@ -1694,7 +2136,7 @@ function FileUpload() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 91：useEffect 最简单的样子（每次渲染后执行）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 110：useEffect 最简单的样子（每次渲染后执行）</h3>
 
 ```jsx
 import { useState, useEffect } from 'react';
@@ -1712,7 +2154,7 @@ function Title() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 92：空依赖数组（只在挂载时执行一次）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 111：空依赖数组（只在挂载时执行一次）</h3>
 
 ```jsx
 function OnMount() {
@@ -1727,7 +2169,7 @@ function OnMount() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 93：指定依赖（依赖变化时才执行）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 112：指定依赖（依赖变化时才执行）</h3>
 
 ```jsx
 function Watcher({ userId }) {
@@ -1742,7 +2184,7 @@ function Watcher({ userId }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 94：依赖数组的三种形态对比（重点总结）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 113：依赖数组的三种形态对比（重点总结）</h3>
 
 ```jsx
 useEffect(() => { /* ... */ });          // ① 不传：每次渲染后都执行
@@ -1755,11 +2197,11 @@ useEffect(() => { /* ... */ }, [a, b]);  // ③ 有依赖：a 或 b 变化时执
 - **`[]`** → 仅挂载时执行一次，卸载时执行清理；
 - **`[a, b]`** → 挂载时执行，之后每当 `a` 或 `b` 变化时再执行。
 
-选哪种，取决于你的副作用"依赖了哪些数据"。原则是：**effect 内部用到的每一个组件内变量（props、state、函数），都应出现在依赖数组里**（见示例 100）。
+选哪种，取决于你的副作用"依赖了哪些数据"。原则是：**effect 内部用到的每一个组件内变量（props、state、函数），都应出现在依赖数组里**（见示例 119）。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 95：清理函数（以定时器为例）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 114：清理函数（以定时器为例）</h3>
 
 ```jsx
 function Timer() {
@@ -1776,7 +2218,7 @@ function Timer() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 96：清理事件监听</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 115：清理事件监听</h3>
 
 ```jsx
 function WindowSize() {
@@ -1794,7 +2236,7 @@ function WindowSize() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 97：在 useEffect 中请求数据（基础版）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 116：在 useEffect 中请求数据（基础版）</h3>
 
 ```jsx
 function UserProfile({ id }) {
@@ -1812,7 +2254,7 @@ function UserProfile({ id }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 98：请求数据的竞态问题与 ignore 标志</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 117：请求数据的竞态问题与 ignore 标志</h3>
 
 ```jsx
 function UserProfile({ id }) {
@@ -1834,7 +2276,7 @@ function UserProfile({ id }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 99：闭包陷阱——读到"过期"的 state</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 118：闭包陷阱——读到"过期"的 state</h3>
 
 ```jsx
 function Counter() {
@@ -1854,7 +2296,7 @@ function Counter() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 100：不要漏写依赖（并理解为什么）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 119：不要漏写依赖（并理解为什么）</h3>
 
 ```jsx
 function Search({ query, onResult }) {
@@ -1866,13 +2308,13 @@ function Search({ query, onResult }) {
 }
 ```
 
-**详解**：ESLint 的 `react-hooks/exhaustive-deps` 规则会提醒你补全依赖。漏写依赖的后果是：effect 内部读到的是某次渲染时"冻结"的旧值，行为难以预测。原则是**诚实地列出 effect 用到的每一个组件内变量**。如果某个依赖变化太频繁导致 effect 反复执行，正确做法不是删依赖，而是用 `useCallback`/`useMemo` 稳定它，或用函数式更新绕开（如示例 99）。
+**详解**：ESLint 的 `react-hooks/exhaustive-deps` 规则会提醒你补全依赖。漏写依赖的后果是：effect 内部读到的是某次渲染时"冻结"的旧值，行为难以预测。原则是**诚实地列出 effect 用到的每一个组件内变量**。如果某个依赖变化太频繁导致 effect 反复执行，正确做法不是删依赖，而是用 `useCallback`/`useMemo` 稳定它，或用函数式更新绕开（如示例 118）。
 
 ### （B）useRef —— 引用 DOM 与保存可变值
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 101：useRef 引用 DOM 元素</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 120：useRef 引用 DOM 元素</h3>
 
 ```jsx
 import { useRef, useEffect } from 'react';
@@ -1890,7 +2332,7 @@ function AutoFocus() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 102：useRef 保存可变值（修改它不会触发渲染）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 121：useRef 保存可变值（修改它不会触发渲染）</h3>
 
 ```jsx
 function Stopwatch() {
@@ -1912,7 +2354,7 @@ function Stopwatch() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 103：useRef vs useState 的区别（对照理解）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 122：useRef vs useState 的区别（对照理解）</h3>
 
 ```jsx
 function Demo() {
@@ -1934,7 +2376,7 @@ function Demo() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 104：useRef 保存上一次的值（自定义 usePrevious）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 123：useRef 保存上一次的值（自定义 usePrevious）</h3>
 
 ```jsx
 function usePrevious(value) {
@@ -1957,7 +2399,7 @@ function PriceDisplay({ price }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 105：useContext 基础用法</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 124：useContext 基础用法</h3>
 
 ```jsx
 import { createContext, useContext } from 'react';
@@ -1982,7 +2424,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 106：useContext 解决"逐层传递 props"（prop drilling）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 125：useContext 解决"逐层传递 props"（prop drilling）</h3>
 
 ```jsx
 const UserContext = createContext(null);
@@ -2010,7 +2452,7 @@ function UserBadge() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 107：useReducer 计数器（入门）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 126：useReducer 计数器（入门）</h3>
 
 ```jsx
 import { useReducer } from 'react';
@@ -2039,7 +2481,7 @@ function Counter() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 108：useReducer 管理复杂表单</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 127：useReducer 管理复杂表单</h3>
 
 ```jsx
 function formReducer(state, action) {
@@ -2068,7 +2510,7 @@ function Form() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 109：useReducer 管理列表</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 128：useReducer 管理列表</h3>
 
 ```jsx
 function todoReducer(todos, action) {
@@ -2103,7 +2545,7 @@ function Todos() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 110：useReducer vs useState 如何选择</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 129：useReducer vs useState 如何选择</h3>
 
 ```jsx
 // 简单、独立的状态 → useState
@@ -2122,7 +2564,7 @@ const [state, dispatch] = useReducer(reducer, initialState);
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 111：useMemo 缓存昂贵的计算结果</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 130：useMemo 缓存昂贵的计算结果</h3>
 
 ```jsx
 import { useMemo } from 'react';
@@ -2140,7 +2582,7 @@ function ExpensiveList({ items, keyword }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 112：useMemo 稳定对象引用（配合 React.memo）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 131：useMemo 稳定对象引用（配合 React.memo）</h3>
 
 ```jsx
 function Parent({ userId }) {
@@ -2165,7 +2607,7 @@ const Child = React.memo(({ config }) => {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 113：useCallback 缓存函数</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 132：useCallback 缓存函数</h3>
 
 ```jsx
 import { useCallback } from 'react';
@@ -2189,11 +2631,11 @@ const Child = React.memo(({ onClick }) => {
 });
 ```
 
-**详解**：`useCallback(fn, deps)` 相当于 `useMemo(() => fn, deps)`，专门用来缓存"函数"。道理同示例 112：函数每次渲染都是新引用，会让接收它的 `memo` 子组件失效。用 `useCallback` 固定函数引用后，父组件计数变化不再连累 `Child` 重渲染。依赖数组里要放函数内部用到的会变化的变量。
+**详解**：`useCallback(fn, deps)` 相当于 `useMemo(() => fn, deps)`，专门用来缓存"函数"。道理同示例 131：函数每次渲染都是新引用，会让接收它的 `memo` 子组件失效。用 `useCallback` 固定函数引用后，父组件计数变化不再连累 `Child` 重渲染。依赖数组里要放函数内部用到的会变化的变量。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 114：不要滥用 useMemo / useCallback</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 133：不要滥用 useMemo / useCallback</h3>
 
 ```jsx
 // ❌ 没必要：加法本身极快，缓存的开销比计算还大
@@ -2213,7 +2655,7 @@ const onClick2 = () => setOpen(true);
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 115：useLayoutEffect 同步测量避免闪烁</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 134：useLayoutEffect 同步测量避免闪烁</h3>
 
 ```jsx
 import { useLayoutEffect, useRef, useState } from 'react';
@@ -2233,7 +2675,7 @@ function Tooltip() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 116：useLayoutEffect 与 useEffect 的区别</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 135：useLayoutEffect 与 useEffect 的区别</h3>
 
 ```jsx
 useEffect(() => { /* 绘制后异步执行，不阻塞渲染，99% 情况用它 */ });
@@ -2244,7 +2686,7 @@ useLayoutEffect(() => { /* 绘制前同步执行，会阻塞渲染，仅测量/�
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 117：useImperativeHandle 向父组件暴露方法</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 136：useImperativeHandle 向父组件暴露方法</h3>
 
 ```jsx
 import { forwardRef, useImperativeHandle, useRef } from 'react';
@@ -2276,7 +2718,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 118：自定义 Hook：useToggle</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 137：自定义 Hook：useToggle</h3>
 
 ```jsx
 import { useState, useCallback } from 'react';
@@ -2297,7 +2739,7 @@ function Switch() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 119：自定义 Hook：useFetch（含加载态与竞态处理）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 138：自定义 Hook：useFetch（含加载态与竞态处理）</h3>
 
 ```jsx
 import { useState, useEffect } from 'react';
@@ -2326,11 +2768,11 @@ function Users() {
 }
 ```
 
-**详解**：这个 `useFetch` 把"请求数据"这套通用逻辑——加载态、错误态、竞态处理（示例 98 的 `ignore` 标志）——全部封装。任何组件只要 `const { data, loading, error } = useFetch(url)` 就能拿到完整的请求状态，组件本身只关心怎么渲染。这正是自定义 Hook 的威力：把重复的副作用逻辑抽象成一个可复用的"能力"。
+**详解**：这个 `useFetch` 把"请求数据"这套通用逻辑——加载态、错误态、竞态处理（示例 117 的 `ignore` 标志）——全部封装。任何组件只要 `const { data, loading, error } = useFetch(url)` 就能拿到完整的请求状态，组件本身只关心怎么渲染。这正是自定义 Hook 的威力：把重复的副作用逻辑抽象成一个可复用的"能力"。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 120：自定义 Hook：useLocalStorage（与浏览器存储同步）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 139：自定义 Hook：useLocalStorage（与浏览器存储同步）</h3>
 
 ```jsx
 import { useState, useEffect } from 'react';
@@ -2360,7 +2802,7 @@ function Settings() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 121：useId 生成唯一 id</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 140：useId 生成唯一 id</h3>
 
 ```jsx
 import { useId } from 'react';
@@ -2378,7 +2820,7 @@ function Field() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 122：useId 生成多个相关 id</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 141：useId 生成多个相关 id</h3>
 
 ```jsx
 function Form() {
@@ -2396,7 +2838,7 @@ function Form() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 123：useTransition 标记非紧急更新</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 142：useTransition 标记非紧急更新</h3>
 
 ```jsx
 import { useState, useTransition } from 'react';
@@ -2427,7 +2869,7 @@ function SearchList({ allItems }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 124：useDeferredValue 延迟值</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 143：useDeferredValue 延迟值</h3>
 
 ```jsx
 import { useState, useDeferredValue, useMemo } from 'react';
@@ -2452,7 +2894,7 @@ function Search({ allItems }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 125：startTransition（非 Hook 版本）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 144：startTransition（非 Hook 版本）</h3>
 
 ```jsx
 import { startTransition } from 'react';
@@ -2469,7 +2911,7 @@ function TabButton({ onSelect }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 126：useSyncExternalStore 订阅外部数据源</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 145：useSyncExternalStore 订阅外部数据源</h3>
 
 ```jsx
 import { useSyncExternalStore } from 'react';
@@ -2498,7 +2940,7 @@ function StatusBar() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 127：useSyncExternalStore 订阅自定义 store</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 146：useSyncExternalStore 订阅自定义 store</h3>
 
 ```jsx
 // 一个极简的外部 store
@@ -2521,7 +2963,7 @@ function Counter() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 128：useInsertionEffect（用于 CSS-in-JS 库）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 147：useInsertionEffect（用于 CSS-in-JS 库）</h3>
 
 ```jsx
 import { useInsertionEffect } from 'react';
@@ -2543,7 +2985,7 @@ function useCss(rule) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 129：Suspense 配合 lazy 懒加载</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 148：Suspense 配合 lazy 懒加载</h3>
 
 ```jsx
 import { Suspense, lazy } from 'react';
@@ -2561,7 +3003,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 130：多个 lazy 组件共享一个 Suspense</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 149：多个 lazy 组件共享一个 Suspense</h3>
 
 ```jsx
 const Chart = lazy(() => import('./Chart'));
@@ -2579,7 +3021,7 @@ function Dashboard() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 131：嵌套 Suspense</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 150：嵌套 Suspense</h3>
 
 ```jsx
 function Page() {
@@ -2596,7 +3038,7 @@ function Page() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 132：Suspense + 数据请求（配合支持 Suspense 的库）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 151：Suspense + 数据请求（配合支持 Suspense 的库）</h3>
 
 ```jsx
 // 需要配合 React Query、Relay 等支持 Suspense 的数据方案
@@ -2612,7 +3054,7 @@ function Profile() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 133：hydrateRoot（服务端渲染注水）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 152：hydrateRoot（服务端渲染注水）</h3>
 
 ```jsx
 import { hydrateRoot } from 'react-dom/client';
@@ -2624,7 +3066,7 @@ hydrateRoot(document.getElementById('root'), <App />);
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 134：并发渲染避免卡顿的完整对比</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 153：并发渲染避免卡顿的完整对比</h3>
 
 ```jsx
 function App() {
@@ -2653,7 +3095,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 135：React.memo 缓存组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 154：React.memo 缓存组件</h3>
 
 ```jsx
 const Item = React.memo(function Item({ text }) {
@@ -2665,7 +3107,7 @@ const Item = React.memo(function Item({ text }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 136：React.memo 自定义比较函数</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 155：React.memo 自定义比较函数</h3>
 
 ```jsx
 const User = React.memo(
@@ -2678,7 +3120,7 @@ const User = React.memo(
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 137：拆分组件减少渲染范围</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 156：拆分组件减少渲染范围</h3>
 
 ```jsx
 // 把频繁变化的部分独立成小组件，避免整棵树重渲染
@@ -2703,7 +3145,7 @@ function LiveClock() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 138：useMemo 缓存传给子组件的对象</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 157：useMemo 缓存传给子组件的对象</h3>
 
 ```jsx
 function Parent({ id }) {
@@ -2715,7 +3157,7 @@ function Parent({ id }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 139：懒加载路由组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 158：懒加载路由组件</h3>
 
 ```jsx
 import { lazy, Suspense } from 'react';
@@ -2738,7 +3180,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 140：列表虚拟化思路（只渲染可见项）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 159：列表虚拟化思路（只渲染可见项）</h3>
 
 ```jsx
 // 大列表建议用 react-window / react-virtualized
@@ -2769,7 +3211,7 @@ function VirtualList({ items, itemHeight = 30, height = 300 }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 141：创建可切换的主题 Context</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 160：创建可切换的主题 Context</h3>
 
 ```jsx
 const ThemeContext = createContext();
@@ -2792,7 +3234,7 @@ function ThemeButton() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 142：用 Context + useReducer 做全局状态</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 161：用 Context + useReducer 做全局状态</h3>
 
 ```jsx
 const StoreContext = createContext();
@@ -2818,7 +3260,7 @@ function CounterDisplay() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 143：多个 Context 组合</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 162：多个 Context 组合</h3>
 
 ```jsx
 function App() {
@@ -2836,7 +3278,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 144：子传父（回调函数）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 163：子传父（回调函数）</h3>
 
 ```jsx
 function Child({ onSend }) {
@@ -2856,7 +3298,7 @@ function Parent() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 145：兄弟组件通信（状态提升）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 164：兄弟组件通信（状态提升）</h3>
 
 ```jsx
 function Parent() {
@@ -2882,7 +3324,7 @@ function Display({ value }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 146：完整的 Todo 应用</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 165：完整的 Todo 应用</h3>
 
 ```jsx
 import { useState } from 'react';
@@ -2922,7 +3364,7 @@ function TodoApp() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 147：防抖搜索（自定义 Hook）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 166：防抖搜索（自定义 Hook）</h3>
 
 ```jsx
 function useDebounce(value, delay = 500) {
@@ -2946,7 +3388,7 @@ function Search() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 148：错误边界（Error Boundary）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 167：错误边界（Error Boundary）</h3>
 
 ```jsx
 import { Component } from 'react';
@@ -2977,7 +3419,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 149：Portal 渲染到 body（弹窗）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 168：Portal 渲染到 body（弹窗）</h3>
 
 ```jsx
 import { createPortal } from 'react-dom';
@@ -3006,7 +3448,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 150：分页数据加载</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 169：分页数据加载</h3>
 
 ```jsx
 function PagedList() {
@@ -3028,7 +3470,7 @@ function PagedList() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 151：倒计时组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 170：倒计时组件</h3>
 
 ```jsx
 function Countdown({ seconds = 60 }) {
@@ -3044,7 +3486,7 @@ function Countdown({ seconds = 60 }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 152：Tab 切换组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 171：Tab 切换组件</h3>
 
 ```jsx
 function Tabs() {
@@ -3064,7 +3506,7 @@ function Tabs() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 153：受控 + 校验的表单</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 172：受控 + 校验的表单</h3>
 
 ```jsx
 function SignupForm() {
@@ -3091,7 +3533,7 @@ function SignupForm() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 154：主题切换 + localStorage 持久化</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 173：主题切换 + localStorage 持久化</h3>
 
 ```jsx
 function ThemedApp() {
@@ -3120,4 +3562,4 @@ function ThemedApp() {
 
 ---
 
-至此共 154 个示例，涵盖 React 18 从入门到进阶的核心用法。建议边读边动手运行，效果更佳。
+至此共 173 个示例，涵盖 React 18 从入门到进阶的核心用法。建议边读边动手运行，效果更佳。
