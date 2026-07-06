@@ -2353,11 +2353,21 @@ function SearchableList({ items }) {
 
 ## 六、表单处理
 
+> **React 里的表单和普通 HTML 表单有什么不同？** 在 HTML 里，`<input>` 等控件自己保存并管理用户输入的值。而在 React 中，我们通常让 **state 成为"唯一数据源"**——控件显示什么由 state 决定，用户输入又通过事件更新 state。这种模式叫"**受控组件（Controlled Component）**"。
+>
+> **受控组件的两步闭环**：① `value={state}`（控件的值由 state 决定）；② `onChange` 中把最新输入写回 state。数据流动形成闭环，state 始终是最新、最权威的值。
+>
+> 本章从"最简单的受控输入框"讲到"完整的注册表单"，覆盖各类控件、多字段处理、提交校验、文件上传等，共 23 个示例。
+
+### （A）受控组件与各类控件
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 116：受控输入框</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 116：什么是受控输入框</h3>
 
 ```jsx
+import { useState } from 'react';
+
 function NameInput() {
   const [name, setName] = useState('');
   return (
@@ -2369,16 +2379,30 @@ function NameInput() {
 }
 ```
 
+**详解**：这是受控组件的最基本形态，请务必吃透它的闭环：
+1. `value={name}`：输入框显示的内容由 state `name` 决定；
+2. 用户敲键盘 → 触发 `onChange` → `e.target.value` 是输入框最新的值 → `setName` 更新 state；
+3. state 变了 → 组件重新渲染 → 输入框显示新的 `name`。
+
+因为 `value` 始终绑定 state，所以 **state 是唯一数据源**。想清空输入框只需 `setName('')`，想预填只需给 state 设初始值。整章的其它控件都是这个模式的变体。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 117：受控 textarea</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 117：受控 textarea（多行文本）</h3>
 
 ```jsx
 function Comment() {
   const [text, setText] = useState('');
-  return <textarea value={text} onChange={e => setText(e.target.value)} />;
+  return (
+    <div>
+      <textarea value={text} onChange={e => setText(e.target.value)} rows={4} />
+      <p>字数：{text.length}</p>
+    </div>
+  );
 }
 ```
+
+**详解**：注意一个和 HTML 的区别——HTML 里 textarea 的内容写在标签之间（`<textarea>内容</textarea>`），而 **React 里统一用 `value` 属性**，和普通 input 一模一样。这样保持了一致性。绑定 state 后，可以顺便实现字数统计（`text.length`）等功能。
 
 <br>
 
@@ -2391,54 +2415,154 @@ function CitySelect() {
     <select value={city} onChange={e => setCity(e.target.value)}>
       <option value="bj">北京</option>
       <option value="sh">上海</option>
+      <option value="gz">广州</option>
     </select>
   );
 }
 ```
 
+**详解**：又一处和 HTML 的区别——HTML 里用 `<option selected>` 来标记默认选中项，而 **React 里在 `<select>` 上用 `value` 统一控制**当前选中值。`value={city}` 等于 `'bj'` 时，北京那一项就自动选中。用户切换选项时 `onChange` 拿到所选 `option` 的 `value`。这种一致的 `value + onChange` 模式让所有控件用法统一。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 119：复选框（checkbox）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 119：多选下拉框（multiple）</h3>
+
+```jsx
+function TagSelect() {
+  const [tags, setTags] = useState([]);
+  const handle = (e) => {
+    // 从选中的 options 里收集所有 value
+    const selected = Array.from(e.target.selectedOptions, o => o.value);
+    setTags(selected);
+  };
+  return (
+    <select multiple value={tags} onChange={handle}>
+      <option value="react">React</option>
+      <option value="vue">Vue</option>
+      <option value="ng">Angular</option>
+    </select>
+  );
+}
+```
+
+**详解**：给 `<select>` 加 `multiple` 属性可多选，此时 `value` 要绑定一个**数组**。因为可能选中多项，`onChange` 里不能只取 `e.target.value`，而要用 `e.target.selectedOptions` 拿到所有选中的 option，再用 `Array.from` 把它们的 `value` 收集成数组。多选控件的状态天然是数组。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 120：复选框（单个 checkbox）</h3>
 
 ```jsx
 function Agree() {
   const [checked, setChecked] = useState(false);
   return (
     <label>
-      <input type="checkbox" checked={checked}
-        onChange={e => setChecked(e.target.checked)} />
-      同意协议
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={e => setChecked(e.target.checked)}
+      />
+      我已阅读并同意用户协议
     </label>
   );
 }
 ```
 
+**详解**：复选框有两点特殊：① 它用 **`checked`**（布尔）而不是 `value` 来表示选中状态；② `onChange` 里要读 **`e.target.checked`**（布尔）而不是 `e.target.value`。单个复选框适合"同意协议""记住我"这类开关。把 `<input>` 包在 `<label>` 里，点文字也能勾选，体验更好。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 120：单选按钮（radio）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 121：一组复选框（结果存数组）</h3>
+
+```jsx
+function Hobbies() {
+  const [hobbies, setHobbies] = useState([]);
+  const toggle = (value) => {
+    setHobbies(prev =>
+      prev.includes(value)
+        ? prev.filter(h => h !== value)  // 已选 → 取消
+        : [...prev, value]               // 未选 → 加入
+    );
+  };
+  const options = ['阅读', '运动', '音乐'];
+  return (
+    <>
+      {options.map(opt => (
+        <label key={opt}>
+          <input
+            type="checkbox"
+            checked={hobbies.includes(opt)}
+            onChange={() => toggle(opt)}
+          />
+          {opt}
+        </label>
+      ))}
+      <p>已选：{hobbies.join('、')}</p>
+    </>
+  );
+}
+```
+
+**详解**：多个复选框代表"可多选"，状态用**数组**保存选中的值。每个框的 `checked` 由 `hobbies.includes(该项)` 决定；点击时 `toggle`：已在数组里就 `filter` 移除，不在就 `[...prev, value]` 加入。这里用了函数式更新 `prev =>`，保证基于最新的数组操作。这是"多选组"的标准写法。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 122：单选按钮（radio）</h3>
 
 ```jsx
 function Gender() {
   const [gender, setGender] = useState('male');
   return (
     <>
-      <label><input type="radio" value="male"
-        checked={gender === 'male'} onChange={e => setGender(e.target.value)} />男</label>
-      <label><input type="radio" value="female"
-        checked={gender === 'female'} onChange={e => setGender(e.target.value)} />女</label>
+      <label>
+        <input type="radio" name="gender" value="male"
+          checked={gender === 'male'} onChange={e => setGender(e.target.value)} />
+        男
+      </label>
+      <label>
+        <input type="radio" name="gender" value="female"
+          checked={gender === 'female'} onChange={e => setGender(e.target.value)} />
+        女
+      </label>
     </>
   );
 }
 ```
 
+**详解**：单选按钮组代表"多选一"，用**一个 state** 保存当前选中的值。每个 radio 的 `checked` 通过 `gender === 该项value` 判断——只有等于当前 state 的那个会选中。多个 radio 用相同的 `name` 归为一组（保证互斥）。`onChange` 里读 `e.target.value` 拿到被选中项的值。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 121：一个函数处理多个字段</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 123：数字输入框（类型转换）</h3>
+
+```jsx
+function AgeInput() {
+  const [age, setAge] = useState(0);
+  return (
+    <div>
+      <input
+        type="number"
+        value={age}
+        onChange={e => setAge(Number(e.target.value))} // 转成数字
+      />
+      <p>十年后你 {age + 10} 岁</p>
+    </div>
+  );
+}
+```
+
+**详解**：一个大坑——**`e.target.value` 永远是字符串**，即使 input 的 `type="number"`。如果不转换直接存进 state，做数学运算时会出错（`'5' + 10` 得到 `'510'` 而不是 `15`）。所以要用 `Number(e.target.value)` 或 `parseInt` 转成数字再存。空输入会得到 `NaN`，实际项目里可能要额外处理。
+
+### （B）多字段表单的统一处理
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 124：一个函数处理多个字段</h3>
 
 ```jsx
 function Form() {
   const [form, setForm] = useState({ name: '', email: '' });
   const handle = (e) => {
+    // 用计算属性名，根据 name 动态更新对应字段
     setForm({ ...form, [e.target.name]: e.target.value });
   };
   return (
@@ -2450,15 +2574,66 @@ function Form() {
 }
 ```
 
+**详解**：表单字段多时，为每个字段写一个处理函数太啰嗦。技巧是：① 给每个 input 设 `name` 属性（对应 state 里的字段名）；② 用**计算属性名** `[e.target.name]` 动态定位要更新的字段。这样一个 `handle` 函数搞定所有字段。`{ ...form, [e.target.name]: e.target.value }` 的意思是"复制整个 form，只更新 name 所指的那个字段"。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 122：表单提交</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 125：用对象统一管理表单状态</h3>
+
+```jsx
+function ProfileForm() {
+  const [form, setForm] = useState({ name: '', age: '', bio: '' });
+  const update = (field) => (e) =>
+    setForm(prev => ({ ...prev, [field]: e.target.value }));
+  return (
+    <>
+      <input value={form.name} onChange={update('name')} />
+      <input value={form.age} onChange={update('age')} />
+      <textarea value={form.bio} onChange={update('bio')} />
+    </>
+  );
+}
+```
+
+**详解**：这里用了"柯里化"技巧——`update('name')` 返回一个专门更新 `name` 字段的处理函数。相比示例 124 依赖 `name` 属性，这种写法更灵活、更明确，且不需要给控件设 `name`。用函数式更新 `prev =>` 确保基于最新状态。当字段较多、关系紧密时，把它们放进一个对象统一管理会比一堆独立 `useState` 更清爽。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 126：混合类型字段的统一处理（用 type 判断）</h3>
+
+```jsx
+function MixedForm() {
+  const [form, setForm] = useState({ username: '', subscribe: false });
+  const handle = (e) => {
+    const { name, type, value, checked } = e.target;
+    // checkbox 取 checked，其它取 value
+    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+  return (
+    <>
+      <input name="username" value={form.username} onChange={handle} />
+      <label>
+        <input name="subscribe" type="checkbox" checked={form.subscribe} onChange={handle} />
+        订阅邮件
+      </label>
+    </>
+  );
+}
+```
+
+**详解**：一个通用处理函数如果要同时管文本框和复选框，就得区分类型：checkbox 要取 `e.target.checked`，其它取 `e.target.value`。通过判断 `type === 'checkbox'` 决定取哪个。这是编写"一个 handle 管所有控件"的通用型表单处理函数的关键，很多表单库内部也是这么做的。
+
+### （C）表单提交与校验
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 127：表单提交（onSubmit + preventDefault）</h3>
 
 ```jsx
 function LoginForm() {
   const [user, setUser] = useState('');
   const submit = (e) => {
-    e.preventDefault(); // 阻止页面刷新
+    e.preventDefault(); // 关键：阻止表单默认提交导致页面刷新
     alert('提交：' + user);
   };
   return (
@@ -2470,39 +2645,329 @@ function LoginForm() {
 }
 ```
 
+**详解**：处理提交要把 `onSubmit` 绑在 `<form>` 上（而不是按钮的 `onClick`），这样点击 `type="submit"` 按钮**或**在输入框按回车都能触发。**必须调用 `e.preventDefault()`**——否则浏览器会执行默认的表单提交行为（刷新/跳转页面），破坏单页应用。阻止默认后，就用 JS 自行处理提交逻辑（如发请求）。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 123：非受控组件（用 ref 读取值）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 128：提交时收集并校验数据</h3>
+
+```jsx
+function SignupForm() {
+  const [form, setForm] = useState({ name: '', password: '' });
+  const submit = (e) => {
+    e.preventDefault();
+    if (!form.name.trim()) { alert('请输入用户名'); return; }
+    if (form.password.length < 6) { alert('密码至少 6 位'); return; }
+    console.log('校验通过，提交：', form);
+  };
+  const update = (f) => (e) => setForm(p => ({ ...p, [f]: e.target.value }));
+  return (
+    <form onSubmit={submit}>
+      <input value={form.name} onChange={update('name')} placeholder="用户名" />
+      <input type="password" value={form.password} onChange={update('password')} />
+      <button type="submit">注册</button>
+    </form>
+  );
+}
+```
+
+**详解**：因为整个表单数据都在 state 里，提交时可直接读取 `form` 进行校验。这里用"卫语句"逐条检查：不通过就提示并 `return`（中断提交），全部通过才执行真正的提交。这是"提交时校验"的基本套路——简单直接，适合校验规则不复杂的表单。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 129：实时校验（边输入边提示）</h3>
+
+```jsx
+function EmailForm() {
+  const [email, setEmail] = useState('');
+  const isValid = /^\S+@\S+\.\S+$/.test(email);
+  return (
+    <div>
+      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="邮箱" />
+      {email && !isValid && <p style={{ color: 'red' }}>邮箱格式不正确</p>}
+    </div>
+  );
+}
+```
+
+**详解**：实时校验是在**输入过程中**就给出反馈。因为 state 每次输入都会更新、组件重渲染，所以可以在渲染时直接根据当前值计算校验结果（`isValid`），再条件渲染错误提示。这里用 `email && !isValid` 保证"用户还没输入时不报错，输入了但格式错才提示"。这种"从 state 推导出校验状态"的思路很 React。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 130：把错误信息存进 state 显示</h3>
+
+```jsx
+function Form() {
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setName(value);
+    setError(value.trim() ? '' : '用户名不能为空'); // 同步更新错误信息
+  };
+  return (
+    <div>
+      <input value={name} onChange={handleChange} />
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+    </div>
+  );
+}
+```
+
+**详解**：当校验逻辑较复杂、或需要保存"某字段的错误消息"时，用一个专门的 state（如 `error`）来存错误文本。输入时更新值的同时更新错误信息，界面根据 `error` 是否有内容来显示提示。多字段时，`error` 常设计成一个对象 `{ name: '...', email: '...' }`，为每个字段单独存错误。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 131：根据校验结果禁用提交按钮</h3>
+
+```jsx
+function Form() {
+  const [form, setForm] = useState({ name: '', agree: false });
+  const canSubmit = form.name.trim() !== '' && form.agree;
+  const update = (f, key = 'value') => (e) =>
+    setForm(p => ({ ...p, [f]: e.target[key] }));
+  return (
+    <form>
+      <input value={form.name} onChange={update('name')} placeholder="用户名" />
+      <label>
+        <input type="checkbox" checked={form.agree} onChange={update('agree', 'checked')} />
+        同意协议
+      </label>
+      <button type="submit" disabled={!canSubmit}>提交</button>
+    </form>
+  );
+}
+```
+
+**详解**：更友好的做法是在表单不满足条件时**禁用提交按钮**（`disabled={!canSubmit}`），从源头防止无效提交。`canSubmit` 是从 state 推导出来的布尔值——用户名非空且勾选了协议才允许提交。因为 state 一变就重新计算，按钮的可用状态会实时随表单变化。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 132：提交中状态（防重复提交）</h3>
+
+```jsx
+function AsyncForm() {
+  const [value, setValue] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const submit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await fakeApi(value);       // 模拟发请求
+      alert('提交成功');
+    } finally {
+      setSubmitting(false);       // 无论成功失败都恢复
+    }
+  };
+  return (
+    <form onSubmit={submit}>
+      <input value={value} onChange={e => setValue(e.target.value)} disabled={submitting} />
+      <button type="submit" disabled={submitting}>
+        {submitting ? '提交中...' : '提交'}
+      </button>
+    </form>
+  );
+}
+function fakeApi(v) { return new Promise(r => setTimeout(r, 1000)); }
+```
+
+**详解**：提交涉及异步请求时，要用一个 `submitting` 状态标记"正在提交"。提交期间禁用按钮和输入框、按钮文字改成"提交中..."，防止用户重复点击造成多次请求。用 `try/finally` 保证请求无论成功或失败，最后都把 `submitting` 复位。这是异步表单的标准处理。
+
+### （D）非受控组件与文件上传
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 133：非受控组件（ref + defaultValue）</h3>
 
 ```jsx
 import { useRef } from 'react';
 
 function UncontrolledForm() {
   const inputRef = useRef(null);
-  const submit = () => alert(inputRef.current.value);
+  const submit = (e) => {
+    e.preventDefault();
+    alert('值是：' + inputRef.current.value); // 提交时才读取
+  };
   return (
-    <>
-      <input ref={inputRef} defaultValue="默认值" />
-      <button onClick={submit}>读取</button>
-    </>
+    <form onSubmit={submit}>
+      <input ref={inputRef} defaultValue="初始值" />
+      <button type="submit">读取</button>
+    </form>
   );
 }
 ```
 
+**详解**：与受控组件相对的是"非受控组件"——不用 state 绑定 `value`，而是让 DOM 自己保管输入值，需要时用 `ref` 读取。注意用 **`defaultValue`**（而不是 `value`）设置初始值，否则值会被锁死无法输入。非受控组件代码更少，但你无法在输入过程中实时拿到值、做校验或联动。
+
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 124：文件上传</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 134：受控 vs 非受控如何选择</h3>
+
+```jsx
+// 受控：value 绑 state，实时可控
+<input value={name} onChange={e => setName(e.target.value)} />
+
+// 非受控：defaultValue + ref，提交时读取
+<input ref={ref} defaultValue="" />
+```
+
+**详解**：如何选择：
+- **用受控组件（推荐，默认选它）**：需要实时校验、根据输入联动其它 UI、动态启用/禁用按钮、格式化输入等——凡是"输入过程中要对值做点什么"的场景。React 生态绝大多数表单都用受控。
+- **用非受控组件**：只在提交时读一次值、表单极其简单、或对接文件上传（file 输入本身就是非受控，见下例）、集成非 React 的第三方库时。
+
+一句话：**默认用受控，特殊情况才用非受控**。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 135：文件上传（单文件）</h3>
 
 ```jsx
 function FileUpload() {
+  const [fileName, setFileName] = useState('');
   const onChange = (e) => {
-    const file = e.target.files[0];
-    if (file) console.log('文件名：', file.name);
+    const file = e.target.files[0]; // 取第一个文件
+    if (file) {
+      setFileName(file.name);
+      console.log('大小：', file.size, '类型：', file.type);
+    }
   };
-  return <input type="file" onChange={onChange} />;
+  return (
+    <div>
+      <input type="file" onChange={onChange} />
+      {fileName && <p>已选择：{fileName}</p>}
+    </div>
+  );
 }
 ```
 
+**详解**：`<input type="file">` 是特殊的——出于安全原因它**只能是非受控的**（你不能用 `value` 设置用户要上传哪个文件）。通过 `e.target.files` 拿到用户选择的文件列表（一个类数组的 `FileList`），`files[0]` 是第一个文件。文件对象有 `name`、`size`、`type` 等属性。真正上传时通常把 file 放进 `FormData` 发给后端。
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 136：多文件上传与图片预览</h3>
+
+```jsx
+function MultiUpload() {
+  const [previews, setPreviews] = useState([]);
+  const onChange = (e) => {
+    const files = Array.from(e.target.files);          // FileList → 数组
+    const urls = files.map(f => URL.createObjectURL(f)); // 生成本地预览地址
+    setPreviews(urls);
+  };
+  return (
+    <div>
+      <input type="file" accept="image/*" multiple onChange={onChange} />
+      <div>{previews.map((url, i) => <img key={i} src={url} width={80} />)}</div>
+    </div>
+  );
+}
+```
+
+**详解**：加 `multiple` 允许选多个文件，`accept="image/*"` 限制只能选图片。`e.target.files` 是类数组，用 `Array.from` 转成真数组才能 `map`。`URL.createObjectURL(file)` 能为本地文件生成一个临时 URL，用于在上传前预览图片。（严谨起见，组件卸载时应调用 `URL.revokeObjectURL` 释放这些临时地址。）
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 137：重置表单</h3>
+
+```jsx
+function Form() {
+  const initial = { name: '', email: '' };
+  const [form, setForm] = useState(initial);
+  const update = (f) => (e) => setForm(p => ({ ...p, [f]: e.target.value }));
+  return (
+    <form>
+      <input value={form.name} onChange={update('name')} />
+      <input value={form.email} onChange={update('email')} />
+      <button type="button" onClick={() => setForm(initial)}>重置</button>
+    </form>
+  );
+}
+```
+
+**详解**：受控表单重置非常简单——把 state 设回初始值即可（`setForm(initial)`），所有绑定该 state 的控件会自动清空。把初始值抽成一个 `initial` 常量便于复用。注意重置按钮要设 `type="button"`，否则在 `<form>` 里它默认是 `type="submit"`，点击会触发提交。
+
+### （E）综合实战
+
+<br>
+
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 138：综合实战——完整注册表单</h3>
+
+```jsx
+import { useState } from 'react';
+
+function RegisterForm() {
+  const [form, setForm] = useState({ name: '', email: '', password: '', agree: false });
+  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+
+  // 统一处理各类控件
+  const handle = (e) => {
+    const { name, type, value, checked } = e.target;
+    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  // 校验，返回错误对象
+  const validate = () => {
+    const errs = {};
+    if (!form.name.trim()) errs.name = '请输入用户名';
+    if (!/^\S+@\S+\.\S+$/.test(form.email)) errs.email = '邮箱格式不正确';
+    if (form.password.length < 6) errs.password = '密码至少 6 位';
+    if (!form.agree) errs.agree = '请勾选同意协议';
+    return errs;
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    const errs = validate();
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return; // 有错误则中断
+    setSubmitting(true);
+    try {
+      await fakeApi(form);
+      alert('注册成功！');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={submit}>
+      <div>
+        <input name="name" value={form.name} onChange={handle} placeholder="用户名" />
+        {errors.name && <span style={{ color: 'red' }}>{errors.name}</span>}
+      </div>
+      <div>
+        <input name="email" value={form.email} onChange={handle} placeholder="邮箱" />
+        {errors.email && <span style={{ color: 'red' }}>{errors.email}</span>}
+      </div>
+      <div>
+        <input name="password" type="password" value={form.password} onChange={handle} placeholder="密码" />
+        {errors.password && <span style={{ color: 'red' }}>{errors.password}</span>}
+      </div>
+      <div>
+        <label>
+          <input name="agree" type="checkbox" checked={form.agree} onChange={handle} />
+          我已阅读并同意用户协议
+        </label>
+        {errors.agree && <span style={{ color: 'red' }}>{errors.agree}</span>}
+      </div>
+      <button type="submit" disabled={submitting}>
+        {submitting ? '注册中...' : '注册'}
+      </button>
+    </form>
+  );
+}
+function fakeApi(data) { return new Promise(r => setTimeout(r, 1000)); }
+```
+
+**详解**：这个注册表单综合了本章几乎所有知识点：
+1. **对象 state 管理多字段** + **一个 `handle` 处理所有控件**（含 checkbox 的 type 判断，示例 126）；
+2. **集中校验函数** `validate` 返回错误对象，把每个字段的错误存进 `errors` state（示例 130）；
+3. **提交流程**：`preventDefault` → 校验 → 有错中断并显示、无错继续（示例 128）；
+4. **异步提交状态** `submitting` 防重复提交（示例 132）；
+5. **字段级错误提示**：每个字段下方按 `errors.字段` 条件渲染红色错误文案。
+
+这套结构就是真实项目中手写表单的通用骨架。规则更复杂时，可考虑用 React Hook Form、Formik 等成熟表单库，它们把这些模式封装得更简洁。
 
 ---
 
@@ -2516,7 +2981,7 @@ function FileUpload() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 125：useEffect 最简单的样子（每次渲染后执行）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 139：useEffect 最简单的样子（每次渲染后执行）</h3>
 
 ```jsx
 import { useState, useEffect } from 'react';
@@ -2534,7 +2999,7 @@ function Title() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 126：空依赖数组（只在挂载时执行一次）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 140：空依赖数组（只在挂载时执行一次）</h3>
 
 ```jsx
 function OnMount() {
@@ -2549,7 +3014,7 @@ function OnMount() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 127：指定依赖（依赖变化时才执行）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 141：指定依赖（依赖变化时才执行）</h3>
 
 ```jsx
 function Watcher({ userId }) {
@@ -2564,7 +3029,7 @@ function Watcher({ userId }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 128：依赖数组的三种形态对比（重点总结）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 142：依赖数组的三种形态对比（重点总结）</h3>
 
 ```jsx
 useEffect(() => { /* ... */ });          // ① 不传：每次渲染后都执行
@@ -2577,11 +3042,11 @@ useEffect(() => { /* ... */ }, [a, b]);  // ③ 有依赖：a 或 b 变化时执
 - **`[]`** → 仅挂载时执行一次，卸载时执行清理；
 - **`[a, b]`** → 挂载时执行，之后每当 `a` 或 `b` 变化时再执行。
 
-选哪种，取决于你的副作用"依赖了哪些数据"。原则是：**effect 内部用到的每一个组件内变量（props、state、函数），都应出现在依赖数组里**（见示例 134）。
+选哪种，取决于你的副作用"依赖了哪些数据"。原则是：**effect 内部用到的每一个组件内变量（props、state、函数），都应出现在依赖数组里**（见示例 148）。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 129：清理函数（以定时器为例）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 143：清理函数（以定时器为例）</h3>
 
 ```jsx
 function Timer() {
@@ -2598,7 +3063,7 @@ function Timer() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 130：清理事件监听</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 144：清理事件监听</h3>
 
 ```jsx
 function WindowSize() {
@@ -2616,7 +3081,7 @@ function WindowSize() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 131：在 useEffect 中请求数据（基础版）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 145：在 useEffect 中请求数据（基础版）</h3>
 
 ```jsx
 function UserProfile({ id }) {
@@ -2634,7 +3099,7 @@ function UserProfile({ id }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 132：请求数据的竞态问题与 ignore 标志</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 146：请求数据的竞态问题与 ignore 标志</h3>
 
 ```jsx
 function UserProfile({ id }) {
@@ -2656,7 +3121,7 @@ function UserProfile({ id }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 133：闭包陷阱——读到"过期"的 state</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 147：闭包陷阱——读到"过期"的 state</h3>
 
 ```jsx
 function Counter() {
@@ -2676,7 +3141,7 @@ function Counter() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 134：不要漏写依赖（并理解为什么）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 148：不要漏写依赖（并理解为什么）</h3>
 
 ```jsx
 function Search({ query, onResult }) {
@@ -2688,13 +3153,13 @@ function Search({ query, onResult }) {
 }
 ```
 
-**详解**：ESLint 的 `react-hooks/exhaustive-deps` 规则会提醒你补全依赖。漏写依赖的后果是：effect 内部读到的是某次渲染时"冻结"的旧值，行为难以预测。原则是**诚实地列出 effect 用到的每一个组件内变量**。如果某个依赖变化太频繁导致 effect 反复执行，正确做法不是删依赖，而是用 `useCallback`/`useMemo` 稳定它，或用函数式更新绕开（如示例 133）。
+**详解**：ESLint 的 `react-hooks/exhaustive-deps` 规则会提醒你补全依赖。漏写依赖的后果是：effect 内部读到的是某次渲染时"冻结"的旧值，行为难以预测。原则是**诚实地列出 effect 用到的每一个组件内变量**。如果某个依赖变化太频繁导致 effect 反复执行，正确做法不是删依赖，而是用 `useCallback`/`useMemo` 稳定它，或用函数式更新绕开（如示例 147）。
 
 ### （B）useRef —— 引用 DOM 与保存可变值
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 135：useRef 引用 DOM 元素</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 149：useRef 引用 DOM 元素</h3>
 
 ```jsx
 import { useRef, useEffect } from 'react';
@@ -2712,7 +3177,7 @@ function AutoFocus() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 136：useRef 保存可变值（修改它不会触发渲染）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 150：useRef 保存可变值（修改它不会触发渲染）</h3>
 
 ```jsx
 function Stopwatch() {
@@ -2734,7 +3199,7 @@ function Stopwatch() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 137：useRef vs useState 的区别（对照理解）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 151：useRef vs useState 的区别（对照理解）</h3>
 
 ```jsx
 function Demo() {
@@ -2756,7 +3221,7 @@ function Demo() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 138：useRef 保存上一次的值（自定义 usePrevious）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 152：useRef 保存上一次的值（自定义 usePrevious）</h3>
 
 ```jsx
 function usePrevious(value) {
@@ -2779,7 +3244,7 @@ function PriceDisplay({ price }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 139：useContext 基础用法</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 153：useContext 基础用法</h3>
 
 ```jsx
 import { createContext, useContext } from 'react';
@@ -2804,7 +3269,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 140：useContext 解决"逐层传递 props"（prop drilling）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 154：useContext 解决"逐层传递 props"（prop drilling）</h3>
 
 ```jsx
 const UserContext = createContext(null);
@@ -2832,7 +3297,7 @@ function UserBadge() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 141：useReducer 计数器（入门）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 155：useReducer 计数器（入门）</h3>
 
 ```jsx
 import { useReducer } from 'react';
@@ -2861,7 +3326,7 @@ function Counter() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 142：useReducer 管理复杂表单</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 156：useReducer 管理复杂表单</h3>
 
 ```jsx
 function formReducer(state, action) {
@@ -2890,7 +3355,7 @@ function Form() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 143：useReducer 管理列表</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 157：useReducer 管理列表</h3>
 
 ```jsx
 function todoReducer(todos, action) {
@@ -2925,7 +3390,7 @@ function Todos() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 144：useReducer vs useState 如何选择</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 158：useReducer vs useState 如何选择</h3>
 
 ```jsx
 // 简单、独立的状态 → useState
@@ -2944,7 +3409,7 @@ const [state, dispatch] = useReducer(reducer, initialState);
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 145：useMemo 缓存昂贵的计算结果</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 159：useMemo 缓存昂贵的计算结果</h3>
 
 ```jsx
 import { useMemo } from 'react';
@@ -2962,7 +3427,7 @@ function ExpensiveList({ items, keyword }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 146：useMemo 稳定对象引用（配合 React.memo）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 160：useMemo 稳定对象引用（配合 React.memo）</h3>
 
 ```jsx
 function Parent({ userId }) {
@@ -2987,7 +3452,7 @@ const Child = React.memo(({ config }) => {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 147：useCallback 缓存函数</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 161：useCallback 缓存函数</h3>
 
 ```jsx
 import { useCallback } from 'react';
@@ -3011,11 +3476,11 @@ const Child = React.memo(({ onClick }) => {
 });
 ```
 
-**详解**：`useCallback(fn, deps)` 相当于 `useMemo(() => fn, deps)`，专门用来缓存"函数"。道理同示例 146：函数每次渲染都是新引用，会让接收它的 `memo` 子组件失效。用 `useCallback` 固定函数引用后，父组件计数变化不再连累 `Child` 重渲染。依赖数组里要放函数内部用到的会变化的变量。
+**详解**：`useCallback(fn, deps)` 相当于 `useMemo(() => fn, deps)`，专门用来缓存"函数"。道理同示例 160：函数每次渲染都是新引用，会让接收它的 `memo` 子组件失效。用 `useCallback` 固定函数引用后，父组件计数变化不再连累 `Child` 重渲染。依赖数组里要放函数内部用到的会变化的变量。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 148：不要滥用 useMemo / useCallback</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 162：不要滥用 useMemo / useCallback</h3>
 
 ```jsx
 // ❌ 没必要：加法本身极快，缓存的开销比计算还大
@@ -3035,7 +3500,7 @@ const onClick2 = () => setOpen(true);
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 149：useLayoutEffect 同步测量避免闪烁</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 163：useLayoutEffect 同步测量避免闪烁</h3>
 
 ```jsx
 import { useLayoutEffect, useRef, useState } from 'react';
@@ -3055,7 +3520,7 @@ function Tooltip() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 150：useLayoutEffect 与 useEffect 的区别</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 164：useLayoutEffect 与 useEffect 的区别</h3>
 
 ```jsx
 useEffect(() => { /* 绘制后异步执行，不阻塞渲染，99% 情况用它 */ });
@@ -3066,7 +3531,7 @@ useLayoutEffect(() => { /* 绘制前同步执行，会阻塞渲染，仅测量/�
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 151：useImperativeHandle 向父组件暴露方法</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 165：useImperativeHandle 向父组件暴露方法</h3>
 
 ```jsx
 import { forwardRef, useImperativeHandle, useRef } from 'react';
@@ -3098,7 +3563,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 152：自定义 Hook：useToggle</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 166：自定义 Hook：useToggle</h3>
 
 ```jsx
 import { useState, useCallback } from 'react';
@@ -3119,7 +3584,7 @@ function Switch() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 153：自定义 Hook：useFetch（含加载态与竞态处理）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 167：自定义 Hook：useFetch（含加载态与竞态处理）</h3>
 
 ```jsx
 import { useState, useEffect } from 'react';
@@ -3148,11 +3613,11 @@ function Users() {
 }
 ```
 
-**详解**：这个 `useFetch` 把"请求数据"这套通用逻辑——加载态、错误态、竞态处理（示例 132 的 `ignore` 标志）——全部封装。任何组件只要 `const { data, loading, error } = useFetch(url)` 就能拿到完整的请求状态，组件本身只关心怎么渲染。这正是自定义 Hook 的威力：把重复的副作用逻辑抽象成一个可复用的"能力"。
+**详解**：这个 `useFetch` 把"请求数据"这套通用逻辑——加载态、错误态、竞态处理（示例 146 的 `ignore` 标志）——全部封装。任何组件只要 `const { data, loading, error } = useFetch(url)` 就能拿到完整的请求状态，组件本身只关心怎么渲染。这正是自定义 Hook 的威力：把重复的副作用逻辑抽象成一个可复用的"能力"。
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 154：自定义 Hook：useLocalStorage（与浏览器存储同步）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 168：自定义 Hook：useLocalStorage（与浏览器存储同步）</h3>
 
 ```jsx
 import { useState, useEffect } from 'react';
@@ -3182,7 +3647,7 @@ function Settings() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 155：useId 生成唯一 id</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 169：useId 生成唯一 id</h3>
 
 ```jsx
 import { useId } from 'react';
@@ -3200,7 +3665,7 @@ function Field() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 156：useId 生成多个相关 id</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 170：useId 生成多个相关 id</h3>
 
 ```jsx
 function Form() {
@@ -3218,7 +3683,7 @@ function Form() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 157：useTransition 标记非紧急更新</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 171：useTransition 标记非紧急更新</h3>
 
 ```jsx
 import { useState, useTransition } from 'react';
@@ -3249,7 +3714,7 @@ function SearchList({ allItems }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 158：useDeferredValue 延迟值</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 172：useDeferredValue 延迟值</h3>
 
 ```jsx
 import { useState, useDeferredValue, useMemo } from 'react';
@@ -3274,7 +3739,7 @@ function Search({ allItems }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 159：startTransition（非 Hook 版本）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 173：startTransition（非 Hook 版本）</h3>
 
 ```jsx
 import { startTransition } from 'react';
@@ -3291,7 +3756,7 @@ function TabButton({ onSelect }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 160：useSyncExternalStore 订阅外部数据源</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 174：useSyncExternalStore 订阅外部数据源</h3>
 
 ```jsx
 import { useSyncExternalStore } from 'react';
@@ -3320,7 +3785,7 @@ function StatusBar() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 161：useSyncExternalStore 订阅自定义 store</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 175：useSyncExternalStore 订阅自定义 store</h3>
 
 ```jsx
 // 一个极简的外部 store
@@ -3343,7 +3808,7 @@ function Counter() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 162：useInsertionEffect（用于 CSS-in-JS 库）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 176：useInsertionEffect（用于 CSS-in-JS 库）</h3>
 
 ```jsx
 import { useInsertionEffect } from 'react';
@@ -3365,7 +3830,7 @@ function useCss(rule) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 163：Suspense 配合 lazy 懒加载</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 177：Suspense 配合 lazy 懒加载</h3>
 
 ```jsx
 import { Suspense, lazy } from 'react';
@@ -3383,7 +3848,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 164：多个 lazy 组件共享一个 Suspense</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 178：多个 lazy 组件共享一个 Suspense</h3>
 
 ```jsx
 const Chart = lazy(() => import('./Chart'));
@@ -3401,7 +3866,7 @@ function Dashboard() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 165：嵌套 Suspense</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 179：嵌套 Suspense</h3>
 
 ```jsx
 function Page() {
@@ -3418,7 +3883,7 @@ function Page() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 166：Suspense + 数据请求（配合支持 Suspense 的库）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 180：Suspense + 数据请求（配合支持 Suspense 的库）</h3>
 
 ```jsx
 // 需要配合 React Query、Relay 等支持 Suspense 的数据方案
@@ -3434,7 +3899,7 @@ function Profile() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 167：hydrateRoot（服务端渲染注水）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 181：hydrateRoot（服务端渲染注水）</h3>
 
 ```jsx
 import { hydrateRoot } from 'react-dom/client';
@@ -3446,7 +3911,7 @@ hydrateRoot(document.getElementById('root'), <App />);
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 168：并发渲染避免卡顿的完整对比</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 182：并发渲染避免卡顿的完整对比</h3>
 
 ```jsx
 function App() {
@@ -3475,7 +3940,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 169：React.memo 缓存组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 183：React.memo 缓存组件</h3>
 
 ```jsx
 const Item = React.memo(function Item({ text }) {
@@ -3487,7 +3952,7 @@ const Item = React.memo(function Item({ text }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 170：React.memo 自定义比较函数</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 184：React.memo 自定义比较函数</h3>
 
 ```jsx
 const User = React.memo(
@@ -3500,7 +3965,7 @@ const User = React.memo(
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 171：拆分组件减少渲染范围</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 185：拆分组件减少渲染范围</h3>
 
 ```jsx
 // 把频繁变化的部分独立成小组件，避免整棵树重渲染
@@ -3525,7 +3990,7 @@ function LiveClock() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 172：useMemo 缓存传给子组件的对象</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 186：useMemo 缓存传给子组件的对象</h3>
 
 ```jsx
 function Parent({ id }) {
@@ -3537,7 +4002,7 @@ function Parent({ id }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 173：懒加载路由组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 187：懒加载路由组件</h3>
 
 ```jsx
 import { lazy, Suspense } from 'react';
@@ -3560,7 +4025,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 174：列表虚拟化思路（只渲染可见项）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 188：列表虚拟化思路（只渲染可见项）</h3>
 
 ```jsx
 // 大列表建议用 react-window / react-virtualized
@@ -3591,7 +4056,7 @@ function VirtualList({ items, itemHeight = 30, height = 300 }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 175：创建可切换的主题 Context</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 189：创建可切换的主题 Context</h3>
 
 ```jsx
 const ThemeContext = createContext();
@@ -3614,7 +4079,7 @@ function ThemeButton() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 176：用 Context + useReducer 做全局状态</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 190：用 Context + useReducer 做全局状态</h3>
 
 ```jsx
 const StoreContext = createContext();
@@ -3640,7 +4105,7 @@ function CounterDisplay() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 177：多个 Context 组合</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 191：多个 Context 组合</h3>
 
 ```jsx
 function App() {
@@ -3658,7 +4123,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 178：子传父（回调函数）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 192：子传父（回调函数）</h3>
 
 ```jsx
 function Child({ onSend }) {
@@ -3678,7 +4143,7 @@ function Parent() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 179：兄弟组件通信（状态提升）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 193：兄弟组件通信（状态提升）</h3>
 
 ```jsx
 function Parent() {
@@ -3704,7 +4169,7 @@ function Display({ value }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 180：完整的 Todo 应用</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 194：完整的 Todo 应用</h3>
 
 ```jsx
 import { useState } from 'react';
@@ -3744,7 +4209,7 @@ function TodoApp() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 181：防抖搜索（自定义 Hook）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 195：防抖搜索（自定义 Hook）</h3>
 
 ```jsx
 function useDebounce(value, delay = 500) {
@@ -3768,7 +4233,7 @@ function Search() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 182：错误边界（Error Boundary）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 196：错误边界（Error Boundary）</h3>
 
 ```jsx
 import { Component } from 'react';
@@ -3799,7 +4264,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 183：Portal 渲染到 body（弹窗）</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 197：Portal 渲染到 body（弹窗）</h3>
 
 ```jsx
 import { createPortal } from 'react-dom';
@@ -3828,7 +4293,7 @@ function App() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 184：分页数据加载</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 198：分页数据加载</h3>
 
 ```jsx
 function PagedList() {
@@ -3850,7 +4315,7 @@ function PagedList() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 185：倒计时组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 199：倒计时组件</h3>
 
 ```jsx
 function Countdown({ seconds = 60 }) {
@@ -3866,7 +4331,7 @@ function Countdown({ seconds = 60 }) {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 186：Tab 切换组件</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 200：Tab 切换组件</h3>
 
 ```jsx
 function Tabs() {
@@ -3886,7 +4351,7 @@ function Tabs() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 187：受控 + 校验的表单</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 201：受控 + 校验的表单</h3>
 
 ```jsx
 function SignupForm() {
@@ -3913,7 +4378,7 @@ function SignupForm() {
 
 <br>
 
-<h3 style="color: #FF8C00; font-size: 1.6em;">示例 188：主题切换 + localStorage 持久化</h3>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 202：主题切换 + localStorage 持久化</h3>
 
 ```jsx
 function ThemedApp() {
@@ -3942,4 +4407,4 @@ function ThemedApp() {
 
 ---
 
-至此共 188 个示例，涵盖 React 18 从入门到进阶的核心用法。建议边读边动手运行，效果更佳。
+至此共 202 个示例，涵盖 React 18 从入门到进阶的核心用法。建议边读边动手运行，效果更佳。
