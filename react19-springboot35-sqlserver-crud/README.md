@@ -28,6 +28,7 @@
 | 附录 C | [附录C-HTTP与JSON基础.md](附录C-HTTP与JSON基础.md) | HTTP 请求方法 / 状态码 / JSON / 跨域(CORS)原理 |
 | 附录 D | [附录D-数据库与事务.md](附录D-数据库与事务.md) | 事务 / ACID / @Transactional 原理 / 连接池 HikariCP |
 | 附录 E | [附录E-Gradle构建原理.md](附录E-Gradle构建原理.md) | 依赖下载 / implementation vs api / 构建生命周期 |
+| 附录 F | [附录F-注解详解与速查.md](附录F-注解详解与速查.md) | 注解是什么/作用/原理 + 分类速查 + 易混对比 |
 
 ---
 
