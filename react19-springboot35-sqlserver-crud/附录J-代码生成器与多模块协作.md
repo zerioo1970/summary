@@ -82,6 +82,92 @@ public class CodeGenerator {
 
 ---
 
+## J.1.5 完整实操：生成 → 只在 Service 填一条业务规则
+
+下面用 `sys_user` 表走一遍完整流程，让你直观看到"**生成器包办样板，你只写业务逻辑**"。
+
+### 第 1 步：跑生成器
+
+运行 J.1.3 的 `CodeGenerator`（把 `setGenerateTable(...)` 里留 `"sys_user"` 即可）。跑完后，这 5 个文件被自动生成，**你一个字没敲**：
+
+```
+entity/User.java              ← 实体（按表字段生成）
+mapper/UserMapper.java        ← 继承 BaseMapper，白得全套 CRUD
+service/UserService.java      ← 业务接口（基础增删改查）
+service/impl/UserServiceImpl.java  ← 业务实现（转调 Mapper）
+controller/UserController.java     ← 5 个 REST 接口
+```
+
+### 第 2 步：看看生成的 Service 长什么样（骨架）
+
+生成的 `UserServiceImpl` 大致是"直接转调 Mapper"的样子，**没有任何业务规则**——这正是留给你填的地方：
+
+```java
+@Service
+public class UserServiceImpl implements UserService {
+
+    private final UserMapper userMapper;
+    public UserServiceImpl(UserMapper userMapper) { this.userMapper = userMapper; }
+
+    @Override
+    public boolean save(User user) {
+        return userMapper.insert(user) > 0;   // ← 生成器只给了"直接插入"，没有任何校验
+    }
+
+    // listAll / getById / updateById / removeById ... 同理，都是直接转调
+}
+```
+
+此时项目**已经能跑**：5 个接口都可用，纯 CRUD 一行业务代码都不用写。
+
+### 第 3 步：只改 Service，加一条业务规则
+
+现在加一个真实需求：**"新增用户前，用户名不能重复"**。这是生成器不可能知道的业务规则，只有你懂——所以只在 `UserServiceImpl.save()` 里动手，**其它四个文件（Entity/Mapper/Controller/接口）一律不碰**：
+
+```java
+import static com.example.crudbackend.entity.table.UserTableDef.USER;  // APT 生成的表定义
+
+@Service
+public class UserServiceImpl implements UserService {
+
+    private final UserMapper userMapper;
+    public UserServiceImpl(UserMapper userMapper) { this.userMapper = userMapper; }
+
+    @Override
+    public boolean save(User user) {
+        // ★★★ 这几行就是你唯一要写的"业务逻辑" ★★★
+        long count = userMapper.selectCountByQuery(
+                QueryWrapper.create().where(USER.USERNAME.eq(user.getUsername()))
+        );
+        if (count > 0) {
+            throw new RuntimeException("用户名已存在：" + user.getUsername());
+        }
+        // ★★★ 业务规则结束，下面是生成器给的原逻辑 ★★★
+
+        user.setCreateTime(LocalDateTime.now());
+        return userMapper.insert(user) > 0;
+    }
+}
+```
+
+就这么几行。前端调 `POST /api/users` 时，若用户名重复，全局异常处理器（[第 7 章](07-统一返回-跨域-异常.md)）会自动把它转成统一的错误 JSON 返回。
+
+### 第 4 步：确认"你到底动了哪些文件"
+
+| 文件 | 是否改动 | 说明 |
+|------|:------:|------|
+| `entity/User.java` | ❌ 没动 | 表结构没变，实体不用改 |
+| `mapper/UserMapper.java` | ❌ 没动 | `selectCountByQuery` 是 `BaseMapper` 自带的 |
+| `service/UserService.java`（接口） | ❌ 没动 | 方法签名没变 |
+| **`service/impl/UserServiceImpl.java`** | ✅ **只改这里** | 加了 3~4 行"用户名查重"业务规则 |
+| `controller/UserController.java` | ❌ 没动 | 接口不变，前端无感 |
+
+**这就是核心结论的实证**：一个新需求，5 个文件里你只碰了 1 个、只加了几行。生成器负责"能跑的骨架"，你负责"业务的灵魂"。
+
+> 小提示：如果规则涉及**多步写操作**（如"建用户同时建默认配置"），记得在方法上加 `@Transactional`（原理见 [附录 D.3](附录D-数据库与事务.md)），保证同成同败。
+
+---
+
 ## J.2 多模块协作 —— 不同模块的四层能相互调用
 
 ### J.2.1 结论：能，靠依赖注入
