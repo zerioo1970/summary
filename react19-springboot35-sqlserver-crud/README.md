@@ -30,6 +30,7 @@
 | 附录 E | [附录E-Gradle构建原理.md](附录E-Gradle构建原理.md) | 依赖下载 / implementation vs api / 构建生命周期 |
 | 附录 F | [附录F-注解详解与速查.md](附录F-注解详解与速查.md) | 注解是什么/作用/原理 + 分类速查 + 易混对比 |
 | 附录 G | [附录G-项目部署上线.md](附录G-项目部署上线.md) | 打包 / 生产配置 / Nginx 反代 / Docker 部署 |
+| 附录 H | [附录H-WebForm到SpringBoot概念对照.md](附录H-WebForm到SpringBoot概念对照.md) | ASP.NET WebForm 老手过渡：概念一一对照 |
 | 速查 | [术语速查表-Glossary.md](术语速查表-Glossary.md) | 全教程术语一句话解释 + 跳转索引 |
 
 ---
