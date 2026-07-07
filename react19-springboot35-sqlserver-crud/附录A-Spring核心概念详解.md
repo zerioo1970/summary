@@ -202,6 +202,83 @@ flowchart TB
 
 > 小结这句原文："去 mapper 包扫描所有接口 → 为每个接口用动态代理生成实现 → 把生成的代理对象注册成 Spring Bean → Service 注入时就拿到它"。现在每个环节你都懂了。
 
+### A.5.3 「凭空造出一个实现了接口的对象」到底是怎么回事
+
+这句话是理解动态代理的钥匙，我们把它彻底拆开。
+
+**先看"正常"情况**：一个接口要能用，必须有人写一个类去 `implements` 它，编译成 `.class`，再 `new` 出来：
+
+```java
+interface UserMapper { User selectById(Long id); }
+
+class UserMapperImpl implements UserMapper {          // 你手写的实现类
+    public User selectById(Long id) { /* 真实代码 */ }
+}
+UserMapper m = new UserMapperImpl();                  // 有源码、有 .class 才能 new
+```
+
+**动态代理"反常"在哪**：你**根本没写 `UserMapperImpl`**，源码和编译产物里都不存在它。但程序**运行的那一刻**，JVM 能在内存里临时"捏造"出一个新类（名字常是 `$Proxy0`、`$Proxy12`），这个类：
+- 确实实现了 `UserMapper` 接口（所以类型上能当 `UserMapper` 用）；
+- 但它每个方法里**没有真正的业务代码**，而是被统一"改道"到一个你指定的**拦截器**上。
+
+**"调用任何方法都改道到一段逻辑"——关键机制**：Java 靠 `java.lang.reflect.Proxy` + `InvocationHandler` 实现。接口里无论有多少方法、无论调哪个，全部汇聚到你写的**一个** `invoke` 方法里：
+
+```java
+UserMapper proxy = (UserMapper) Proxy.newProxyInstance(
+    UserMapper.class.getClassLoader(),   // 用哪个类加载器
+    new Class[]{ UserMapper.class },     // 要"假装实现"哪些接口
+    (p, method, args) -> {               // InvocationHandler：所有方法调用的统一入口
+        // 不管调 selectById 还是 insert，都会进到这里
+        // method = 被调用的方法对象, args = 调用时传入的参数
+        // MyBatis 在这里做的事：根据 method 名 + @Table/@Id 信息拼出 SQL → JDBC 执行 → 封装结果
+        return 根据method和args查出来的结果;
+    });
+
+proxy.selectById(1L);   // 不执行"真实方法体"(根本没有)，而是进上面的 invoke
+```
+
+所以：
+- **"凭空造出对象"** = 运行时生成一个实现了接口的类并实例化（你没写过这个类）。
+- **"规定调用任何方法执行哪段逻辑"** = 把所有方法调用都汇聚到 `invoke`，由框架统一处理。
+
+MyBatis 的 `invoke` 里，正是拿到你调的方法名（如 `selectOneById`）和参数，结合 `@Table("sys_user")`、`@Id` 等信息，**运行时拼出 SQL** 交给 JDBC 执行——这就是"Mapper 只是接口却能查库"的真相。
+
+**Java 里的两种动态代理**：
+
+| 方式 | 能代理什么 | 谁在用 |
+|------|-----------|--------|
+| **JDK 动态代理**（`Proxy`） | 只能代理**接口** | MyBatis 的 Mapper、Spring 对有接口的 Bean 做 AOP |
+| **CGLIB**（运行时生成字节码） | 能代理**普通类**（生成其子类） | Spring 的 `@Transactional`、`@Async` 等，当目标没接口时 |
+
+底层依赖两项能力：**反射**（运行时读取类/方法信息）+ **运行时生成字节码**（临时造类）。
+
+### A.5.4 动态代理是 Java 独有的吗？C# 等其它语言有吗？
+
+**完全不是 Java 独有。** 它属于"元编程 / 运行时代理"这一类通用能力，凡是带反射、能在运行时生成或拦截的语言基本都有，只是叫法和 API 不同。
+
+**C# / .NET 的对应物**（能力对等，某些方面更灵活）：
+
+| 机制 | 说明 | 类比 Java |
+|------|------|-----------|
+| **`DispatchProxy`** | .NET Core / .NET 5+ 内置，为**接口**动态生成代理，重写一个 `Invoke` 拦截所有调用 | ≈ `Proxy` + `InvocationHandler`，几乎一模一样 |
+| **Castle DynamicProxy**（Castle.Core 库） | 社区最流行，能代理接口和类；Moq、NHibernate、AutoMapper 都靠它 | ≈ CGLIB |
+| **`RealProxy`**（老 .NET Framework） | 早期透明代理（基于 `MarshalByRefObject`） | 早期方案 |
+| **Source Generators / Roslyn** | 编译期生成代码（非运行时），另一条路线 | ≈ Java 的 APT 注解处理器 |
+
+> 例：C# 最有名的 Mock 框架 **Moq**，`new Mock<IUserService>()` 就是用 Castle DynamicProxy 在运行时凭空造出一个实现 `IUserService` 的假对象——原理与本节如出一辙。
+
+**其它语言**：
+
+| 语言 | 对应能力 |
+|------|---------|
+| **JavaScript** | ES6 的 `Proxy` 对象（`new Proxy(target, handler)`），比 Java 更强，连"读属性"都能拦截 |
+| **Python** | `__getattr__` / `__getattribute__` 魔术方法、元类（metaclass） |
+| **Ruby** | `method_missing`（调用不存在的方法时统一兜底） |
+| **PHP** | `__call` 魔术方法 |
+| **Go** | 没有真正的运行时动态代理（不能轻易运行时造类），一般用**编译期代码生成**（go generate）或 `reflect` 变通 |
+
+**结论**：动态代理是一种跨语言的通用思想（本质 = "代理模式" + "运行时生成/拦截"）。Java 有 `Proxy`/CGLIB，C# 有 `DispatchProxy`/Castle DynamicProxy，能力对等甚至 C# 更灵活。真正"没有运行时动态代理"的主流语言反而是 Go（它偏向编译期代码生成）。
+
 ---
 
 ## A.6 把整条链串起来：应用启动时到底发生了什么

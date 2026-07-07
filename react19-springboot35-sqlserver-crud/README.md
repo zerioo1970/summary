@@ -23,7 +23,9 @@
 | 11 | [11-React-CRUD页面.md](11-React-CRUD页面.md) | 完整 UserManager 组件 |
 | 12 | [12-前后端联调与数据流.md](12-前后端联调与数据流.md) | 启动顺序、端到端数据流 |
 | 13 | [13-常见问题FAQ.md](13-常见问题FAQ.md) | 8 个高频报错排查 |
-| 附录 A | [附录A-Spring核心概念详解.md](附录A-Spring核心概念详解.md) | Bean / IoC 容器 / 依赖注入 / 动态代理 深入讲解 |
+| 附录 A | [附录A-Spring核心概念详解.md](附录A-Spring核心概念详解.md) | Bean / IoC 容器 / 依赖注入 / 动态代理（含跨语言对比）深入讲解 |
+| 附录 B | [附录B-前端概念详解.md](附录B-前端概念详解.md) | 组件 / Hooks / 状态 / 虚拟 DOM / Promise / async-await |
+| 附录 C | [附录C-HTTP与JSON基础.md](附录C-HTTP与JSON基础.md) | HTTP 请求方法 / 状态码 / JSON / 跨域(CORS)原理 |
 
 ---
 
