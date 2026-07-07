@@ -1,6 +1,7 @@
-# React 18 详细使用说明（100+ 示例）
+# React 18 详细使用说明（100+ 示例，并补充 React 19 新特性）
 
-> 本文档面向已了解 JavaScript / ES6 的开发者，通过 280 多个由浅入深的小示例，系统讲解 React 18 的用法，并覆盖 React Router 路由与 React Query 数据请求两大常用生态库。
+> 本文档面向已了解 JavaScript / ES6 的开发者，通过 320 多个由浅入深的小示例，系统讲解 React 18 的用法，并覆盖 React Router 路由与 React Query 数据请求两大常用生态库。
+> **文末（第十五~二十一章，示例 284 起）补充了 React 19 的全部新特性**：Actions、`useActionState`、`useFormStatus`、`useOptimistic`、`use` API、ref 作为 prop、文档元数据/样式表/资源预加载、Server Components 等。
 > 每个示例都尽量短小、独立，方便直接复制运行。
 
 ---
@@ -21,6 +22,16 @@
 12. [进阶与实战](#十二进阶与实战)
 13. [React Router 路由](#十三react-router-路由)
 14. [数据请求（React Query）](#十四数据请求react-query)
+
+**React 19 新特性（示例 284 起）**
+
+15. [React 19 简介与升级](#十五react-19-简介与升级)
+16. [Actions：用异步 transition 统一管理提交](#十六actions用异步-transition-统一管理提交)
+17. [`use` API：在渲染中读取 Promise 与 Context](#十七use-api在渲染中读取-promise-与-context)
+18. [组件 API 的改进](#十八组件-api-的改进)
+19. [文档元数据、样式表、脚本与资源预加载](#十九文档元数据样式表脚本与资源预加载)
+20. [Server Components 与 Server Actions（概念入门）](#二十server-components-与-server-actions概念入门)
+21. [其它改进与破坏性变更](#二十一其它改进与破坏性变更)
 
 ---
 
@@ -6540,3 +6551,1027 @@ const m = useMutation({ mutationFn, onSuccess: () => qc.invalidateQueries({ quer
 ---
 
 至此全文共 283 个示例，覆盖 React 18 从入门到进阶实战的核心内容。**最好的学习方式是边读边动手敲**——把示例改一改、跑一跑，遇到报错去查、去想为什么，进步最快。祝你学得顺利！
+
+
+
+---
+---
+
+# React 19 新特性详解（React 18 之后的全部新内容）
+
+> 上半部分我们系统学习了 React 18。**React 19 已于 2024 年 12 月正式发布（stable）**，它在 React 18 的并发能力之上，进一步把"数据变更 → 更新界面"这件最常见的事做成了内建能力（Actions），并新增了 `use` API、`ref` 直接作为 prop、文档元数据/样式表/资源预加载等一大批实用特性，同时移除了一批过时 API。
+>
+> 本部分**紧接上文的示例编号**（从示例 284 继续），风格与上半部分一致：先给概念，再给可运行示例，最后逐条**详解**。为了突出"新旧对比"，很多示例会同时给出 **React 18 的老写法** 和 **React 19 的新写法**。
+>
+> 阅读前提：你已经掌握上半部分的 Hooks、Suspense、`useTransition`、`createRoot` 等基础。
+
+## React 19 部分目录
+
+- 十五、React 19 简介与升级
+- 十六、Actions：用异步 transition 统一管理提交
+- 十七、`use` API：在渲染中读取 Promise 与 Context
+- 十八、组件 API 的改进（ref 作为 prop、ref 清理、`<Context>` 作为 Provider、useDeferredValue 初始值）
+- 十九、文档元数据、样式表、脚本与资源预加载
+- 二十、Server Components 与 Server Actions（概念入门）
+- 二十一、其它改进与破坏性变更（错误处理、自定义元素、静态 API、被移除的 API）
+- 附：React 18 → React 19 升级速查
+
+---
+
+## 十五、React 19 简介与升级
+
+> React 19 不是"推倒重来"，而是在 React 18 并发架构上的增量升级。绝大多数 React 18 项目**改动很小**即可升级。本节先把"怎么装、入口要不要改、有哪些前置要求"讲清楚。
+
+### （A）安装与升级
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 284：安装 React 19</h3>
+
+```bash
+# npm
+npm install --save-exact react@^19.0.0 react-dom@^19.0.0
+
+# 如果用 TypeScript，类型也要一起升级
+npm install --save-exact @types/react@^19.0.0 @types/react-dom@^19.0.0
+
+# yarn
+yarn add --exact react@^19.0.0 react-dom@^19.0.0
+```
+
+**详解**：`react` 和 `react-dom` 必须**版本一致**，二者是配套的。用 `--save-exact`（或 yarn 的 `--exact`）锁定精确版本，避免自动升到不兼容的小版本。TypeScript 项目一定要同步升级 `@types/react`、`@types/react-dom`，否则会有大量类型报错（React 19 的类型定义有变化，例如 `ref` 现在是普通 prop）。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 285：入口写法不变——仍然用 createRoot</h3>
+
+```jsx
+// main.jsx —— 和 React 18 完全一样
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App.jsx';
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);
+```
+
+**详解**：React 18 引入的 `createRoot` 在 React 19 里**依旧是标准入口**，写法不变。区别在于：React 18 里还"能用但会警告"的老入口 `ReactDOM.render` / `ReactDOM.hydrate`，在 React 19 里被**彻底移除**了（见示例 322）。所以如果你的项目还在用 `ReactDOM.render`，升级 19 前必须先改成 `createRoot`。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 286：升级前置要求——新版 JSX Transform</h3>
+
+```jsx
+// React 19 依赖 2020 年引入的"新 JSX 转换"
+// 特征：文件顶部不再需要手动 import React 就能写 JSX
+function Hello() {
+  return <h1>无需 import React 即可使用 JSX</h1>;
+}
+
+// 如果构建工具仍用旧 transform，控制台会警告：
+// "Your app (or one of its dependencies) is using an outdated JSX transform."
+```
+
+**详解**：React 19 的一些新能力（比如 `ref` 作为 prop、JSX 提速）**要求启用新 JSX Transform**。好消息是，Vite、Next.js、Create React App 等主流环境**默认早已启用**，绝大多数项目无需改动。只有很老的自定义 Babel 配置可能需要把 `@babel/preset-react` 的 `runtime` 设为 `"automatic"`。看到上面那条警告时，去更新构建配置即可。
+
+**升级心智小结**：① 换 `react`/`react-dom`/类型三件套；② 确保 `createRoot` 入口；③ 确保新 JSX Transform；④ 处理被移除的 API（本部分最后一章）。官方还提供了一系列 codemod 自动改写，命令形如 `npx codemod@latest react/19/...`。
+
+---
+
+## 十六、Actions：用异步 transition 统一管理提交
+
+> "提交表单 → 请求接口 → 处理结果"是 React 应用里最高频的场景。React 18 里你得手动维护 `isPending`、`error`、乐观更新、请求顺序……样板代码一大堆。**React 19 把这些做成了内建能力，统称 Actions**：凡是在 `startTransition` 里执行的异步函数，React 就会自动帮你管理 pending 状态、错误、表单重置和乐观更新。
+>
+> 围绕 Actions，React 19 新增了 4 样东西：`useTransition` 支持异步、`useActionState`、`<form action>`、`useFormStatus`，以及 `useOptimistic`。本节逐个拆解。
+
+### （A）Actions 的由来：从"手动"到"自动"
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 287：React 18 的老写法——一切都要手动管理</h3>
+
+```jsx
+// ❌ React 18：pending / error 全靠手写
+function UpdateName() {
+  const [name, setName] = useState('');
+  const [error, setError] = useState(null);
+  const [isPending, setIsPending] = useState(false);
+
+  const handleSubmit = async () => {
+    setIsPending(true);
+    const error = await updateName(name); // 假设返回错误信息或 null
+    setIsPending(false);
+    if (error) {
+      setError(error);
+      return;
+    }
+    redirect('/path');
+  };
+
+  return (
+    <div>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <button onClick={handleSubmit} disabled={isPending}>更新</button>
+      {error && <p>{error}</p>}
+    </div>
+  );
+}
+```
+
+**详解**：注意这里有 **3 个 state**（name、error、isPending），而且 `setIsPending(true)` / `setIsPending(false)` 必须小心地成对出现——一旦某个 `return` 分支漏了 `setIsPending(false)`，按钮就会一直卡在 disabled。这类样板代码正是 Actions 要消灭的。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 288：React 19 的过渡写法——用 useTransition 支持异步</h3>
+
+```jsx
+// ✅ React 19：把异步函数丢进 startTransition，pending 自动管理
+function UpdateName() {
+  const [name, setName] = useState('');
+  const [error, setError] = useState(null);
+  const [isPending, startTransition] = useTransition();
+
+  const handleSubmit = () => {
+    startTransition(async () => {
+      const error = await updateName(name);
+      if (error) {
+        setError(error);
+        return;
+      }
+      redirect('/path');
+    });
+  };
+
+  return (
+    <div>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <button onClick={handleSubmit} disabled={isPending}>更新</button>
+      {error && <p>{error}</p>}
+    </div>
+  );
+}
+```
+
+**详解**：React 19 里 `startTransition` **可以接收 async 函数**了（React 18 只能接同步函数）。这样的异步 transition 会**立刻把 `isPending` 置为 `true`**，等异步任务全部结束后自动置回 `false`——你再也不用手写 `setIsPending`。这类"跑在异步 transition 里的函数"，官方约定俗成称为 **Action**。
+
+> **术语约定**：Action = 在异步 transition（`startTransition` / `<form action>` / `useActionState`）里运行的函数。Actions 自动提供：**pending 状态**、**乐观更新**（配合 `useOptimistic`）、**错误处理**（配合 Error Boundary，并会自动回滚乐观更新）、以及 **表单自动重置**。
+
+### （B）useActionState —— 为 Actions 量身定制的 Hook
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 289：useActionState 基础用法</h3>
+
+```jsx
+import { useActionState } from 'react';
+
+function ChangeName() {
+  const [error, submitAction, isPending] = useActionState(
+    async (previousState, formData) => {
+      const error = await updateName(formData.get('name'));
+      if (error) {
+        return error; // 返回值会成为下一次的 state（这里存错误）
+      }
+      redirect('/path');
+      return null;
+    },
+    null // 第二个参数：初始 state
+  );
+
+  return (
+    <form action={submitAction}>
+      <input type="text" name="name" />
+      <button type="submit" disabled={isPending}>更新</button>
+      {error && <p>{error}</p>}
+    </form>
+  );
+}
+```
+
+**详解**：`useActionState(action, initialState)` 接收一个 Action 函数和初始 state，返回一个**三元组** `[state, wrappedAction, isPending]`：
+- `state`：Action **上一次的返回值**（初次是 `initialState`）。这里我们用它存"错误信息"。
+- `wrappedAction`：包装后的 Action，可以直接丢给 `<form action={...}>` 或按钮的 `formAction`。
+- `isPending`：Action 是否正在执行，**自动管理**。
+
+对比示例 287，原来的 3 个 state + 手动 pending 现在**一行搞定**，且不用维护受控 input 的 `value`（表单用原生 `name` 提交，通过 `formData.get('name')` 取值）。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 290：Action 函数的两个参数——previousState 与 payload</h3>
+
+```jsx
+import { useActionState } from 'react';
+
+function Counter() {
+  // 这次不配合 <form>，而是直接把 wrappedAction 当普通函数调用
+  const [count, incrementAction, isPending] = useActionState(
+    async (previousCount, amount) => {
+      await new Promise((r) => setTimeout(r, 500)); // 模拟异步
+      return previousCount + amount; // 返回值成为新的 count
+    },
+    0
+  );
+
+  return (
+    <>
+      <p>当前：{count}</p>
+      <button onClick={() => incrementAction(1)} disabled={isPending}>+1</button>
+      <button onClick={() => incrementAction(5)} disabled={isPending}>+5</button>
+    </>
+  );
+}
+```
+
+**详解**：Action 函数的**第一个参数永远是"上一次的 state"**（`previousCount`），**第二个参数是你调用 `wrappedAction` 时传入的实参**（这里是 `amount`）。当它配合 `<form action>` 使用时，第二个参数就是浏览器自动传入的 `FormData` 对象（见示例 289）。因为 Action 可组合，`useActionState` 会把每次的返回值作为新的 state 缓存下来。
+
+> **改名提示**：`useActionState` 在 Canary 阶段曾叫 `ReactDOM.useFormState`，正式版**改名并搬到了 `react` 包**（`import { useActionState } from 'react'`）。老的 `useFormState` 已废弃，见到旧教程要注意区分。
+
+### （C）表单 Actions：`<form action={fn}>`
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 291：给 form 的 action 传函数</h3>
+
+```jsx
+function Search() {
+  async function search(formData) {
+    const query = formData.get('query');
+    const results = await fetchResults(query);
+    // ...更新界面
+  }
+
+  return (
+    <form action={search}>
+      <input name="query" />
+      <button type="submit">搜索</button>
+    </form>
+  );
+}
+```
+
+**详解**：React 19 里 `<form>`、`<input>`、`<button>` 的 `action` / `formAction` 属性**可以直接传一个函数**。提交时 React 会：① 自动阻止默认的页面刷新；② 把表单数据打包成 `FormData` 传给你的函数；③ 把这个函数当作 Action 跑在 transition 里（自动 pending）。**成功后，对于非受控表单 React 会自动清空输入框**。这让"简单表单"几乎不需要任何 `useState`。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 292：button 的 formAction 与手动重置 requestFormReset</h3>
+
+```jsx
+import { requestFormReset } from 'react-dom';
+
+function MultiActionForm() {
+  async function save(formData) { /* 保存草稿 */ }
+  async function publish(formData) { /* 发布 */ }
+
+  return (
+    <form>
+      <textarea name="content" />
+      {/* 同一个表单里，不同按钮触发不同 Action */}
+      <button formAction={save}>存草稿</button>
+      <button formAction={publish}>发布</button>
+    </form>
+  );
+}
+```
+
+**详解**：`<button formAction={fn}>` 让**同一个表单的不同按钮执行不同的 Action**——非常适合"保存 / 发布"这类多操作表单。默认情况下，非受控表单提交成功后 React 会自动重置；如果你想**手动控制何时重置**（比如失败时保留内容），可以调用 react-dom 的新 API `requestFormReset(formElement)`。
+
+### （D）useFormStatus —— 读取父表单的提交状态
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 293：设计系统里的提交按钮，无需层层传 props</h3>
+
+```jsx
+import { useFormStatus } from 'react-dom';
+
+// 这是一个通用按钮组件，它不知道具体表单，却能感知提交状态
+function SubmitButton({ children }) {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" disabled={pending}>
+      {pending ? '提交中…' : children}
+    </button>
+  );
+}
+
+// 使用：直接放进任意 <form> 内即可
+function ContactForm() {
+  async function send(formData) {
+    await sendMessage(formData.get('msg'));
+  }
+  return (
+    <form action={send}>
+      <input name="msg" />
+      <SubmitButton>发送</SubmitButton>
+    </form>
+  );
+}
+```
+
+**详解**：`useFormStatus()` 来自 `react-dom`，它读取**最近的父级 `<form>` 的提交状态**，就好像表单是一个 Context Provider 一样。返回对象里最常用的是 `pending`（是否正在提交），还包含 `data`（正在提交的 `FormData`）、`method`、`action`。这样封装通用组件（如设计系统里的 Button）时，**不用把 pending 一层层往下传 props**。
+
+> **注意**：`useFormStatus` 只能读取**父组件**里的 `<form>` 状态，不能读取组件自身渲染的 `<form>`。也就是说，`SubmitButton` 必须是 `<form>` 的**子孙**才生效。
+
+### （E）useOptimistic —— 乐观更新
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 294：改名时先"乐观"显示新名字</h3>
+
+```jsx
+import { useOptimistic } from 'react';
+
+function ChangeName({ currentName, onUpdateName }) {
+  const [optimisticName, setOptimisticName] = useOptimistic(currentName);
+
+  const submitAction = async (formData) => {
+    const newName = formData.get('name');
+    setOptimisticName(newName);          // 立刻乐观显示
+    const updatedName = await updateName(newName); // 真正请求
+    onUpdateName(updatedName);           // 用服务端结果更新真实状态
+  };
+
+  return (
+    <form action={submitAction}>
+      <p>你的名字：{optimisticName}</p>
+      <label>改名：</label>
+      <input type="text" name="name" disabled={currentName !== optimisticName} />
+    </form>
+  );
+}
+```
+
+**详解**：`useOptimistic(realValue)` 返回 `[乐观值, 设置乐观值的函数]`。在异步请求进行时，界面**立刻**显示 `optimisticName`（用户感觉零延迟）；当 Action 结束或出错，React 会**自动丢弃乐观值、回到真实值 `currentName`**。这就是"乐观 UI"：先假设成功、立即反馈，出错再回滚。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 295：乐观更新一个列表（发消息场景）</h3>
+
+```jsx
+import { useOptimistic, useState, useRef } from 'react';
+
+function Thread({ messages, sendMessageAction }) {
+  const formRef = useRef();
+
+  // 第二个参数是 reducer：如何把"乐观项"合并进现有列表
+  const [optimisticMessages, addOptimistic] = useOptimistic(
+    messages,
+    (state, newText) => [
+      ...state,
+      { text: newText, sending: true }, // 标记为"发送中"
+    ]
+  );
+
+  async function formAction(formData) {
+    const text = formData.get('message');
+    addOptimistic(text);       // 立刻在列表末尾插入"发送中"的气泡
+    formRef.current.reset();   // 立刻清空输入框
+    await sendMessageAction(text); // 真正发送
+  }
+
+  return (
+    <>
+      {optimisticMessages.map((m, i) => (
+        <div key={i}>
+          {m.text} {m.sending && <small>（发送中…）</small>}
+        </div>
+      ))}
+      <form action={formAction} ref={formRef}>
+        <input name="message" placeholder="输入消息…" />
+        <button type="submit">发送</button>
+      </form>
+    </>
+  );
+}
+```
+
+**详解**：`useOptimistic(state, updateFn)` 的第二个参数是一个 **reducer**，定义"如何把乐观数据合并进当前 state"。这里我们在列表末尾追加一条带 `sending: true` 标记的消息，界面立即显示"发送中"气泡。等请求完成、父组件真正把新消息写入 `messages` 后，乐观列表会自动被真实列表替换。**若请求失败，那条乐观消息会自动消失**——非常适合聊天、点赞、评论等场景。
+
+**Actions 章小结**：`useActionState` 管"提交 + 结果 + pending"，`<form action>` 管"表单自动化"，`useFormStatus` 让子组件感知提交状态，`useOptimistic` 管"即时反馈"。四者常常组合使用，把过去几十行样板代码压缩到几行。
+
+
+---
+
+## 十七、`use` API：在渲染中读取 Promise 与 Context
+
+> React 19 新增了一个特别的 API：`use`。它能在渲染过程中**读取一个资源**——目前支持读取 **Promise**（会自动配合 Suspense 挂起）和 **Context**。它长得像 Hook，但有一个 Hook 做不到的能力：**可以在条件语句、循环、提前返回之后调用**。
+
+### （A）用 use 读取 Promise
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 296：use(promise) 配合 Suspense 读取异步数据</h3>
+
+```jsx
+import { use, Suspense } from 'react';
+
+function Comments({ commentsPromise }) {
+  // use 会"挂起"组件，直到 promise resolve
+  const comments = use(commentsPromise);
+  return comments.map((c) => <p key={c.id}>{c.text}</p>);
+}
+
+function Page({ commentsPromise }) {
+  // Comments 挂起时，展示这个 Suspense 的 fallback
+  return (
+    <Suspense fallback={<div>加载评论中…</div>}>
+      <Comments commentsPromise={commentsPromise} />
+    </Suspense>
+  );
+}
+```
+
+**详解**：`use(promise)` 会让组件**挂起（suspend）**，直到 Promise 完成，期间由最近的 `<Suspense>` 显示 fallback；Promise resolve 后，`use` 直接返回结果值。相比 React 18 里"`useEffect` + `useState` 手动请求"，`use` 让异步数据读取像同步代码一样自然。若 Promise 被 reject，错误会冒泡到最近的 Error Boundary。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 297：陷阱——不要在渲染中创建 Promise</h3>
+
+```jsx
+// ❌ 错误：每次渲染都创建新 promise，React 会警告
+function Comments() {
+  const comments = use(fetch('/api/comments').then((r) => r.json()));
+  // Console: A component was suspended by an uncached promise...
+  return /* ... */;
+}
+
+// ✅ 正确：promise 由外部/框架/缓存层创建后传进来
+function Page() {
+  const commentsPromise = useMemo(() => fetchComments(), []); // 或来自框架的缓存
+  return (
+    <Suspense fallback="加载中…">
+      <Comments commentsPromise={commentsPromise} />
+    </Suspense>
+  );
+}
+```
+
+**详解**：`use` **不支持在渲染中直接创建的 Promise**。因为组件挂起后会重新渲染，如果每次渲染都 `fetch()` 新建 Promise，就会陷入"请求→挂起→重渲染→再请求"的死循环。正确做法是让 Promise 来自**支持缓存的框架/库**（如 Next.js、React Query），或在组件外/更上层稳定地创建后作为 prop 传入。React 19 官方也表示未来会提供更方便的"渲染中缓存 Promise"的能力。
+
+### （B）用 use 读取 Context（可条件调用）
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 298：use(Context) 可以写在提前返回之后</h3>
+
+```jsx
+import { use } from 'react';
+import ThemeContext from './ThemeContext';
+
+function Heading({ children }) {
+  if (children == null) {
+    return null; // 提前返回
+  }
+
+  // ✅ use 可以在 if 之后调用；useContext 在这里会违反 Hook 规则
+  const theme = use(ThemeContext);
+  return <h1 style={{ color: theme.color }}>{children}</h1>;
+}
+```
+
+**详解**：这正是 `use` 相对 `useContext` 的独特之处。**Hook（包括 `useContext`）必须在组件顶层无条件调用**，不能放在 `if` / 提前 `return` 之后。而 `use` **可以条件调用**——上面的组件在 `children` 为空时提前返回、根本不读取 Context，避免了不必要的订阅。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 299：use vs useContext 对比</h3>
+
+```jsx
+// 传统方式（依然可用）
+function A() {
+  const theme = useContext(ThemeContext); // 必须在顶层
+  return <div style={{ color: theme.color }} />;
+}
+
+// React 19 新方式
+function B({ show }) {
+  if (!show) return null;
+  const theme = use(ThemeContext); // 可以在条件后
+  return <div style={{ color: theme.color }} />;
+}
+```
+
+**详解**：`use` 和 Hook 一样**只能在渲染中调用**，但**不受"必须在顶层"的限制**，可以放进 `if` / 循环里。简单记忆：
+- 只是读 Context、且在组件顶层 → `useContext` 或 `use` 都行。
+- 需要在条件分支/提前返回之后读 Context → 用 `use`。
+- 读 Promise（挂起等待数据）→ 只能用 `use`。
+
+---
+
+## 十八、组件 API 的改进
+
+> React 19 对日常写组件的几处"老痛点"做了改进：`ref` 终于可以像普通 prop 一样传递（告别 `forwardRef`），`ref` 回调可以返回清理函数，`<Context>` 本身可以直接当 Provider，`useDeferredValue` 支持初始值。
+
+### （A）ref 作为普通 prop —— 告别 forwardRef
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 300：函数组件直接接收 ref</h3>
+
+```jsx
+// ✅ React 19：ref 就是一个普通 prop
+function MyInput({ placeholder, ref }) {
+  return <input placeholder={placeholder} ref={ref} />;
+}
+
+// 使用
+function Form() {
+  const inputRef = useRef(null);
+  return (
+    <>
+      <MyInput placeholder="姓名" ref={inputRef} />
+      <button onClick={() => inputRef.current.focus()}>聚焦</button>
+    </>
+  );
+}
+```
+
+**详解**：React 19 里，**函数组件可以直接从 props 中解构出 `ref`** 并转发给内部 DOM。不再需要 `forwardRef` 包裹。这大幅简化了组件库和转发 ref 的写法。官方还提供了 codemod 自动把旧代码迁移过来；未来版本会正式废弃并移除 `forwardRef`。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 301：对比 React 18 的 forwardRef 老写法</h3>
+
+```jsx
+// ❌ React 18 的写法（19 里仍兼容，但不再必要）
+import { forwardRef } from 'react';
+
+const MyInput = forwardRef(function MyInput({ placeholder }, ref) {
+  return <input placeholder={placeholder} ref={ref} />;
+});
+```
+
+**详解**：老写法里 `ref` 是 `forwardRef` 回调的**第二个参数**，而不是 props 的一部分，写起来啰嗦、类型也麻烦。对比示例 300 的新写法，React 19 让 `ref` 回归"就是个 prop"的直觉。**注意**：class 组件的 `ref` 指向的是**实例**，因此不会作为 prop 传入，这条改进只针对函数组件。
+
+### （B）ref 清理函数
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 302：ref 回调返回一个清理函数</h3>
+
+```jsx
+function Widget() {
+  return (
+    <input
+      ref={(node) => {
+        // 元素挂载：node 是 DOM
+        console.log('挂载', node);
+
+        // ✅ React 19：返回清理函数，元素卸载时自动调用
+        return () => {
+          console.log('卸载，做清理');
+        };
+      }}
+    />
+  );
+}
+```
+
+**详解**：React 19 支持从 **ref 回调返回一个清理函数**，就像 `useEffect` 的返回值一样——当元素从 DOM 移除时，React 会调用它。这对于"绑定/解绑事件、初始化/销毁第三方库实例"特别方便。以前你只能在下一次回调里判断 `node === null` 来做清理，现在语义清晰得多。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 303：用 ref 清理函数集成第三方库</h3>
+
+```jsx
+function Chart({ data }) {
+  return (
+    <div
+      ref={(node) => {
+        if (!node) return;
+        const chart = new SomeChartLib(node, { data }); // 初始化
+        return () => chart.destroy();                   // 卸载时销毁
+      }}
+    />
+  );
+}
+```
+
+**详解**：初始化 → 返回销毁函数，一处代码把"生老病死"管完，避免内存泄漏。这个能力对 DOM ref、class 组件 ref、以及 `useImperativeHandle` 都有效。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 304：TypeScript 提示——不要用隐式返回</h3>
+
+```jsx
+// ❌ 隐式返回了赋值表达式的结果，TS 会报错（被当成"意外的清理函数"）
+<div ref={(current) => (instance = current)} />
+
+// ✅ 用花括号，明确"不返回任何东西"
+<div ref={(current) => { instance = current; }} />
+```
+
+**详解**：因为 ref 回调的返回值现在有了新含义（清理函数），**箭头函数的隐式返回**会让 TypeScript 困惑——它分不清你是想返回清理函数还是手滑。解决办法就是加花括号，把它变成没有返回值的语句体。官方 codemod `no-implicit-ref-callback-return` 可批量修复。
+
+### （C）`<Context>` 直接作为 Provider
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 305：用 &lt;Context&gt; 代替 &lt;Context.Provider&gt;</h3>
+
+```jsx
+import { createContext } from 'react';
+
+const ThemeContext = createContext('');
+
+function App({ children }) {
+  // ✅ React 19：Context 本身就能当 Provider
+  return <ThemeContext value="dark">{children}</ThemeContext>;
+}
+```
+
+**详解**：React 19 里 `<ThemeContext value={...}>` 可以直接作为 Provider 使用，**不用再写 `.Provider`**。少敲几个字符，读起来也更顺。官方提供 codemod 转换现有代码，未来会废弃 `<Context.Provider>`。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 306：对比旧写法</h3>
+
+```jsx
+// ❌ React 18 及以前
+<ThemeContext.Provider value="dark">
+  {children}
+</ThemeContext.Provider>
+
+// ✅ React 19
+<ThemeContext value="dark">
+  {children}
+</ThemeContext>
+```
+
+**详解**：两者行为完全一致，只是新写法省掉了 `.Provider`。消费端不变——依然用 `useContext(ThemeContext)` 或 `use(ThemeContext)` 读取。
+
+### （D）useDeferredValue 的初始值
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 307：useDeferredValue 第二参数 initialValue</h3>
+
+```jsx
+import { useDeferredValue } from 'react';
+
+function Search({ query }) {
+  // 首次渲染返回 ''，随后在后台调度一次用真实 query 的重渲染
+  const deferredQuery = useDeferredValue(query, '');
+  return <Results query={deferredQuery} />;
+}
+```
+
+**详解**：React 19 给 `useDeferredValue(value, initialValue?)` 增加了**第二个可选参数 `initialValue`**。**首次渲染**时直接返回 `initialValue`（这里是空字符串，可以立刻渲染出轻量骨架），然后在后台安排一次用真实 `value` 的重渲染。这解决了 React 18 里"首屏必须先用真实值渲染一次"的问题，让初始渲染更快、更可控。
+
+
+---
+
+## 十九、文档元数据、样式表、脚本与资源预加载
+
+> HTML 里 `<title>`、`<meta>`、`<link rel="stylesheet">`、`<script>` 这些标签，传统上必须放进 `<head>`、并且要小心处理顺序和去重。以前得靠 `react-helmet` 之类的库或手写 effect。**React 19 把这些能力做进了内核**：你可以在**任意组件里就地渲染**这些标签，React 会自动搬运、排序、去重，并与 SSR / 流式渲染 / Suspense 深度配合。
+
+### （A）文档元数据
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 308：在组件里直接写 title / meta / link</h3>
+
+```jsx
+function BlogPost({ post }) {
+  return (
+    <article>
+      <h1>{post.title}</h1>
+      {/* 这些标签会被自动提升到 <head> */}
+      <title>{post.title}</title>
+      <meta name="author" content="Josh" />
+      <link rel="author" href="https://example.com/josh" />
+      <meta name="keywords" content={post.keywords} />
+      <p>正文内容…</p>
+    </article>
+  );
+}
+```
+
+**详解**：React 渲染时看到 `<title>`、`<meta>`、`<link>`，会**自动把它们提升（hoist）到文档的 `<head>`**。这意味着你可以把"这篇文章的标题/描述"写在离它最近的组件里，而不必和布局层的 `<head>` 打交道。它在纯客户端应用、流式 SSR、Server Components 下都能正常工作。
+
+> **提示**：简单场景用原生标签就够了；但如果需要"按路由覆盖通用元数据""生成 Open Graph 卡片"等高级能力，仍可用 `react-helmet` 这类库——React 19 的原生支持让这些库实现起来更简单，而非取代它们。
+
+### （B）样式表与优先级
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 309：用 precedence 管理样式表插入顺序</h3>
+
+```jsx
+function ComponentOne() {
+  return (
+    <Suspense fallback="loading...">
+      <link rel="stylesheet" href="foo" precedence="default" />
+      <link rel="stylesheet" href="bar" precedence="high" />
+      <article className="foo-class bar-class">…</article>
+    </Suspense>
+  );
+}
+
+function ComponentTwo() {
+  return (
+    <div>
+      <p>…</p>
+      {/* 会被插入到 foo 与 bar 之间（按 precedence 排序） */}
+      <link rel="stylesheet" href="baz" precedence="default" />
+    </div>
+  );
+}
+```
+
+**详解**：给 `<link rel="stylesheet">` 加上 `precedence`（如 `"default"`、`"high"`），React 就会**按优先级管理样式表在 DOM 中的插入顺序**，并保证**依赖这些样式的内容在样式加载完成前不显示**（避免闪烁）。SSR 时样式会进 `<head>` 阻塞首屏绘制；客户端渲染时 React 会等新样式加载完再提交。你终于可以把样式表写在"用到它的组件"旁边了。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 310：同一样式表自动去重</h3>
+
+```jsx
+function App() {
+  return (
+    <>
+      <ComponentOne />
+      {/* 再渲染一次，不会在 DOM 里产生重复的 <link> */}
+      <ComponentOne />
+    </>
+  );
+}
+```
+
+**详解**：即使多个组件都渲染了指向同一 `href` 的样式表，React 也**只会在文档里插入一次**。这让组件"自带样式"变得安全——不用担心重复加载。
+
+### （C）异步脚本
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 311：就地渲染 &lt;script async&gt;</h3>
+
+```jsx
+function MyComponent() {
+  return (
+    <div>
+      <script async src="https://example.com/analytics.js" />
+      Hello World
+    </div>
+  );
+}
+```
+
+**详解**：React 19 允许你把**异步脚本 `<script async>`** 直接写在依赖它的组件里，React 会自动**去重**（多个组件渲染同一脚本只加载执行一次）并妥善安置位置。SSR 时异步脚本会放进 `<head>`，且优先级低于样式表、字体等阻塞渲染的关键资源。注意这只适用于 `async` 脚本；普通脚本和 `defer` 脚本按文档顺序加载，不适合深埋组件树中。
+
+### （D）资源预加载 API
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 312：preload / preinit / prefetchDNS / preconnect</h3>
+
+```jsx
+import { prefetchDNS, preconnect, preload, preinit } from 'react-dom';
+
+function MyComponent() {
+  preinit('https://example.com/script.js', { as: 'script' }); // 立即加载并执行脚本
+  preload('https://example.com/font.woff', { as: 'font' });   // 预加载字体
+  preload('https://example.com/style.css', { as: 'style' });  // 预加载样式表
+  prefetchDNS('https://cdn.example.com');                     // 只做 DNS 解析
+  preconnect('https://api.example.com');                      // 提前建立连接
+
+  return <div>…</div>;
+}
+```
+
+**详解**：`react-dom` 新增了一组资源加载 API，帮浏览器"提前知道要用什么"，显著改善加载性能：
+- `preload(href, { as })`：预加载资源（字体、样式、图片等），稍后使用。
+- `preinit(href, { as })`：更进一步，**立即加载并执行**（如脚本）或插入（如样式表）。
+- `prefetchDNS(href)`：只提前做 DNS 解析（还不确定要不要请求这个域时）。
+- `preconnect(href)`：提前建立连接（确定会请求、但还不知道具体请求什么时）。
+
+React 会**按资源对早期加载的重要性排序**（而不是按你调用的顺序）生成对应的 `<link>` / `<script>`。典型用法：在用户 hover 某个链接时 `preload` 目标页面要用的资源，点进去就秒开。
+
+---
+
+## 二十、Server Components 与 Server Actions（概念入门）
+
+> React 19 正式纳入了 **React Server Components（RSC）** 相关能力。它们主要面向 **Next.js 等全栈框架**，普通的纯客户端（Vite + React）项目**用不到、也无需配置**。这里做概念性介绍，帮你看懂相关文章和框架文档。
+
+### （A）Server Components
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 313：一个 Server Component 的样子</h3>
+
+```jsx
+// app/page.jsx —— 默认就是 Server Component（在框架里）
+// 它在"服务器/构建期"运行，可以直接读数据库、读文件，不会打包进客户端 JS
+async function Page() {
+  const posts = await db.posts.findMany(); // 直接访问服务端资源
+  return (
+    <main>
+      {posts.map((p) => (
+        <article key={p.id}>{p.title}</article>
+      ))}
+    </main>
+  );
+}
+
+export default Page;
+```
+
+**详解**：Server Component 是一种**在打包之前、在独立于客户端的环境里提前渲染**的组件——这个环境就是 RSC 里的"server"（可以是 CI 构建期，也可以是每次请求时的 Web 服务器）。它的代码**不会进客户端 bundle**，因此可以直接访问数据库、文件系统等服务端资源，还能减小前端体积。**注意：Server Component 没有专门的指令**——它是框架里的默认形态。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 314："use client" 指令——标记客户端组件</h3>
+
+```jsx
+'use client'; // 文件顶部：这是客户端组件，可用 useState、事件、浏览器 API
+
+import { useState } from 'react';
+
+export default function Counter() {
+  const [n, setN] = useState(0);
+  return <button onClick={() => setN(n + 1)}>点了 {n} 次</button>;
+}
+```
+
+**详解**：需要交互（`useState`、事件、`useEffect`、访问 `window` 等）的组件，要在文件顶部加 `'use client'`，把它标记为**客户端组件**。Server Component 里可以引入并渲染客户端组件，从而组成"服务端负责取数、客户端负责交互"的架构。
+
+### （B）Server Actions
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 315："use server" —— 客户端调用服务端函数</h3>
+
+```jsx
+// actions.js
+'use server'; // 标记：以下导出的是 Server Action，实际在服务器执行
+
+export async function createTodo(formData) {
+  const text = formData.get('text');
+  await db.todos.create({ text }); // 服务端逻辑
+}
+```
+
+```jsx
+// TodoForm.jsx（客户端组件）
+'use client';
+import { createTodo } from './actions';
+
+export default function TodoForm() {
+  // 直接把 Server Action 传给 <form action>
+  return (
+    <form action={createTodo}>
+      <input name="text" />
+      <button type="submit">添加</button>
+    </form>
+  );
+}
+```
+
+**详解**：`'use server'` 指令用于声明 **Server Action**——它让**客户端组件可以调用在服务器上执行的异步函数**。框架会自动创建一个"函数引用"传给客户端；客户端调用时，React 发请求到服务器执行、再把结果返回。它天然与第十六章的 Actions（`<form action>`、`useActionState`）配合。
+
+> **常见误解澄清**：`'use server'` **不是**用来标记 Server Component 的！它标记的是 **Server Action**。Server Component 没有指令。
+
+---
+
+## 二十一、其它改进与破坏性变更
+
+> 除了上面的大特性，React 19 还有一批"体验改进"和"清理旧包袱"的变更。升级前尤其要关注**被移除的 API**。
+
+### （A）错误处理更清爽
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 316：createRoot 的三个错误回调</h3>
+
+```jsx
+import { createRoot } from 'react-dom/client';
+
+const root = createRoot(document.getElementById('root'), {
+  onCaughtError: (error, errorInfo) => {
+    // 被 Error Boundary 捕获的错误
+    reportToServer('caught', error, errorInfo);
+  },
+  onUncaughtError: (error, errorInfo) => {
+    // 没有被任何 Error Boundary 捕获的错误
+    reportToServer('uncaught', error, errorInfo);
+  },
+  onRecoverableError: (error, errorInfo) => {
+    // React 自动恢复了的错误（如某些水合不匹配）
+    reportToServer('recoverable', error, errorInfo);
+  },
+});
+
+root.render(<App />);
+```
+
+**详解**：React 19 精简了错误日志（不再重复打印同一个错误），并给 `createRoot` / `hydrateRoot` 增加了 `onCaughtError`、`onUncaughtError`、`onRecoverableError` 三个回调，方便你**对接生产环境的错误上报系统**。另外，未被 Error Boundary 捕获的错误现在会上报到 `window.reportError`，被捕获的错误走 `console.error`。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 317：水合（hydration）错误变成清晰的 diff</h3>
+
+```text
+Uncaught Error: Hydration failed because the server rendered HTML didn't
+match the client...
+
+  <App>
+    <span>
++    Client
+-    Server
+```
+
+**详解**：React 18 里水合不匹配会打印一堆重复、难懂的警告。React 19 改成**一条信息 + 一段直观的 diff**（`+` 客户端、`-` 服务端），并列出常见原因（如 `typeof window` 分支、`Date.now()`/`Math.random()` 等每次不同的值、locale 差异、非法标签嵌套、浏览器扩展改动 DOM 等）。排查 SSR 问题效率大增。此外，React 19 会**跳过第三方脚本/浏览器扩展注入的意外标签**，不再因此报水合错误。
+
+### （B）自定义元素（Web Components）
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 318：完整支持自定义元素的属性</h3>
+
+```jsx
+function App() {
+  // React 19 通过了 Custom Elements Everywhere 全部测试
+  return <my-widget count={5} label="hi" active={true} />;
+}
+```
+
+**详解**：React 18 及以前，React 会把自定义元素上不认识的 prop 当作 **attribute**（字符串）处理，导致传对象/布尔值等很别扭。React 19 做了完整支持：**SSR** 时，原始类型（string、number、`true`）渲染为 attribute，其它（object、function、`false`）省略；**客户端**时，若属性名匹配自定义元素实例上的 property 则赋为 property，否则作为 attribute。用 Web Components 更顺畅了。
+
+### （C）新的静态渲染 API
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 319：prerender / prerenderToNodeStream</h3>
+
+```jsx
+import { prerender } from 'react-dom/static';
+
+async function handler(request) {
+  const { prelude } = await prerender(<App />, {
+    bootstrapScripts: ['/main.js'],
+  });
+  return new Response(prelude, {
+    headers: { 'content-type': 'text/html' },
+  });
+}
+```
+
+**详解**：`react-dom/static` 新增 `prerender`（Web Streams 环境）和 `prerenderToNodeStream`（Node.js 环境）两个**静态站点生成**（SSG）API。相比老的 `renderToString`，它们会**等所有数据加载完成**再输出完整的静态 HTML，更适合搭配 Suspense 做数据获取。它们不做"边加载边流式输出"（那是 `renderToPipeableStream` 等服务端 API 的职责）。
+
+### （D）被移除的 API（升级重点！）
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 320：propTypes 与函数组件的 defaultProps 被移除</h3>
+
+```jsx
+// ❌ React 19 中不再生效
+import PropTypes from 'prop-types';
+function Heading({ text }) { return <h1>{text}</h1>; }
+Heading.propTypes = { text: PropTypes.string };
+Heading.defaultProps = { text: 'Hello' };
+
+// ✅ 改用 TypeScript + ES6 默认参数
+function Heading({ text = 'Hello' }) {
+  return <h1>{text}</h1>;
+}
+```
+
+**详解**：`propTypes` 早在 2017 年就被废弃，React 19 里**彻底移除**（写了也静默忽略）。**函数组件的 `defaultProps` 也被移除**，改用 **ES6 默认参数**。（class 组件的 `defaultProps` 保留，因为没有 ES6 替代。）迁移可用 codemod：`npx codemod@latest react/prop-types-typescript`。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 321：字符串 ref、旧版 Context、createFactory 等被移除</h3>
+
+```jsx
+// ❌ 字符串 ref（已移除）
+<input ref="input" /> // this.refs.input
+
+// ✅ 改用回调 ref
+<input ref={(el) => { this.input = el; }} />
+
+// ❌ 旧版 Context（contextTypes / getChildContext，已移除）
+// ✅ 改用 createContext + contextType（class）或 useContext（函数）
+
+// ❌ React.createFactory（已移除）
+const button = createFactory('button');
+// ✅ 直接用 JSX
+const button = <button />;
+```
+
+**详解**：React 19 清理了一批过时 API：**字符串 ref**（改回调 ref，codemod：`react/19/replace-string-ref`）、**旧版 Legacy Context**（`contextTypes`/`getChildContext` → 新 `createContext`）、**module pattern factories**（返回 `{ render() }` 的工厂函数 → 普通函数组件）、**`React.createFactory`**（→ JSX）。
+
+<br>
+<h3 style="color: #FF8C00; font-size: 1.6em;">示例 322：ReactDOM.render / hydrate / findDOMNode 被移除</h3>
+
+```jsx
+// ❌ React 18 里已废弃、React 19 里移除
+import ReactDOM from 'react-dom';
+ReactDOM.render(<App />, container);
+ReactDOM.hydrate(<App />, container);
+ReactDOM.unmountComponentAtNode(container);
+ReactDOM.findDOMNode(instance);
+
+// ✅ React 18/19 标准做法
+import { createRoot, hydrateRoot } from 'react-dom/client';
+const root = createRoot(container);
+root.render(<App />);
+root.unmount();
+// 服务端水合：
+hydrateRoot(container, <App />);
+// findDOMNode → 改用 ref 直接拿 DOM
+```
+
+**详解**：这几个是升级 React 19 时**最常见的报错来源**。老入口 `ReactDOM.render` / `ReactDOM.hydrate` / `unmountComponentAtNode` 一律改成 `react-dom/client` 里的 `createRoot` / `hydrateRoot` / `root.unmount()`；`findDOMNode` 已无替代，改用 **ref** 直接引用 DOM 节点。
+
+---
+
+## 附：React 18 → React 19 升级速查
+
+> 一张表快速回顾这一部分。升级时逐条对照即可。
+
+| 主题 | React 18 | React 19 | 相关示例 |
+| --- | --- | --- | --- |
+| 异步 transition | `startTransition` 只接同步函数 | 可接 async 函数（Action） | 288 |
+| 表单提交 | 手写 `isPending`/`error` | `useActionState` + `<form action>` | 289–292 |
+| 提交状态下传 | 层层传 props 或 Context | `useFormStatus` | 293 |
+| 乐观更新 | 手动维护临时状态 | `useOptimistic` | 294–295 |
+| 读异步数据 | `useEffect` + `useState` | `use(promise)` + Suspense | 296–297 |
+| 条件读 Context | 不行（Hook 规则） | `use(Context)` 可条件调用 | 298–299 |
+| 转发 ref | `forwardRef` 包裹 | `ref` 作为普通 prop | 300–301 |
+| ref 清理 | 判断 `node === null` | ref 回调返回清理函数 | 302–304 |
+| Context Provider | `<Ctx.Provider>` | `<Ctx>` 直接用 | 305–306 |
+| useDeferredValue | 无初始值 | 支持 `initialValue` | 307 |
+| 文档元数据 | react-helmet / effect | 组件内直接写 `<title>` 等 | 308 |
+| 样式表 | 手动放 `<head>` | `<link precedence>` 自动管理 | 309–310 |
+| 资源预加载 | 手写 `<link rel>` | `preload`/`preinit` 等 API | 312 |
+| 错误上报 | 重复日志 | `onCaughtError` 等回调 | 316–317 |
+| 入口 | `ReactDOM.render`（废弃） | `createRoot`（`render` 已移除） | 322 |
+| 类型检查 | `propTypes` | TypeScript | 320 |
+
+**React 19 部分小结**：React 19 的主线是 **Actions**——把"提交 → 请求 → 反馈"这条最常见的链路做成内建能力，配合 `useActionState`、`<form action>`、`useFormStatus`、`useOptimistic` 大幅减少样板代码；`use` API 让读取异步数据和条件读 Context 更自然；`ref` 作为 prop、`<Context>` 直接作 Provider 等改进降低了日常心智负担；文档元数据/样式表/资源预加载则把过去依赖第三方库的能力收进了内核。对纯客户端项目，Server Components 可暂不关注；升级时最需要处理的是**被移除的旧 API**。
+
+至此，本文档在 React 18（示例 1–283）之上，补充了 React 19 的全部新特性（示例 284–322）。**建议动手把这些新 Hook 敲一遍**——尤其是 `useActionState` + `<form action>` 这套组合，它会明显改变你写表单和数据变更的方式。祝你在 React 19 里写得更少、做得更多！
