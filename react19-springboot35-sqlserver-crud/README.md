@@ -26,6 +26,8 @@
 | 附录 A | [附录A-Spring核心概念详解.md](附录A-Spring核心概念详解.md) | Bean / IoC 容器 / 依赖注入 / 动态代理（含跨语言对比）深入讲解 |
 | 附录 B | [附录B-前端概念详解.md](附录B-前端概念详解.md) | 组件 / Hooks / 状态 / 虚拟 DOM / Promise / async-await |
 | 附录 C | [附录C-HTTP与JSON基础.md](附录C-HTTP与JSON基础.md) | HTTP 请求方法 / 状态码 / JSON / 跨域(CORS)原理 |
+| 附录 D | [附录D-数据库与事务.md](附录D-数据库与事务.md) | 事务 / ACID / @Transactional 原理 / 连接池 HikariCP |
+| 附录 E | [附录E-Gradle构建原理.md](附录E-Gradle构建原理.md) | 依赖下载 / implementation vs api / 构建生命周期 |
 
 ---
 
