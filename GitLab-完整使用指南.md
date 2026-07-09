@@ -36,13 +36,13 @@ GitLab 是一个基于 Git 的完整 DevOps 平台，提供：
 **GitLab 平台模块关系图：**
 
 ```mermaid
-flowchart TD
+graph TD
     GL["GitLab DevOps 平台"]
     GL --> Repo["📦 代码托管 / 版本控制"]
-    GL --> Collab["👥 协作开发<br/>Merge Request / Code Review"]
-    GL --> CI["🚀 CI/CD<br/>构建 / 测试 / 部署"]
-    GL --> PM["📊 项目管理<br/>Issue / 看板 / 里程碑"]
-    GL --> Mon["📈 监控分析<br/>代码质量 / 性能"]
+    GL --> Collab["👥 协作开发：Merge Request / Code Review"]
+    GL --> CI["🚀 CI/CD：构建 / 测试 / 部署"]
+    GL --> PM["📊 项目管理：Issue / 看板 / 里程碑"]
+    GL --> Mon["📈 监控分析：代码质量 / 性能"]
 ```
 
 ### GitLab vs GitHub vs Bitbucket
@@ -353,10 +353,10 @@ ls -la
 #### 完整工作流程图
 
 ```mermaid
-flowchart LR
-    A["工作区<br/>Working Directory"] -->|git add| B["暂存区<br/>Staging Area"]
-    B -->|git commit| C["本地仓库<br/>Local Repository"]
-    C -->|git push| D["远程仓库<br/>GitLab"]
+graph LR
+    A["工作区：Working Directory"] -->|git add| B["暂存区：Staging Area"]
+    B -->|git commit| C["本地仓库：Local Repository"]
+    C -->|git push| D["远程仓库：GitLab"]
     D -->|git fetch / pull| A
 ```
 
@@ -606,11 +606,11 @@ git revert HEAD                      # 撤销最后一次提交
 **reset 三种模式的区别：**
 
 ```mermaid
-flowchart TD
+graph TD
     subgraph HEAD 回退影响范围
-        soft["--soft<br/>只移动 HEAD<br/>修改保留在暂存区"]
-        mixed["--mixed（默认）<br/>移动 HEAD + 清空暂存区<br/>修改保留在工作区"]
-        hard["--hard<br/>移动 HEAD + 清空暂存区 + 工作区<br/>⚠️ 丢弃所有修改"]
+        soft["--soft：只移动 HEAD：修改保留在暂存区"]
+        mixed["--mixed（默认）：移动 HEAD + 清空暂存区：修改保留在工作区"]
+        hard["--hard：移动 HEAD + 清空暂存区 + 工作区：⚠️ 丢弃所有修改"]
     end
 ```
 
@@ -653,7 +653,7 @@ git push --tags                      # 推送所有标签
 **分支模型图：**
 
 ```mermaid
-flowchart TD
+graph TD
     main["main（生产分支）"]
     develop["develop（开发分支）"]
     f1["feature/login（功能分支）"]
@@ -792,13 +792,13 @@ git rebase --abort
 **Merge vs Rebase 对比：**
 
 ```mermaid
-flowchart LR
+graph LR
     subgraph Merge["Merge（保留分叉历史）"]
-        m1["main"] --> mm["合并提交<br/>merge commit"]
+        m1["main"] --> mm["合并提交：merge commit"]
         f["feature"] --> mm
     end
     subgraph Rebase["Rebase（线性历史）"]
-        r1["main"] --> r2["feature 的提交<br/>被重放到 main 之上"]
+        r1["main"] --> r2["feature 的提交：被重放到 main 之上"]
     end
 ```
 
@@ -829,7 +829,7 @@ Fork 工作流适合开源项目或大型团队。
 **流程图：**
 
 ```mermaid
-flowchart TD
+graph TD
     A["原始仓库 upstream"] -->|Fork| B["您的仓库 origin"]
     B -->|clone| C["本地仓库 local"]
     C -->|push| B
@@ -1130,10 +1130,10 @@ revert:   回滚提交
 **原理：** 当多个 MR 排队合并时，GitLab 把它们排成一列“列车”，**依次把每个 MR 叠加在前一个的预期结果之上运行流水线**，只有全部通过才真正合入。这样能保证合入后的主分支一定是绿色的。
 
 ```mermaid
-flowchart LR
-    A["MR #1<br/>基于 main"] --> B["MR #2<br/>基于 (main + #1)"]
-    B --> C["MR #3<br/>基于 (main + #1 + #2)"]
-    C --> D["全部流水线通过<br/>→ 依次合入 main"]
+graph LR
+    A["MR #1：基于 main"] --> B["MR #2：基于 (main + #1)"]
+    B --> C["MR #3：基于 (main + #1 + #2)"]
+    C --> D["全部流水线通过：→ 依次合入 main"]
 ```
 
 **启用：** Settings → Merge requests → 勾选 **Enable merged results pipelines** 与 **Enable merge trains**。
@@ -1213,7 +1213,7 @@ bug, frontend, safari
 **典型看板布局：**
 
 ```mermaid
-flowchart LR
+graph LR
     subgraph Backlog["Backlog"]
         i1["Issue #1"]
         i2["Issue #2"]
@@ -1247,7 +1247,7 @@ Wiki 用于编写项目文档、指南、规范等。
 **Wiki 文档结构示例：**
 
 ```mermaid
-flowchart TD
+graph TD
     Home["Home"]
     Home --> GS["Getting Started"]
     Home --> Dev["Development"]
@@ -1355,7 +1355,7 @@ GitLab CI/CD 是内置的持续集成和部署工具。
 **CI/CD 流程图：**
 
 ```mermaid
-flowchart LR
+graph LR
     A[代码提交] --> B[自动测试]
     B --> C[构建]
     C --> D[部署到测试环境]
@@ -1609,7 +1609,7 @@ build_docker:
 流水线是一组按顺序执行的任务。
 
 ```mermaid
-flowchart TD
+graph TD
     P["Pipeline #12345"]
     P --> test
     test --> build
@@ -2172,14 +2172,14 @@ chore:    杂务
 #### 工作流程
 
 ```mermaid
-flowchart TD
-    A["1. 认领任务<br/>Issue 指派 / 移到 In Progress"] --> B["2. 创建分支<br/>从最新 develop 拉出"]
-    B --> C["3. 开发<br/>频繁提交 / 定期推送"]
-    C --> D["4. 自测<br/>本地测试 / lint / 测试套件"]
-    D --> E["5. 创建 MR<br/>详细描述 / 关联 Issue / 指定审查者"]
-    E --> F["6. 代码审查<br/>回复评论 / 修改后重新请求"]
-    F --> G["7. 合并<br/>批准后合并 / 删除分支 / 关闭 Issue"]
-    G --> H["8. 验证<br/>测试环境验证功能"]
+graph TD
+    A["1. 认领任务：Issue 指派 / 移到 In Progress"] --> B["2. 创建分支：从最新 develop 拉出"]
+    B --> C["3. 开发：频繁提交 / 定期推送"]
+    C --> D["4. 自测：本地测试 / lint / 测试套件"]
+    D --> E["5. 创建 MR：详细描述 / 关联 Issue / 指定审查者"]
+    E --> F["6. 代码审查：回复评论 / 修改后重新请求"]
+    F --> G["7. 合并：批准后合并 / 删除分支 / 关闭 Issue"]
+    G --> H["8. 验证：测试环境验证功能"]
 ```
 
 ### 7. 提交签名与验证（Signed Commits）
@@ -2614,10 +2614,10 @@ deploy:
 ### 学习路径建议
 
 ```mermaid
-flowchart LR
-    W1["第 1 周<br/>Git 基础"] --> W2["第 2-3 周<br/>协作开发"]
-    W2 --> W3["第 4-5 周<br/>CI/CD"]
-    W3 --> W4["第 6 周及以后<br/>高级特性"]
+graph LR
+    W1["第 1 周：Git 基础"] --> W2["第 2-3 周：协作开发"]
+    W2 --> W3["第 4-5 周：CI/CD"]
+    W3 --> W4["第 6 周及以后：高级特性"]
 ```
 
 ---
@@ -2803,10 +2803,10 @@ HTTPS: https://gitlab.com/username/project.git
 **三方合并工具（解决冲突时）：**
 
 ```mermaid
-flowchart TD
-    L["左侧：本地版本<br/>Your Version"] --> R["结果版本<br/>Result"]
-    B["中间：基础版本<br/>Base"] --> R
-    S["右侧：远程版本<br/>Server Version"] --> R
+graph TD
+    L["左侧：本地版本：Your Version"] --> R["结果版本：Result"]
+    B["中间：基础版本：Base"] --> R
+    S["右侧：远程版本：Server Version"] --> R
 ```
 
 ### 4. 推送（Push）
@@ -2865,7 +2865,7 @@ flowchart TD
 **分支列表结构：**
 
 ```mermaid
-flowchart TD
+graph TD
     cur["★ 当前分支：main"]
     subgraph local["Local Branches"]
         l1["develop"]
@@ -3107,8 +3107,8 @@ IDEA 内置的 **AI Assistant**（需订阅 AI Pro / 企业授权）深度接入
 **典型流程：**
 
 ```mermaid
-flowchart LR
-    A["git add<br/>暂存改动"] --> B["点击 ✨<br/>AI 生成提交信息"]
+graph LR
+    A["git add：暂存改动"] --> B["点击 ✨：AI 生成提交信息"]
     B --> C["人工确认 / 微调"]
     C --> D["Commit / Commit and Push"]
 ```
@@ -3157,7 +3157,7 @@ IDEA 现在支持原生 Git **Staging Area**，可像命令行一样精细控制
 | 从剪贴板应用 | **Git → Apply Patch from Clipboard** | 直接粘贴补丁内容应用 |
 
 ```mermaid
-flowchart LR
+graph LR
     A["本地改动 / 提交"] -->|Create Patch| B["changes.patch 文件"]
     B -->|发送给同事 / 存档| C["另一台机器 / 他人"]
     C -->|Apply Patch| D["还原相同改动"]
@@ -3205,9 +3205,9 @@ git remote add backup   git@github.com:team/app-mirror.git
 在 IDEA 的 **Push** 对话框中，可分别选择目标 remote 逐个推送；也可用别名一次推送到多个远程（需在 `.git/config` 配置多个 pushurl）。
 
 ```mermaid
-flowchart LR
-    L["本地仓库"] -->|push| O["origin<br/>gitlab.com"]
-    L -->|push| B["backup<br/>github.com（镜像）"]
+graph LR
+    L["本地仓库"] -->|push| O["origin：gitlab.com"]
+    L -->|push| B["backup：github.com（镜像）"]
 ```
 
 ---
@@ -3293,10 +3293,10 @@ flowchart LR
 ### 学习建议
 
 ```mermaid
-flowchart LR
-    A["第 1 周<br/>基本操作<br/>Commit/Push/Pull"] --> B["第 2 周<br/>分支管理"]
-    B --> C["第 3 周<br/>GitLab 集成<br/>MR/Issue"]
-    C --> D["第 4 周<br/>高级功能<br/>Rebase/Cherry-pick"]
+graph LR
+    A["第 1 周：基本操作：Commit/Push/Pull"] --> B["第 2 周：分支管理"]
+    B --> C["第 3 周：GitLab 集成：MR/Issue"]
+    C --> D["第 4 周：高级功能：Rebase/Cherry-pick"]
 ```
 
 ### 最佳实践
