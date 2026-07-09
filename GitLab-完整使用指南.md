@@ -2647,6 +2647,7 @@ flowchart LR
 7. [高级功能](#高级功能-1)
 8. [IDEA 2026 现代特性与进阶操作](#idea-2026-现代特性与进阶操作)
 9. [实用技巧](#实用技巧-1)
+10. [附录：IDEA Git 常用操作速查表](#附录idea-git-常用操作速查表一页纸)
 
 ---
 
@@ -3317,3 +3318,89 @@ flowchart LR
 - [IntelliJ IDEA 官方文档](https://www.jetbrains.com/help/idea/)
 - [Git 集成教程](https://www.jetbrains.com/help/idea/working-with-git-tutorial.html)
 - [GitLab 集成文档](https://www.jetbrains.com/help/idea/gitlab.html)
+
+
+---
+
+## 附录：IDEA Git 常用操作速查表（一页纸）
+
+> 🆕 **新增附录。** 命令行 ↔ IDEA 菜单 ↔ 快捷键对照。快捷键基于 IDEA 默认键位；标「—（菜单）」表示**无默认快捷键**，需从菜单触发（可在 Settings → Keymap 自行绑定）。macOS 符号：⌘ Cmd、⌥ Option、⌃ Control、⇧ Shift。
+
+### 1. 提交与同步
+
+| 操作 | Git 命令 | IDEA 菜单 | Win/Linux | macOS |
+|------|----------|-----------|-----------|-------|
+| 提交 | `git commit` | Git → Commit | `Ctrl+K` | `⌘K` |
+| 提交并推送 | `git commit && git push` | Commit 窗口 → Commit and Push | `Ctrl+Alt+K` | `⌘⌥K` |
+| 推送 | `git push` | Git → Push | `Ctrl+Shift+K` | `⌘⇧K` |
+| 更新项目（拉取） | `git pull` | Git → Update Project | `Ctrl+T` | `⌘T` |
+| 拉取（合并） | `git pull` | Git → Pull | —（菜单） | —（菜单） |
+| 获取（不合并） | `git fetch` | Git → Fetch | —（菜单）✅ | —（菜单）✅ |
+| 添加到 VCS | `git add` | 右键 → Git → Add | `Ctrl+Alt+A` | `⌘⌥A` |
+
+### 2. 差异与历史
+
+| 操作 | Git 命令 | IDEA 菜单 | Win/Linux | macOS |
+|------|----------|-----------|-----------|-------|
+| 查看差异 | `git diff` | Git → Show Diff | `Ctrl+D` | `⌘D` |
+| 文件历史 | `git log <file>` | 右键 → Git → Show History | —（菜单） | —（菜单） |
+| 逐行溯源 | `git blame` | 右键 → Git → Annotate with Git Blame | —（菜单） | —（菜单） |
+| 提交日志 | `git log --graph` | Git → Show Git Log（Git 工具窗口） | `Alt+9` | `⌘9` |
+| 上/下一处差异 | — | 差异/合并查看器内 | `F7` / `Shift+F7` | `F7` / `⇧F7` |
+
+### 3. 分支
+
+| 操作 | Git 命令 | IDEA 菜单 | Win/Linux | macOS |
+|------|----------|-----------|-----------|-------|
+| 分支弹窗 | `git branch` | 状态栏分支名 / VCS 组件 | —（菜单） | —（菜单） |
+| 新建分支 | `git switch -c <b>` | Git → New Branch | —（菜单） | —（菜单） |
+| 切换分支 | `git switch <b>` | Branches 弹窗 → 双击 | —（菜单） | —（菜单） |
+| 合并分支 | `git merge <b>` | Git → Merge Changes... | —（菜单） | —（菜单） |
+| 变基 | `git rebase <b>` | Git → Rebase... | —（菜单） | —（菜单） |
+| 删除分支 | `git branch -d <b>` | Branches 弹窗 → 右键 → Delete | —（菜单） | —（菜单） |
+
+### 4. 撤销与历史整理
+
+| 操作 | Git 命令 | IDEA 菜单 | Win/Linux | macOS |
+|------|----------|-----------|-----------|-------|
+| 回滚工作区改动 | `git restore <file>` | Git → Rollback | `Ctrl+Alt+Z` | `⌘⌥Z` |
+| 撤销最近提交 | `git reset --soft HEAD~1` | Log 右键 → Undo Commit | —（菜单） | —（菜单） |
+| 改历史提交信息 | `git rebase -i`（reword） | Log 右键 → Edit Commit Message | —（菜单） | —（菜单） |
+| 压缩提交 | `git rebase -i`（squash） | Log 右键 → Squash / Fixup | —（菜单） | —（菜单） |
+| 交互式变基 | `git rebase -i <c>` | Log 右键 → Interactively Rebase from Here | —（菜单） | —（菜单） |
+| 撤销某提交 | `git revert <c>` | Log 右键 → Revert Commit | —（菜单） | —（菜单） |
+| 重置到某提交 | `git reset <c>` | Log 右键 → Reset Current Branch to Here | —（菜单） | —（菜单） |
+
+### 5. 储藏 / 搁置 / 补丁
+
+| 操作 | Git 命令 | IDEA 菜单 | Win/Linux | macOS |
+|------|----------|-----------|-----------|-------|
+| 储藏 | `git stash` | Git → Uncommitted Changes → Stash Changes | —（菜单） | —（菜单） |
+| 恢复储藏 | `git stash pop` | Git → Uncommitted Changes → Unstash Changes | —（菜单） | —（菜单） |
+| 搁置（IDEA 专有） | —（近似 stash） | Git → Uncommitted Changes → Shelve Changes | —（菜单） | —（菜单） |
+| 创建补丁 | `git diff > x.patch` | Git → Create Patch... | —（菜单） | —（菜单） |
+| 应用补丁 | `git apply x.patch` | Git → Apply Patch... | —（菜单） | —（菜单） |
+| 挑选提交 | `git cherry-pick <c>` | Log 右键 → Cherry-Pick | —（菜单） | —（菜单） |
+
+### 6. GitLab 集成
+
+| 操作 | 入口 | 快捷键 |
+|------|------|--------|
+| 创建 Merge Request | Git → GitLab → Create Merge Request（或推送后提示） | —（菜单） |
+| 查看 Merge Requests | Git → GitLab → Show Merge Requests | —（菜单） |
+| 创建 Issue | Git → GitLab → Create Issue | —（菜单） |
+| 查看 Pipeline | Log 右键提交 → GitLab → View Pipeline | —（菜单） |
+
+### 7. 通用入口
+
+| 操作 | 入口 | Win/Linux | macOS |
+|------|------|-----------|-------|
+| VCS 操作弹窗（一站式菜单） | 弹出所有 VCS 操作 | `` Alt+` `` | `⌃V` |
+| Git 工具窗口 | Log / Console / 分支树 | `Alt+9` | `⌘9` |
+| 提交（Commit）工具窗口 | 新 UI 左侧竖排面板 | `Ctrl+K` | `⌘K` |
+| Local History（本地历史） | 右键文件 → Local History → Show History | —（菜单） | —（菜单） |
+| 快速操作面板（Find Action） | 输入 `git ...` 快速执行 | `Ctrl+Shift+A` | `⌘⇧A` |
+| 内置终端 | 直接敲 Git 命令 | `Alt+F12` | `⌥F12` |
+| 解决冲突 | 冲突时 → Merge（三方合并工具） | —（菜单） | —（菜单） |
+
+> 💡 **提示：** 记不住快捷键时，用 **VCS 操作弹窗**（`` Alt+` `` / `⌃V`）或 **Find Action**（`Ctrl+Shift+A` / `⌘⇧A`）几乎能触发所有 Git 操作。「—（菜单）」的操作可在 Settings → Keymap 中搜索操作名后自定义绑定。
