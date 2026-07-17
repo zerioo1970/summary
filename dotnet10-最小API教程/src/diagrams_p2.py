@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 """第二批示意图：第 2 章（运行原理）、第 3 章（环境搭建）、附录 A（前端方法全景）"""
+import os
+import docbuilder as _db
 from docbuilder import _new_ax, _box, _arrow, save, DZ
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
+# 统一输出到顶层 images/（markdown 以 ../images 引用）
+_db.IMG_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "images"))
+os.makedirs(_db.IMG_DIR, exist_ok=True)
 
 
 # ============================ 第 2 章 ============================

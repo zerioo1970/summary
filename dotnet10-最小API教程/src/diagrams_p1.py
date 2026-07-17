@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 """第一批示意图：第 1、2 章"""
+import os
+import docbuilder as _db
 from docbuilder import _new_ax, _box, _arrow, save, DZ
+# 统一输出到顶层 images/（markdown 以 ../images 引用）
+_db.IMG_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "images"))
+os.makedirs(_db.IMG_DIR, exist_ok=True)
 
 
 def fig_minimal_vs_mvc():
