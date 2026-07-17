@@ -1,8 +1,8 @@
-# 第 13 章　实时通信：Server-Sent Events（.NET 10 新特性）
+# 第 14 章　实时通信：Server-Sent Events（.NET 10 新特性）
 
 到目前为止，都是"前端问一次、后端答一次"。但有些场景需要**服务器主动、持续地推送**数据：股价跳动、消息通知、任务进度、日志流…….NET 10 为最小 API 内置了 **Server-Sent Events（SSE）**，让这件事变得很简单。
 
-## 13.1 SSE 原理与适用场景
+## 14.1 SSE 原理与适用场景
 
 **SSE** 是一种基于 HTTP 的**服务器→客户端单向推送**技术：客户端发起一次请求后，连接保持打开，服务器可以源源不断地把一条条事件推给前端。
 
@@ -19,7 +19,7 @@ SSE vs WebSocket：
 
 一句话：**只需要"服务器往下推"，用 SSE 就够了，且更省事。**
 
-## 13.2 TypedResults.ServerSentEvents 用法
+## 14.2 TypedResults.ServerSentEvents 用法
 
 .NET 10 提供了 `TypedResults.ServerSentEvents`，配合 C# 的异步流（`IAsyncEnumerable`）即可推送。下面做一个每秒推送一次当前时间的端点：
 
@@ -52,7 +52,7 @@ app.Run();
 - `CancellationToken` 在客户端断开时触发，循环随之结束，避免服务器空转。
 - `eventType` 给事件命名，前端可按名字监听。
 
-## 13.3 前端接收：EventSource
+## 14.3 前端接收：EventSource
 
 前端用浏览器内置的 `EventSource` 接收（详见附录 A 方法 10）：
 
@@ -68,7 +68,7 @@ source.addEventListener("time", (e) => {
 // source.close();
 ```
 
-## 13.4 实战：推送任务进度
+## 14.4 实战：推送任务进度
 
 一个更实用的例子——把一个耗时任务的进度实时推给前端：
 

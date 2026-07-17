@@ -1,10 +1,10 @@
 # 第四部分　文档、安全与实时通信
 
-# 第 10 章　OpenAPI 与接口文档（.NET 10 新特性）
+# 第 11 章　OpenAPI 与接口文档（.NET 10 新特性）
 
 接口写好了，前端同事怎么知道有哪些接口、参数是什么、返回什么？靠**接口文档**。手写文档又累又容易过期。好在最小 API 能**自动生成**——这就是 OpenAPI。
 
-## 10.1 什么是 OpenAPI
+## 11.1 什么是 OpenAPI
 
 OpenAPI 是一套描述 HTTP 接口的**标准规范**（前身叫 Swagger）。符合规范的接口描述是一份 JSON/YAML 文件，各种工具（Swagger UI、Postman、代码生成器）都能读懂它。
 
@@ -12,7 +12,7 @@ OpenAPI 是一套描述 HTTP 接口的**标准规范**（前身叫 Swagger）。
 
 ![图 10-1　OpenAPI：从代码自动生成接口文档](../images/fig_ch10_openapi.png)
 
-## 10.2 开启 OpenAPI
+## 11.2 开启 OpenAPI
 
 两步即可：
 
@@ -32,7 +32,7 @@ app.Run();
 
 运行后访问 `http://localhost:5000/openapi/v1.json`，就能看到自动生成的 OpenAPI 文档（JSON）。
 
-## 10.3 集成可视化界面：Swagger UI / Scalar
+## 11.3 集成可视化界面：Swagger UI / Scalar
 
 原始 JSON 不便阅读，配一个可视化界面就能"点着测接口"。两个常用选择：
 
@@ -62,7 +62,7 @@ app.UseSwaggerUI(o => o.SwaggerEndpoint("/openapi/v1.json", "v1"));
 
 打开对应页面，你能看到所有接口列表，直接填参数、点"发送"就能测试，非常适合调试和交接。
 
-## 10.4 用元数据丰富文档
+## 11.4 用元数据丰富文档
 
 给端点加描述信息，文档会更清晰。常用链式方法：
 
@@ -84,9 +84,9 @@ app.MapGet("/api/products/{id:int}", (int id) => new { id, name = "苹果" })
 | `WithTags` | 分组，界面里按标签归类 |
 | `Produces<T>(code)` | 声明某状态码的返回类型 |
 
-> **【提示】** 前面第 6 章推荐的 `TypedResults` 和 `Results<Ok<T>, NotFound>` 写法，能让 OpenAPI **自动推断**出各状态码的返回类型，很多时候连 `Produces` 都不用手写。
+> **【提示】** 前面第 7 章推荐的 `TypedResults` 和 `Results<Ok<T>, NotFound>` 写法，能让 OpenAPI **自动推断**出各状态码的返回类型，很多时候连 `Produces` 都不用手写。
 
-## 10.5 从 XML 注释生成文档
+## 11.5 从 XML 注释生成文档
 
 还能让文档直接来自代码里的 XML 注释。先在项目文件开启：
 
@@ -98,9 +98,9 @@ app.MapGet("/api/products/{id:int}", (int id) => new { id, name = "苹果" })
 
 然后在方法/类型上写标准 XML 注释，.NET 10 的 OpenAPI 能把它们纳入文档。这样"注释即文档"，维护成本更低。
 
-## 10.6 接口分组与标签
+## 11.6 接口分组与标签
 
-结合第 4 章的 `MapGroup`，可以给整组接口统一打标签：
+结合第 5 章的 `MapGroup`，可以给整组接口统一打标签：
 
 ```csharp
 var products = app.MapGroup("/api/products").WithTags("商品管理");

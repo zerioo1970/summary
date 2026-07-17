@@ -1,10 +1,10 @@
-# 第 15 章　跨域（CORS）、限流与健康检查
+# 第 16 章　跨域（CORS）、限流与健康检查
 
 这一章讲三个上线前几乎都会用到的实用功能：让前端能跨域访问（CORS）、防止接口被刷（限流）、让运维能探活（健康检查）。
 
 ![图 15-1　限流 / CORS / 健康检查](../images/fig_ch15_ratelimit.png)
 
-## 15.1 CORS：跨域资源共享
+## 16.1 CORS：跨域资源共享
 
 附录 A 已经解释过"为什么会跨域"。这里讲**生产级**配置——不要再用 `AllowAnyOrigin()`，而是明确列出允许的前端地址：
 
@@ -35,7 +35,7 @@ app.MapGet("/open", () => "public data")
 
 > **【注意】** `AllowCredentials()`（允许带凭证）**不能**和 `AllowAnyOrigin()` 同时用——必须明确指定 `WithOrigins`。这是浏览器安全规则。
 
-## 15.2 限流（Rate Limiting）
+## 16.2 限流（Rate Limiting）
 
 为防止接口被恶意刷或被单个客户端压垮，用**限流**限制单位时间内的请求次数。ASP.NET Core 内置限流中间件：
 
@@ -76,7 +76,7 @@ app.Run();
 
 超出限制的请求会得到 **429 Too Many Requests**。
 
-## 15.3 健康检查（Health Checks）
+## 16.3 健康检查（Health Checks）
 
 部署到容器/云平台后，运维系统需要一个地址来判断"这个服务还活着吗"。这就是**健康检查**：
 

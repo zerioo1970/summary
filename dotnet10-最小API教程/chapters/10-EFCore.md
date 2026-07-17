@@ -1,8 +1,8 @@
-# 第 9 章　数据持久化与 EF Core
+# 第 10 章　数据持久化与 EF Core
 
 前面的数据都存在内存里，程序一重启就没了。真实应用要把数据存进**数据库**。.NET 里最主流的数据库访问技术是 **EF Core（Entity Framework Core）**。这一章用它做一个能落库的 TodoList。
 
-## 9.1 EF Core 简介
+## 10.1 EF Core 简介
 
 EF Core 是一个 **ORM（对象关系映射）**框架。它让你用 C# 对象和 LINQ 操作数据库，自动帮你翻译成 SQL，不用手写 SQL 语句。
 
@@ -14,7 +14,7 @@ EF Core 是一个 **ORM（对象关系映射）**框架。它让你用 C# 对象
 - **DbContext**：数据库会话，负责查询、跟踪变更、保存。
 - **DbSet&lt;T&gt;**：对应一张表的集合，通过它增删改查。
 
-## 9.2 安装
+## 10.2 安装
 
 以 SQLite（轻量、免安装，适合学习）为例，安装 NuGet 包：
 
@@ -25,7 +25,7 @@ dotnet add package Microsoft.EntityFrameworkCore.Design
 
 生产中常用 SQL Server（`Microsoft.EntityFrameworkCore.SqlServer`）或 PostgreSQL（`Npgsql.EntityFrameworkCore.PostgreSQL`），用法几乎一致，只是连接串和 `UseXxx` 不同。
 
-## 9.3 定义模型与 DbContext
+## 10.3 定义模型与 DbContext
 
 定义实体类：
 
@@ -62,7 +62,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 var app = builder.Build();
 ```
 
-## 9.4 迁移与数据库初始化
+## 10.4 迁移与数据库初始化
 
 **迁移（Migration）**把你的模型变化同步到数据库结构。先安装 CLI 工具（一次即可）：
 
@@ -79,7 +79,7 @@ dotnet ef database update                # 在数据库里建表
 
 执行后会生成 `todos.db` 文件，里面有了 `Todos` 表。以后每次改模型（加字段等），重复 `migrations add` + `database update` 即可。
 
-## 9.5 用最小 API 实现完整 TodoList CRUD
+## 10.5 用最小 API 实现完整 TodoList CRUD
 
 把 EF Core 和前面所学串起来，做一个真正落库的 TodoList：
 
@@ -136,11 +136,11 @@ app.Run();
 
 注意几点：
 
-- `AppDbContext db` 通过 **DI 自动注入**（第 7 章）。
+- `AppDbContext db` 通过 **DI 自动注入**（第 8 章）。
 - 数据库操作用 **异步**方法（`ToListAsync`、`SaveChangesAsync` 等），配合 `async/await`，不阻塞线程。
 - 改完对象后要调 `SaveChangesAsync()` 才会真正写库。
 
-## 9.6 异步查询与分页
+## 10.6 异步查询与分页
 
 列表数据多时要分页，用 `Skip` + `Take`；还可以用 LINQ 过滤、排序：
 
