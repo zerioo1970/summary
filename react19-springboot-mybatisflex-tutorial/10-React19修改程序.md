@@ -393,21 +393,21 @@ h1 {
 
 ```mermaid
 sequenceDiagram
-    participant 用户
-    participant Edit as 修改程序(5174)
-    participant Boot as 后端(8080)
+    participant User as 用户
+    participant Edit as 修改程序（5174）
+    participant Boot as 后端（8080）
     participant DB as SQL Server
-    用户->>Edit: 输入 ID=2，点查询
+    User->>Edit: 输入 ID=2，点查询
     Edit->>Boot: GET /api/users/2
     Boot->>DB: SELECT ... WHERE id=2
     DB-->>Boot: 李四数据
-    Boot-->>Edit: JSON → 填入表单
-    用户->>Edit: 改字段，点保存
+    Boot-->>Edit: JSON 填入表单
+    User->>Edit: 改字段，点保存
     Edit->>Boot: PUT /api/users/2 + JSON body
     Boot->>DB: UPDATE t_user ... WHERE id=2
     DB-->>Boot: 更新成功
     Boot-->>Edit: 返回最新数据
-    Edit-->>用户: 显示"保存成功"
+    Edit-->>User: 显示「保存成功」
 ```
 
 ---
