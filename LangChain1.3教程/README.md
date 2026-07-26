@@ -171,27 +171,27 @@
 
 ```
 code/
-├── .env.example                        ← 复制成 .env 并填 Key
+├── .env.example              ← 复制成 .env 并填 Key
 ├── ch01/
-│   ├── 00_版本检查.py                   ← 不需要 Key，先跑这个
-│   ├── 01_连通性测试.py                 ← 确认能跟模型说上话
-│   └── 02_第一个Agent.py
+│   ├── check_versions.py     ← 不需要 Key，先跑这个确认环境
+│   ├── smoke_test.py         ← 确认能跟模型说上话
+│   └── hello_agent.py        ← 第一个会查天气的 Agent
 ├── ch02/
-│   ├── 01_看清AIMessage.py
-│   ├── 02_算钱与批量.py
-│   └── 03_手动多轮对话.py
+│   ├── model_basics.py       ← AIMessage 里到底装了什么
+│   ├── token_count.py        ← 算钱 + batch 批量并发
+│   └── manual_memory.py      ← 手动多轮，理解"记忆"的本质
 ├── ch03/
-│   ├── 01_好坏提示对比.py
-│   ├── 02_模板与fewshot.py              ← 前半部分不需要 Key
-│   └── 03_需求整理器.py
+│   ├── prompt_compare.py     ← 好坏提示各跑 3 次看稳定性
+│   ├── prompt_template.py    ← 模板防注入 + Few-shot（前半段不需要 Key）
+│   └── prompt_structure.py   ← 四段结构实战：需求整理器
 ├── ch04/
-│   ├── 01_工具三要素.py                 ← 不需要 Key，看模型能"看到"什么
-│   ├── 02_错误处理.py
-│   └── 03_实战_权限隔离与查库.py         ← 三道保险，最重要的一个
+│   ├── tool_basics.py        ← 不需要 Key，看模型到底能"看到"什么
+│   ├── tool_errors.py        ← 工具报错的三种处理方案
+│   └── real_tools.py         ← 权限隔离 + 查库三道保险（最重要的一个）
 └── ch05/
-    ├── 01_手写Agent循环.py
-    ├── 02_查看决策过程与保险.py           ← 调试函数可直接抄进你的项目
-    └── 03_实战_旅行助手.py
+    ├── manual_agent.py       ← 手写 30 行极简 Agent 循环
+    ├── inspect_agent.py      ← 调试函数，可直接抄进你的项目
+    └── travel_agent.py       ← 综合实战：旅行规划助手
 ```
 
 准备环境：

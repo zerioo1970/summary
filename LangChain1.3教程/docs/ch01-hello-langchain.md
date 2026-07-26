@@ -1,83 +1,43 @@
-# 第 1 章　认识 LangChain，并跑出第一个程序
+# 第 1 章 认识 LangChain，并跑出第一个程序
 
-> 本章目标：**40 分钟内**，让你的电脑上跑出一个能自己决定"要不要查资料"的 AI 程序。
-> 环境：Python 3.10+ ｜ `langchain 1.3.14` ｜ 模型用 DeepSeek
+> 本章目标：40 分钟内，让一个 AI 自己决定「我要查天气」，然后调用你写的 Python 函数，再把结果说成人话。
+>
+> 前置要求：会装 Python 包、会写函数。不需要任何 AI 背景。
 
 ---
 
-## 1.1 LangChain 是什么，不是什么
+## 1.1 LangChain 是什么、不是什么（一页说完）
 
-### 一句话
+### 是什么
 
-**LangChain 不是模型，它是模型的"外壳"。**
+大模型本身只会一件事：**给它一段文字，它续写一段文字**。仅此而已。它不能查数据库、不能调 API、不记得你上一句说了什么。
 
-模型（DeepSeek、GPT）负责"想"，外壳负责"想之外的所有事"：怎么把提示送进去、模型说要查数据库时谁去执行、多轮对话的历史存哪、返回的文字怎么变成能入库的对象。
+LangChain 干的事，是在这个「只会说话的大脑」外面套一层壳，让它能：
 
-用你熟悉的方式类比：
+| 能力 | 没有 LangChain 时你要自己写 | LangChain 给你的 |
+| --- | --- | --- |
+| 换模型 | 每家 SDK 参数都不同，改一次动一片 | `init_chat_model("模型名")` 一行切换 |
+| 调工具 | 手写 function-calling 的 JSON 协议、解析、分发 | `@tool` 装饰器 + 自动分发 |
+| 循环决策 | 手写 while 循环判断「模型是不是还想调工具」 | `create_agent()` 帮你循环 |
+| 记住对话 | 自己存数组、自己截断、自己拼回去 | `checkpointer` + `thread_id` |
+| 读你的文档 | 自己切分、算向量、存库、检索 | 一整套 RAG 组件 |
 
-| 角色 | 数据库世界 | AI 世界 |
-|---|---|---|
-| 底层引擎 | SQL Server | DeepSeek / GPT 模型 |
-| 你直接怼引擎 | 手写 TCP 包连 1433 端口 | 手写 HTTP 请求调模型 API |
-| 中间那层库 | ADO.NET / Entity Framework | **LangChain** |
+一句话：**LangChain 是「大模型应用的脚手架」，不是模型本身。**
 
-你当年不会去手写 TCP 包连数据库，同理，做 AI 应用也很少有人直接手撸 HTTP。
+### 不是什么
 
-### 不用 LangChain，你得自己做这些事
+新手最容易误解的四点，现在说清楚，能省你好几个小时：
 
-假设你要做一个"能查公司订单的问答助手"。只用 `requests` 直接调 DeepSeek 的 HTTP 接口，你需要自己写：
+1. **它不是模型。** 你还是要有 OpenAI / DeepSeek 的 API Key，或者本地跑 Ollama。LangChain 一行模型代码都不含。
+2. **它不会让笨模型变聪明。** 如果模型能力不够，工具照样选错。换模型比调提示词有效得多。
+3. **它不是「必须用」的。** 简单的单轮问答，直接调官方 SDK 更省事。LangChain 的价值在**多工具 + 多轮 + 要换模型**的场景。
+4. **1.x 和 0.x 是两套东西。** 你在网上搜到的 `AgentExecutor`、`LLMChain`、`ConversationBufferMemory` 在 1.3 里全都不能用了。看到这些关键词，直接跳过那篇文章。
 
-| # | 你要自己实现的 | LangChain 里对应什么 |
-|---|---|---|
-| 1 | 把对话历史组装成正确的 JSON 数组 | 消息对象（第 2 章） |
-| 2 | 告诉模型"你有哪些函数可以调"，格式还得符合厂商规范 | `@tool` 装饰器（第 4 章） |
-| 3 | 解析模型返回的"我要调用 `查订单(订单号='A123')`" | 自动完成 |
-| 4 | 真的去执行这个函数，再把结果拼回去，再问一遍模型 | Agent 循环（第 5 章） |
-| 5 | 判断它到底问完了没有，防止无限循环 | `recursion_limit`（第 5 章） |
-| 6 | 把返回的文字抠成结构化数据 | `response_format`（第 6 章） |
-| 7 | 多轮对话历史的存取、按用户隔离 | `checkpointer`（第 8 章） |
-| 8 | 历史太长时裁剪或摘要 | 中间件（第 9 章） |
-| 9 | 换个模型厂商时不用重写代码 | `init_chat_model`（第 2 章） |
+### 🧱 C#/SQL 类比
 
-第 3、4 两条是最要命的。**光是"模型要调工具 → 执行 → 把结果送回 → 再问一次"这个循环，自己写要上百行，而且每家厂商的返回格式还不一样。**
-
-### 三个词先记住
-
-```mermaid
-flowchart LR
-    A["模型 Model<br/>负责思考和说话"] --> B["工具 Tool<br/>你写的普通 Python 函数<br/>让 AI 能查库、算数、发邮件"]
-    B --> C["Agent<br/>把模型和工具装在一起<br/>让它自己循环干活直到完成"]
-```
-
-- **模型（Model）**：会说话，但对你公司的事一无所知，也不能执行任何操作。
-- **工具（Tool）**：**就是你写的普通 Python 函数**。写好后模型就能"申请"调用它。注意——模型只是申请，真正执行的永远是你的代码。
-- **Agent**：把模型和工具装成一个整体，让它自己反复"想 → 用工具 → 再想"，直到把事办完。
-
-一张图看清 Agent 干活的样子：
-
-```mermaid
-flowchart TD
-    U[用户提问] --> M[模型思考]
-    M --> Q{需要用工具吗?}
-    Q -->|需要| T["执行工具<br/>（你的 Python 代码）"]
-    T --> M
-    Q -->|不需要| A[给出最终回答]
-```
-
-这个循环就是 Agent 的全部秘密。第 5 章我们会亲手把它拆开看。
-
-### 什么情况**不要**用它
-
-诚实劝退，省得你走弯路：
-
-| 场景 | 建议 |
-|---|---|
-| 只是想让 AI 写一段文案，一次性的 | 直接用网页版聊天，别写代码 |
-| 一个 `WHERE` 条件就能精确解决的查询 | 用 SQL，别用 AI。又慢又贵还可能出错 |
-| 财务对账、税额计算等要求 100% 准确 | 让 AI **生成 SQL 去算**可以，让 AI 自己算不行 |
-| 要求强一致性的事务判断 | 交给数据库约束 |
-
-**LangChain 真正的用武之地是：输入是自然语言或非结构化文本（邮件、日志、文档、口述需求），且规则明确但纯手工做很枯燥、量还很大的活。**
+- LangChain ≈ **ORM（如 Entity Framework）**。数据库（模型）不是它提供的，它提供的是统一访问方式 + 一堆常用套路。你也可以裸写 SQL（裸调 SDK），只是麻烦。
+- `create_agent` ≈ **一个带重试的工作流引擎**。给它一堆可执行动作（工具），它自己决定调哪个、调几次。
+- `@tool` ≈ **暴露给外部的存储过程**。函数签名和注释就是「接口文档」，只不过读文档的是模型而不是人。
 
 ---
 
@@ -85,563 +45,537 @@ flowchart TD
 
 ### 第一步：确认 Python 版本
 
-⚠️ **LangChain 1.x 要求 Python 3.10 或更高，3.9 不行**（3.9 已经到生命周期终点了）。
-
 ```bash
 python --version
 ```
 
-你应该看到 `Python 3.10.x` 或更高。如果低于 3.10，去 [python.org](https://www.python.org/downloads/) 装个新的（Windows 用户注意勾选 "Add Python to PATH"）。
+需要 **3.10 或更高**。低于 3.10 的直接去 [python.org](https://www.python.org/downloads/) 装新的，别折腾兼容。
 
-### 第二步：用 uv 建项目
+### 第二步：装 uv（推荐）
 
-`uv` 是现在最快的 Python 包管理工具，比 pip 快很多，还顺手管虚拟环境。
+`uv` 是目前最快的 Python 包管理器，比 pip 快一个数量级，而且自带虚拟环境管理。
 
-**Windows（PowerShell）：**
-```powershell
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-**macOS / Linux：**
 ```bash
+# Windows (PowerShell)
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# macOS / Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-装好后建项目：
+装完重开一个终端，验证：
+
+```bash
+uv --version
+```
+
+> **不想装 uv？** 完全可以。后面所有 `uv add X` 都换成 `pip install X`，`uv run script.py` 换成 `python script.py`。只是慢一些。
+
+### 第三步：建项目
 
 ```bash
 mkdir langchain-learn
 cd langchain-learn
-uv venv --python 3.12          # 建虚拟环境
+uv init --python 3.12
 ```
 
-激活虚拟环境：
+### 第四步：装包
+
+**三条路线选一条**，别全装：
 
 ```bash
-# Windows
-.venv\Scripts\activate
+# 路线 A：OpenAI（最稳，需要国外支付方式）
+uv add langchain langchain-openai python-dotenv
 
-# macOS / Linux
-source .venv/bin/activate
+# 路线 B：DeepSeek（国内首选，便宜，支持支付宝）
+uv add langchain langchain-deepseek python-dotenv
+
+# 路线 C：Ollama（完全离线，不花钱，但要 8G+ 内存）
+uv add langchain langchain-ollama python-dotenv
 ```
 
-> 💡 **虚拟环境是什么**：可以理解成"给这个项目单独开一个干净的包目录"，装什么都不会污染系统 Python，也不会和别的项目打架。命令行前面出现 `(.venv)` 就说明激活成功了。
-
-### 第三步：装包
+装完确认版本对得上：
 
 ```bash
-uv pip install langchain langchain-deepseek python-dotenv
+uv run python -c "import langchain; print(langchain.__version__)"
 ```
 
-三个包分别是：
+应该输出 `1.3.x`。如果是 `0.3.x`，说明装到旧版了，执行 `uv add "langchain>=1.3,<2"` 强制升级。
 
-| 包 | 作用 |
-|---|---|
-| `langchain` | 主包。会自动带上 `langchain-core`、`langgraph` 等一堆依赖 |
-| `langchain-deepseek` | DeepSeek 的接入包。换别的厂商就装对应的包 |
-| `python-dotenv` | 从 `.env` 文件读密钥，避免把 Key 写进代码 |
-
-### 第四步：确认装对了
-
-新建 `00_版本检查.py`：
-
-```python
-from importlib.metadata import version
-
-for 包名 in ["langchain", "langchain-core", "langgraph", "langchain-deepseek"]:
-    print(f"{包名:22} {version(包名)}")
-```
-
-运行：
-
-```bash
-python 00_版本检查.py
-```
-
-**实际输出**（这是我在真实环境里跑出来的，你的补丁号可能略高）：
-
-```
-langchain              1.3.14
-langchain-core         1.5.1
-langgraph              1.2.9
-langchain-deepseek     1.1.0
-```
-
-> ⚠️ **注意 `langchain-core` 是 1.5.x，不是 1.3.x**。这两个包的版本号是各自独立演进的，很多人第一次看到会以为装错了。没错，就是这样。
-
-### 第五步：项目目录长这样
-
-```
-langchain-learn/
-├── .venv/              ← 虚拟环境（不要提交到 Git）
-├── .env                ← 放 API Key（绝对不要提交到 Git！）
-├── .gitignore
-├── 00_版本检查.py
-└── 01_连通性测试.py
-```
-
-`.gitignore` 内容：
-
-```
-.venv/
-.env
-__pycache__/
-```
-
-⚠️ **`.env` 一定要进 `.gitignore`**。把 API Key 提交到 GitHub 是新手最常见的事故，Key 会在几分钟内被爬走并被人拿去刷用量。
-
----
-
-## 1.3 拿到 DeepSeek 的 API Key
-
-### 为什么本教程用 DeepSeek
-
-| 理由 | 说明 |
-|---|---|
-| 国内直连 | 不用配代理 |
-| 便宜 | 学完这本教程的全部练习，花费大概几块钱 |
-| 支持工具调用 | 这是能做 Agent 的硬前提，不是所有便宜模型都支持 |
-| 上下文很大 | 实测 `max_input_tokens: 1000000`，塞长文档不心慌 |
-
-⚠️ **一个要提前知道的限制**：`deepseek-chat` **不接受图片输入**（实测 `image_inputs: False`）。所以"扫描件识别""发票拍照录入"这类需求，要么先用 OCR 转成文字再交给它，要么那一步换成支持视觉的模型。其他文本类工作它都够用。
-
-另外，需要模型输出推理过程时，用 `deepseek-reasoner` 而不是 `deepseek-chat`。
-
-### 拿 Key 的步骤
-
-1. 打开 [platform.deepseek.com](https://platform.deepseek.com/)，注册登录
-2. 左侧「API keys」→ 创建新的 key
-3. **立刻复制保存**——页面关掉就再也看不到了，只能重新建
-4. 到「充值」里充最小金额（学习够用很久）
-
-### 把 Key 写进 `.env`
+### 第五步：`.env` 存 Key
 
 在项目根目录建 `.env` 文件：
 
+```env
+# 路线 A 用这个
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxx
+
+# 路线 B 用这个
+DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
+
+# 路线 C 不需要 Key
 ```
-DEEPSEEK_API_KEY=sk-你的真实key粘贴在这里
+
+⚠️ **同时建一个 `.gitignore`**，第一行就写 `.env`。API Key 泄露到 GitHub 上会被人在几分钟内扫到并刷爆你的额度，这不是危言耸听。
+
+```gitignore
+.env
+__pycache__/
+.venv/
+*.db
 ```
-
-注意：
-- 等号两边**不要加空格**
-- 值**不要加引号**
-- 这个文件**不要提交 Git**
-
-### 换成别的模型怎么办
-
-三种选择，改动都很小：
-
-| 想用 | 装什么包 | 代码里怎么写 | `.env` 里的键 |
-|---|---|---|---|
-| **DeepSeek**（本教程） | `langchain-deepseek` | `init_chat_model("deepseek:deepseek-chat")` | `DEEPSEEK_API_KEY` |
-| OpenAI | `langchain-openai` | `init_chat_model("openai:gpt-4o-mini")` | `OPENAI_API_KEY` |
-| Ollama（本地离线，不花钱） | `langchain-ollama` | `init_chat_model("ollama:qwen2.5")` | 不需要 Key |
-
-**全书代码只有模型那一行不同，其他一模一样**——这正是 LangChain 的价值之一。其他厂商（通义、Kimi、智谱）的写法见附录 B。
 
 ---
 
-## 1.4 第一个程序：连通性测试
+## 1.3 模型三选一
 
-先别急着做 Agent。第一步只确认一件事：**你的电脑能不能成功跟模型说上话。**
+三条路线的代码差异**只有两行**，其余完全一致。先看对比表，选好你的那一行：
 
-新建 `01_连通性测试.py`：
+| | 装的包 | 环境变量 | `init_chat_model` 写法 | 成本 | 网络 |
+| --- | --- | --- | --- | --- | --- |
+| **OpenAI** | `langchain-openai` | `OPENAI_API_KEY` | `"openai:gpt-4o-mini"` | 很低（约 ¥1/百万输入 token） | 国内需代理 |
+| **DeepSeek** | `langchain-deepseek` | `DEEPSEEK_API_KEY` | `"deepseek:deepseek-chat"` | 极低 | 国内直连 |
+| **Ollama** | `langchain-ollama` | 无 | `"ollama:qwen3:8b"` | 免费 | 完全本地 |
+
+### Ollama 额外准备
+
+如果你选了路线 C，需要先把 Ollama 服务和模型准备好：
+
+```bash
+# 1. 去 https://ollama.com/download 下载安装
+# 2. 拉一个支持工具调用的模型（重要！）
+ollama pull qwen3:8b
+# 3. 确认服务在跑
+ollama list
+```
+
+⚠️ **不是所有本地模型都支持工具调用。** 本章后面的天气 Agent 需要模型会 function calling。已知可用的小模型：`qwen3:8b`、`qwen2.5:7b`、`llama3.1:8b`。像 `gemma:2b` 这类不支持，会直接失败。
+
+---
+
+## 1.4 二十行代码：一个会查天气的 Agent
+
+### 🖼 图解：这段代码到底在干什么
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as 你
+    participant A as Agent<br/>(create_agent)
+    participant M as 大模型<br/>(云端/本地)
+    participant T as get_weather()<br/>(你的 Python 函数)
+
+    U->>A: "北京天气怎么样？"
+    A->>M: 用户问题 + 工具清单说明
+    M-->>A: 我要调 get_weather(city="北京")
+    Note over M,A: 模型只是"申请"<br/>它没有执行能力
+    A->>T: 真正执行你的函数
+    T-->>A: "北京：晴，22°C"
+    A->>M: 工具返回了这个结果
+    M-->>A: "北京今天晴天，22 度，挺舒服的"
+    A-->>U: 最终回答
+```
+
+**最关键的一点**（第 4 章会详细展开）：模型**永远不会**执行你的代码。它只输出一个「我想调用这个函数、参数是这些」的结构化请求，真正的 `get_weather()` 调用是 LangChain 在你自己的进程里做的。
+
+这个设计的安全含义很重要：模型能做什么，完全取决于你给了它哪些工具。
+
+### 💻 完整代码
+
+新建 `hello_agent.py`：
 
 ```python
-from dotenv import load_dotenv
-from langchain.chat_models import init_chat_model
+"""第一个 LangChain Agent：会自己决定查天气。
 
-# 1. 把 .env 里的 DEEPSEEK_API_KEY 读进环境变量
+运行：uv run hello_agent.py
+"""
+
+from dotenv import load_dotenv
+from langchain.agents import create_agent
+from langchain_core.tools import tool
+
+# 从 .env 读取 API Key，塞进环境变量。
+# 必须在创建模型之前调用，否则模型初始化时读不到 Key。
 load_dotenv()
 
-# 2. 连上模型。格式是 "厂商:模型名"
-模型 = init_chat_model("deepseek:deepseek-chat")
 
-# 3. 问一句话
-回复 = 模型.invoke("用一句话介绍你自己")
+# ---------- 第一步：定义工具 ----------
+# @tool 装饰器把普通函数变成"模型可以申请调用的工具"。
+# ⚠️ 下面三样东西都是给模型看的，不是给人看的注释：
+#    1. 函数名 get_weather —— 模型靠它判断"这是干什么的"
+#    2. 类型标注 city: str —— 模型靠它知道要传什么参数
+#    3. docstring —— 模型靠它判断"什么时候该用这个工具"
+@tool
+def get_weather(city: str) -> str:
+    """查询指定城市当前的天气情况。
 
-# 4. 取出文字。注意 .text 后面没有括号！
-print(回复.text)
+    Args:
+        city: 城市名称，例如"北京""上海"。
+    """
+    # 真实项目里这里会调气象 API。
+    # 教学阶段先用假数据，把流程跑通比接真接口重要。
+    fake_data = {
+        "北京": "晴，22°C，微风",
+        "上海": "多云，26°C，湿度较高",
+        "广州": "雷阵雨，30°C，注意带伞",
+    }
+    return fake_data.get(city, f"抱歉，暂时查不到{city}的天气数据")
+
+
+# ---------- 第二步：创建 Agent ----------
+agent = create_agent(
+    # 三选一，把你那行的注释去掉即可
+    model="deepseek:deepseek-chat",   # 路线 B：DeepSeek
+    # model="openai:gpt-4o-mini",     # 路线 A：OpenAI
+    # model="ollama:qwen3:8b",        # 路线 C：本地 Ollama
+    tools=[get_weather],
+    system_prompt="你是一个简洁的天气助手。回答控制在两句话以内，用中文。",
+)
+
+
+# ---------- 第三步：调用 ----------
+if __name__ == "__main__":
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "北京天气怎么样？适合出门吗？"}]}
+    )
+
+    # result 是一个 dict，最终答案在 messages 列表的最后一条
+    # ⚠️ .text 是属性，不是方法，不要写成 .text()
+    print(result["messages"][-1].text)
 ```
 
 运行：
 
 ```bash
-python 01_连通性测试.py
+uv run hello_agent.py
 ```
 
-**你应该看到类似这样的输出**（模型每次措辞不同，内容不会完全一致）：
+预期输出（每次措辞会略有不同，这是正常的）：
 
 ```
-我是 DeepSeek Chat，一个由深度求索公司开发的智能助手，可以帮你解答问题、处理文字工作。
+北京今天晴天，22°C 微风，非常适合出门。建议穿件薄外套。
 ```
 
-看到中文输出，说明**环境、Key、网络全都通了**。这一步过了，后面就顺了。跑不通请直接跳到 1.6 节对号入座。
-
-### 逐行拆解
-
-```python
-load_dotenv()
-```
-读取 `.env` 文件，把里面的键值塞进环境变量。之后 `langchain-deepseek` 会自动去环境变量里找 `DEEPSEEK_API_KEY`——**所以你的代码里从头到尾不会出现密钥字符串**。
-
-```python
-模型 = init_chat_model("deepseek:deepseek-chat")
-```
-`"厂商:模型名"` 这个格式是 LangChain 的统一入口。想换 OpenAI 就改成 `"openai:gpt-4o-mini"`，下面的代码一行都不用动。
-
-```python
-回复 = 模型.invoke("用一句话介绍你自己")
-```
-`invoke` 就是"调用一次"。传字符串是最简写法，LangChain 内部会自动包装成一条用户消息。
-
-```python
-print(回复.text)
-```
-`回复` 不是字符串，是一个 `AIMessage` 对象，里面除了文字还装着 token 用量等信息（第 2 章细讲）。
-
-⚠️ **这里有个 1.x 的坑**：`.text` 现在是**属性**，不是方法。老教程里写的 `.text()` 虽然还能用，但会打出警告——我实测到的原文是：
-
-```
-LangChainDeprecationWarning: Calling .text() as a method is deprecated.
-Use .text as a property instead (e.g., message.text).
-```
-
-**记住：`.text` 不加括号。**
+**跑通了吗？** 如果报错，直接跳到本章 ⚠️ 小节，四个常见错误都在那里。
 
 ---
 
-## 1.5 第一个 Agent：会自己查东西的程序
+## 1.5 🔍 拆解运行结果：`result` 里到底有什么
 
-上面那个程序只会聊天。现在给它装上"手脚"。
+上面只打印了最后一句话，但 `result` 里藏着完整的执行过程。这是你以后调试的主要依据，现在就要看懂。
 
-新建 `02_第一个Agent.py`：
+把 `print` 换成这样：
 
 ```python
-from dotenv import load_dotenv
-from langchain.agents import create_agent
-from langchain.tools import tool
-
-load_dotenv()
-
-
-# ── 第一步：写一个工具。它就是个普通函数 ──────────────────
-@tool
-def 查天气(城市: str) -> str:
-    """查询指定城市今天的天气情况。城市名用中文，例如：上海。"""
-    # 演示用的假数据。真实项目里这里就是调你公司的 API 或查数据库
-    天气表 = {
-        "上海": "晴，28℃，东南风 3 级",
-        "北京": "多云，24℃，空气质量良",
-        "广州": "雷阵雨，31℃，注意带伞",
-    }
-    return 天气表.get(城市, f"抱歉，没有 {城市} 的天气数据")
-
-
-# ── 第二步：把模型和工具装成一个 Agent ────────────────────
-助手 = create_agent(
-    model="deepseek:deepseek-chat",       # 用哪个模型
-    tools=[查天气],                        # 它能用哪些工具
-    system_prompt="你是一个简洁的天气助手，回答不超过两句话。",
+result = agent.invoke(
+    {"messages": [{"role": "user", "content": "北京天气怎么样？适合出门吗？"}]}
 )
 
-# ── 第三步：提问 ─────────────────────────────────────────
-结果 = 助手.invoke({
-    "messages": [{"role": "user", "content": "广州今天要带伞吗？"}]
-})
-
-# ── 第四步：取最后一条消息，就是最终答案 ──────────────────
-print(结果["messages"][-1].text)
+print(f"总共产生了 {len(result['messages'])} 条消息\n")
+for i, msg in enumerate(result["messages"], 1):
+    print(f"--- 第 {i} 条：{type(msg).__name__} ---")
+    print(msg.text or "(无文本内容)")
+    # 只有 AIMessage 才可能有 tool_calls
+    if calls := getattr(msg, "tool_calls", None):
+        print(f"申请调用：{calls}")
+    print()
 ```
 
-运行后你会看到类似：
+输出（我加了中文批注）：
 
 ```
-需要带伞。广州今天有雷阵雨，气温 31℃。
+总共产生了 4 条消息
+
+--- 第 1 条：HumanMessage ---          ← 你的问题
+北京天气怎么样？适合出门吗？
+
+--- 第 2 条：AIMessage ---             ← 模型第一次回复：不说话，只申请调工具
+(无文本内容)
+申请调用：[{'name': 'get_weather', 'args': {'city': '北京'},
+           'id': 'call_0_a1b2c3d4', 'type': 'tool_call'}]
+
+--- 第 3 条：ToolMessage ---           ← 你的函数真实返回值
+晴，22°C，微风
+
+--- 第 4 条：AIMessage ---             ← 模型看到工具结果后，组织成人话
+北京今天晴天，22°C 微风，非常适合出门。建议穿件薄外套。
 ```
 
-**请留意这里发生了什么**：你问的是"要带伞吗"，天气数据里写的是"雷阵雨，注意带伞"。模型自己决定了要去调 `查天气("广州")`，拿到结果后再判断出"需要带伞"。**这个决策过程你一行代码都没写。**
+### 四种消息，四个角色
 
-### 这一次调用，背后实际发生了什么
+| 类型 | 谁产生的 | 作用 | 记住这个 |
+| --- | --- | --- | --- |
+| `HumanMessage` | 你 | 用户输入 | 对话的起点 |
+| `AIMessage` | 模型 | 回答**或**工具调用申请 | `tool_calls` 非空说明它要调工具 |
+| `ToolMessage` | LangChain | 工具的真实执行结果 | 一定和某个 `tool_call.id` 配对 |
+| `SystemMessage` | 你 | 全局指令（本例由 `system_prompt` 生成，不出现在返回列表里） | 优先级最高 |
 
-```mermaid
-sequenceDiagram
-    participant 你 as 你的程序
-    participant M as DeepSeek 模型
-    participant T as 查天气函数
-
-    你->>M: ①第一次请求：问题 + "你有个叫查天气的工具"
-    M-->>你: ②我要调用 查天气(城市="广州")
-    Note over M: 模型只是"申请"，没有执行任何代码
-    你->>T: ③你的程序真的去执行这个函数
-    T-->>你: ④"雷阵雨，31℃，注意带伞"
-    你->>M: ⑤第二次请求：问题 + 工具返回的结果
-    M-->>你: ⑥"需要带伞。广州今天有雷阵雨..."
-```
-
-**关键认知**：这一次 `invoke` 实际发了 **两次** 网络请求（所以也花了两次的钱）。工具越多、来回越多，费用就越高——第 12 章会讲怎么控制。
-
-再强调一遍最容易误解的点：**模型没有执行任何代码，它只是返回了一段"我想调用这个函数、参数是这些"的结构化数据。真正执行的是你自己的 Python 进程。** 这意味着安全边界完全在你手里——你不给它工具，它什么也做不了。
-
-### 把中间过程全打印出来
-
-把最后一行换成：
+### 几个关键字段
 
 ```python
-for i, 消息 in enumerate(结果["messages"], 1):
-    print(f"{i}. [{type(消息).__name__}] {消息.text}")
-    if getattr(消息, "tool_calls", None):
-        print(f"    ↳ 申请调用: {消息.tool_calls}")
+last = result["messages"][-1]
+
+last.text            # 纯文本内容，字符串。⚠️ 属性，不加括号
+last.tool_calls      # 工具调用列表，最终回答时为空 []
+last.usage_metadata  # token 用量，形如 {'input_tokens': 156, 'output_tokens': 34, 'total_tokens': 190}
+last.id              # 这条消息的唯一 ID
+last.response_metadata  # 原始返回里的其他信息（模型名、finish_reason 等）
 ```
 
-输出会是这样的四条：
+`usage_metadata` 就是你算钱的依据，第 12 章会用它做成本核算。
 
-```
-1. [HumanMessage] 广州今天要带伞吗？
-2. [AIMessage]
-    ↳ 申请调用: [{'name': '查天气', 'args': {'城市': '广州'}, 'id': 'call_0_xxx', 'type': 'tool_call'}]
-3. [ToolMessage] 雷阵雨，31℃，注意带伞
-4. [AIMessage] 需要带伞。广州今天有雷阵雨，气温 31℃。
-```
-
-四种消息类型对应四个角色：
-
-| 消息类型 | 谁说的 | 内容 |
-|---|---|---|
-| `HumanMessage` | 你 | 原始问题 |
-| `AIMessage` | 模型 | **注意第 2 条的文字是空的**——这一轮它只申请调工具，没说话 |
-| `ToolMessage` | 你的程序 | 工具的执行结果 |
-| `AIMessage` | 模型 | 看完工具结果后的最终回答 |
-
-> 💡 **一个我实测确认的细节**：`system_prompt` **不会**出现在 `messages` 列表里。它每次请求时被送给模型，但不占用对话历史的位置。所以你在 `messages` 里只看到 4 条，不是 5 条。
-
-### 逐行拆解
-
-```python
-@tool
-def 查天气(城市: str) -> str:
-    """查询指定城市今天的天气情况。城市名用中文，例如：上海。"""
-```
-
-这三行信息量最大：
-
-| 元素 | 模型看到的是什么 | 重要性 |
-|---|---|---|
-| 函数名 `查天气` | 工具的名字 | 模型靠它判断该不该用 |
-| 类型标注 `城市: str` | 参数名和类型 | **必须写**，不写模型不知道要传什么 |
-| docstring | 工具的用途说明 | **必须写**，这是给模型看的说明书 |
-
-我实测打印了一下 LangChain 从这个函数里提取出来的东西：
-
-```
-工具名: 查天气
-描述: 查询指定城市今天的天气情况。城市名用中文，例如：上海。
-入参 schema: {'城市': {'title': '城市', 'type': 'string'}}
-```
-
-**结论：docstring 不是写给同事看的注释，是写给模型看的 API 文档。** 写得含糊，模型就选错工具或传错参数。这是第 4 章的核心内容。
-
-```python
-助手 = create_agent(model=..., tools=[...], system_prompt=...)
-```
-
-`create_agent` 是 LangChain 1.x 里创建 Agent 的**唯一推荐方式**。
-
-⚠️ 如果你在网上看到 `initialize_agent`、`AgentExecutor`、`create_react_agent`，那都是 0.x 时代的写法，**在 1.3 里跑不通**。判断一份教程是否过时，看这一行就够了。
-
-```python
-结果 = 助手.invoke({"messages": [{"role": "user", "content": "..."}]})
-```
-
-Agent 的入参不是字符串，而是一个带 `messages` 列表的字典（因为 Agent 要处理多轮对话）。`role` 可以是 `user` / `assistant` / `system`。
-
-```python
-print(结果["messages"][-1].text)
-```
-
-`结果` 是个字典，我实测确认它只有一个键：`messages`。`[-1]` 取最后一条，就是最终答案。
+> **为什么是 4 条而不是 2 条？** 因为 Agent 内部跑了两轮模型调用：第一轮决定「要查天气」，第二轮把查到的数据组织成回答。也就是说这次请求你付了两次 token 费。这是 Agent 的固有成本，第 12 章讲怎么压。
 
 ---
 
-## 1.6 四个必踩的报错
+## 1.6 🧱 C#/SQL 类比：把新概念挂到你已知的东西上
 
-按报错原文对号入座。
+| LangChain 概念 | C# / SQL 里的对应物 | 相同点 | 不同点 |
+| --- | --- | --- | --- |
+| `@tool` 函数 | **存储过程** | 都是「暴露一个带签名的可调用单元」 | 调用方是模型，所以 docstring 比参数名更重要 |
+| `create_agent` | **带重试的工作流引擎**（如 Hangfire + 状态机） | 都是「循环执行直到完成」 | 下一步做什么由模型决定，不是你写死的 |
+| `system_prompt` | **全局配置 / 基类约束** | 都是「对所有请求生效的规则」 | 它是建议不是强制，模型可能违反 |
+| 中间件（第 9 章） | **ASP.NET 的 HttpModule / 中间件管道** | 都是「在主流程前后插钩子」 | 几乎一模一样，第 9 章你会觉得很亲切 |
+| `checkpointer`（第 8 章） | **Session 状态存储** | 都是「按 ID 存取会话数据」 | 存的是完整消息列表，不是键值对 |
+| 向量检索（第 10 章） | **`WHERE content LIKE '%关键词%'` 的语义版** | 都是「找相关内容」 | 按意思匹配，不是按字面。搜「怎么请假」能命中「休假申请流程」 |
 
-### ① `ModuleNotFoundError: No module named 'langchain'`
+最后一条特别值得记：**向量检索 ≈ 语义 LIKE**。你不用懂什么是余弦相似度，就当成一个「懂人话的模糊查询」，第 10 章绝大部分内容就通了。
+
+---
+
+## ⚠️ 新手四个必踩报错
+
+我把真实报错原文贴出来，方便你直接搜。
+
+### 报错 1：模块找不到
 
 ```
-Traceback (most recent call last):
-  File "01_连通性测试.py", line 2, in <module>
-    from langchain.chat_models import init_chat_model
-ModuleNotFoundError: No module named 'langchain'
+ModuleNotFoundError: No module named 'langchain_deepseek'
 ```
 
-**病因**：虚拟环境没激活，或者装包时装到别的 Python 里去了。
+或者更隐蔽的这个：
+
+```
+ImportError: cannot import name 'create_agent' from 'langchain.agents'
+```
+
+**原因**：
+- 第一种：模型提供商包没装。`langchain` 主包不包含任何提供商实现。
+- 第二种：装的是 0.x 版本。`create_agent` 是 1.x 才有的。
 
 **解法**：
-1. 看命令行提示符前面有没有 `(.venv)`，没有就先激活
-2. 确认装包和跑脚本用的是同一个 Python：
-   ```bash
-   python -c "import sys; print(sys.executable)"
-   ```
-   打印出的路径应该包含你项目里的 `.venv`
 
-另一种变体是 `No module named 'langchain_deepseek'`——单独装一下：`uv pip install langchain-deepseek`。
+```bash
+# 确认版本
+uv run python -c "import langchain; print(langchain.__version__)"
 
-### ② Key 没生效
+# 如果不是 1.3.x，强制升级
+uv add "langchain>=1.3,<2"
+
+# 补装提供商包
+uv add langchain-deepseek   # 换成你实际用的
+```
+
+> **额外的坑**：如果你在 VS Code 里跑，可能装包装到了系统 Python，运行却用的虚拟环境（或者反过来）。用 `uv run` 而不是直接 `python` 能避开这个问题。
+
+### 报错 2：Key 没生效
 
 ```
-openai.AuthenticationError: Error code: 401 - {'error': {'message': 'Authentication Fails, Your api key is invalid'}}
+openai.OpenAIError: The api_key client option must be set either by passing
+api_key to the client or by setting the OPENAI_API_KEY environment variable
+```
+
+**四个可能原因，按概率排序**：
+
+1. **忘了调 `load_dotenv()`**，或者调用位置在 `create_agent()` 之后。必须在最前面。
+2. **`.env` 不在当前工作目录**。`load_dotenv()` 默认从当前目录往上找。用 `load_dotenv(verbose=True)` 会打印它找到了哪个文件。
+3. **变量名写错了**。DeepSeek 要的是 `DEEPSEEK_API_KEY`，不是 `DEEPSEEK_KEY` 也不是 `OPENAI_API_KEY`。
+4. **`.env` 里加了引号或空格**。正确写法是 `OPENAI_API_KEY=sk-xxx`，不要写成 `OPENAI_API_KEY = "sk-xxx"`。
+
+**快速定位**：
+
+```python
+import os
+from dotenv import load_dotenv
+
+load_dotenv(verbose=True)  # 会打印读取到的 .env 路径
+
+key = os.getenv("DEEPSEEK_API_KEY")
+if not key:
+    print("❌ Key 没读到")
+else:
+    print(f"✅ Key 已读到，开头 {key[:8]}...，长度 {len(key)}")
+```
+
+⚠️ 打印 Key 时**只打印前几位**。完整 Key 打到日志里，和写在代码里一样危险。
+
+### 报错 3：模型名无效
+
+```
+openai.NotFoundError: Error code: 404 - {'error': {'message':
+'The model `gpt-5-turbo` does not exist or you do not have access to it'}}
+```
+
+或者 Ollama 的版本：
+
+```
+ollama._types.ResponseError: model "qwen3" not found, try pulling it first
+```
+
+**原因**：模型名拼错，或者你的账号没有该模型权限，或者本地没拉过这个模型。
+
+**解法**：
+- 云端模型：去提供商控制台看**可用模型列表**，照抄。别凭印象写。
+- Ollama：先 `ollama list` 看本地有什么，注意**标签也是名字的一部分**——`qwen3:8b` 和 `qwen3` 是两个不同的名字。
+
+**`init_chat_model` 的字符串格式**是 `"提供商:模型名"`：
+
+```python
+"openai:gpt-4o-mini"       # ✅
+"deepseek:deepseek-chat"   # ✅
+"ollama:qwen3:8b"          # ✅ 第二个冒号属于模型名，这样写是对的
+"gpt-4o-mini"              # ⚠️ 能猜出提供商，但显式写更保险
+```
+
+### 报错 4：代理超时
+
+```
+httpx.ConnectTimeout: timed out
 ```
 
 或者：
 
 ```
-ValueError: Did not find deepseek_api_key, please add an environment variable
-`DEEPSEEK_API_KEY` which contains it, or pass `api_key` as a named parameter.
+openai.APIConnectionError: Connection error.
 ```
 
-**病因与自查顺序**：
+**原因**：国内直连 OpenAI 基本不通。
 
-| 检查项 | 常见错误 |
-|---|---|
-| 有没有调 `load_dotenv()` | 忘了写，或者写在 `init_chat_model` 后面 |
-| `.env` 的位置 | 必须在**你运行命令的那个目录**，不是脚本所在目录 |
-| 键名拼写 | 必须是 `DEEPSEEK_API_KEY`，大小写和下划线都不能错 |
-| 格式 | `KEY=值`，等号两边**没有空格**，值**没有引号** |
-| Key 本身 | 有没有复制全？开头是 `sk-`。账户有没有余额？ |
+**三个解法，从省事到麻烦**：
 
-快速验证 Key 到底读进来没有：
+**方案一：换 DeepSeek**（推荐新手）。国内直连，API 格式和 OpenAI 兼容，改一行模型名的事。
+
+**方案二：设代理**。在 `.env` 里加：
+
+```env
+HTTP_PROXY=http://127.0.0.1:7890
+HTTPS_PROXY=http://127.0.0.1:7890
+```
+
+端口换成你自己代理软件的。`load_dotenv()` 会把它们变成环境变量，`httpx` 自动识别。
+
+**方案三：用中转服务**。设置自定义 base_url：
 
 ```python
-import os
-from dotenv import load_dotenv
-load_dotenv()
-k = os.getenv("DEEPSEEK_API_KEY")
-print("读到了：", (k[:6] + "..." + k[-4:]) if k else "❌ 没读到")
+from langchain.chat_models import init_chat_model
+
+model = init_chat_model(
+    "openai:gpt-4o-mini",
+    base_url="https://你的中转地址/v1",
+    api_key="你的中转 Key",
+)
+agent = create_agent(model=model, tools=[get_weather])
 ```
 
-> ⚠️ 别整个打印出来，也别在有别人的场合打印——这是密钥。
-
-### ③ 模型名无效
-
-```
-openai.NotFoundError: Error code: 404 - {'error': {'message': 'Model Not Exist'}}
-```
-
-**病因**：模型名写错了。DeepSeek 目前常用的两个是：
-
-| 模型名 | 用途 |
-|---|---|
-| `deepseek-chat` | 通用对话，**本教程默认用这个** |
-| `deepseek-reasoner` | 需要输出推理过程时用 |
-
-⚠️ 还有一种情况是**前缀写错**：`init_chat_model("deepseek-chat")` 少了厂商前缀，LangChain 猜不出来该用哪个包。正确写法是 `"deepseek:deepseek-chat"`。
-
-### ④ 网络超时 / 代理问题
-
-```
-httpx.ConnectTimeout: timed out
-```
-或
-```
-httpx.ProxyError: Cannot connect to proxy
-```
-
-**病因与解法**：
-
-- 用了 VPN 或系统代理，但代理不通 DeepSeek → 把代理关掉试试（DeepSeek 国内直连，不需要代理）
-- 公司网络限制外网 → 找网管开白名单，或先用 Ollama 在本机跑模型学习
-- 网络就是慢 → 把超时设长一点：
-  ```python
-  模型 = init_chat_model("deepseek:deepseek-chat", timeout=60)
-  ```
-
-> 💡 如果你所在的网络环境实在受限，可以先装 [Ollama](https://ollama.com/)，`ollama pull qwen2.5`，然后把模型那行换成 `init_chat_model("ollama:qwen2.5")`。完全离线、不花钱，本教程前 9 章的代码都能跑（第 10 章的 RAG 会慢一些）。
+⚠️ 中转服务能看到你发的全部内容。别把公司数据、客户信息发给来源不明的中转站。
 
 ---
 
-## 1.7 动手练习
+## 🎯 动手练习
 
-**练习 1（必做）**：把 `查天气` 换成 `查汇率`，让它能回答"100 美元换多少人民币"。
+### 练习 1（必做）：加一个工具
+
+给 Agent 再加一个「查空气质量」的工具，然后问它「北京今天适合跑步吗？」，看它是否会**连续调用两个工具**。
+
+提示：新函数照抄 `get_weather` 的结构，然后 `tools=[get_weather, get_air_quality]`。
+
+### 练习 2：观察它不调工具的情况
+
+问它「你好」。看 `result["messages"]` 有几条。
+
+思考：为什么这次没调工具？
+
+### 练习 3（进阶）：故意让它选错
+
+把 `get_weather` 的 docstring 改成 `"""一个函数。"""`，其他不动，再问天气。
+
+观察发生了什么。这个练习能让你真正理解「docstring 是给模型看的说明书」这句话的分量。
+
+---
 
 <details>
-<summary>参考答案</summary>
+<summary>📖 点击查看参考答案</summary>
+
+### 练习 1 参考答案
 
 ```python
 @tool
-def 查汇率(货币代码: str) -> str:
-    """查询指定外币兑人民币的今日汇率。货币代码用大写字母，例如：USD、EUR、JPY。"""
-    汇率表 = {"USD": 7.18, "EUR": 7.82, "JPY": 0.047}
-    汇率 = 汇率表.get(货币代码.upper())
-    if 汇率 is None:
-        return f"没有 {货币代码} 的汇率数据"
-    return f"1 {货币代码.upper()} = {汇率} 人民币"
+def get_air_quality(city: str) -> str:
+    """查询指定城市的空气质量指数（AQI）。
+
+    Args:
+        city: 城市名称，例如"北京""上海"。
+    """
+    fake_data = {
+        "北京": "AQI 45，优，适合户外运动",
+        "上海": "AQI 88，良",
+        "广州": "AQI 120，轻度污染，敏感人群减少户外活动",
+    }
+    return fake_data.get(city, f"暂无{city}的空气质量数据")
 
 
-助手 = create_agent(
+agent = create_agent(
     model="deepseek:deepseek-chat",
-    tools=[查汇率],
-    system_prompt="你是汇率助手。需要换算时先查汇率再计算，把计算过程写出来。",
+    tools=[get_weather, get_air_quality],   # 两个工具都注册
+    system_prompt="你是一个简洁的生活助手。回答控制在三句话以内，用中文。",
 )
 
-结果 = 助手.invoke({"messages": [{"role": "user", "content": "100 美元换多少人民币？"}]})
-print(结果["messages"][-1].text)
+result = agent.invoke(
+    {"messages": [{"role": "user", "content": "北京今天适合跑步吗？"}]}
+)
+for msg in result["messages"]:
+    print(f"[{type(msg).__name__}] {msg.text}")
 ```
 
-⚠️ 注意最后的乘法是模型自己算的，**小数多的时候它可能算错**。生产环境的正确做法是：再给它一个"计算"工具，或者干脆让工具直接返回换算结果。这个坑第 4 章会专门讲。
+**你会看到 6 条消息**：Human → AI(申请调工具) → Tool → Tool → AI(最终回答)，其中两个 `ToolMessage`。
+
+注意：能干的模型会在**一次** `AIMessage` 里同时申请两个工具调用（并行），弱一些的模型会分两轮串行调用。两种都对，但并行更省钱。你可以看 `tool_calls` 列表的长度来判断。
+
+### 练习 2 参考答案
+
+只有 **2 条**：`HumanMessage` → `AIMessage`。
+
+**为什么？** 因为 Agent 的循环逻辑是：调模型 → 检查返回里有没有 `tool_calls` → 有就执行工具再回到模型，没有就结束。「你好」这种问题模型不需要外部数据，直接回答，`tool_calls` 为空，循环一轮就退出。
+
+**这说明工具不是每次都调的**，它是模型的一个选项，不是必经流程。新手常以为「注册了工具就每次都会用」，不是的。
+
+### 练习 3 参考答案
+
+大概率出现这两种情况之一：
+
+1. **模型不调工具了**，直接编一个天气（幻觉）。因为它看不出这个函数能查天气。
+2. **模型乱传参数**，比如 `get_weather(city="天气")`。因为它不知道 `city` 该填什么。
+
+**结论**：`@tool` 的函数名、类型标注、docstring 构成了模型能看到的**唯一**接口文档。它没有你的源码，只有这三样。写得含糊，模型就选错、传错。
+
+这也是第 4 章会反复强调的：**给工具写 docstring 不是「良好习惯」，而是功能的一部分。** 漏写等于交付一个没有接口文档的 API。
 
 </details>
 
-**练习 2（推荐）**：同时挂上 `查天气` 和 `查汇率` 两个工具，然后问一个**跟两者都无关**的问题（比如"你好"），看它会不会乱调工具。再问"上海天气怎么样，另外 50 欧元是多少钱"，看它会不会**连着调两个工具**。
+---
 
-**练习 3（思考）**：如果 `查天气` 的 docstring 改成 `"""查询。"""`，你觉得会发生什么？改一下试试。
+## 📌 一句话总结
+
+**LangChain 不提供智能，它提供的是让模型能调用你代码的那套管道；`create_agent` 就是这套管道的默认实现。**
 
 ---
 
-## 1.8 本章速查卡
+## 下一章预告
 
-```python
-# 最小可用模板 —— 抄这个开头就行
-from dotenv import load_dotenv
-from langchain.agents import create_agent
-from langchain.tools import tool
+第 1 章里 `create_agent(model="...")` 那个字符串藏了不少门道：怎么调温度？怎么设超时？怎么看这次花了多少钱？多轮对话怎么手动传历史？
 
-load_dotenv()
-
-@tool
-def 工具名(参数: str) -> str:
-    """一句话说清这个工具干什么、参数是什么格式。"""   # ← 给模型看的
-    return "结果"
-
-助手 = create_agent(
-    model="deepseek:deepseek-chat",
-    tools=[工具名],
-    system_prompt="你的角色和行为约束。",
-)
-
-结果 = 助手.invoke({"messages": [{"role": "user", "content": "问题"}]})
-print(结果["messages"][-1].text)
-```
-
-| 要点 | 记住 |
-|---|---|
-| Python 版本 | **3.10+**，3.9 不行 |
-| 模型写法 | `"厂商:模型名"`，如 `"deepseek:deepseek-chat"` |
-| 取文字 | `.text` **不加括号** |
-| Agent 入参 | `{"messages": [{"role": "user", "content": "..."}]}` |
-| 取最终答案 | `结果["messages"][-1].text` |
-| 工具三要素 | 函数名 + 类型标注 + docstring，缺一不可 |
-| 谁执行工具 | **你的代码**，不是模型 |
-| 密钥 | 放 `.env`，`.env` 进 `.gitignore` |
-| 过时标志 | 看到 `initialize_agent` / `AgentExecutor`，说明那份教程是 0.x 的 |
+第 2 章会把「模型」这一层拆开讲清楚，包括 1.x 里最容易踩的 `.text` 属性变更。
 
 ---
 
-## 📌 本章一句话总结
-
-**Agent = 模型 + 你的工具 + 一个自动循环；模型只负责决定"用哪个工具、传什么参数"，执行永远是你的代码。**
-
----
-
-下一章：[第 2 章　模型与消息](第02章-模型与消息.md) —— 搞清楚 `invoke` 返回的那个对象里到底装了什么，以及怎么看这次调用花了多少钱。
+**导航**：[返回目录](../README.md) · [下一章](ch02-models-and-messages.md)

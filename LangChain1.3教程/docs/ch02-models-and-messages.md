@@ -1,536 +1,829 @@
-# 第 2 章　模型与消息
+# 第 2 章 模型与消息
 
-> 本章目标：搞清楚 `invoke` 返回的那个对象里到底装了什么，学会算钱，学会手动管理多轮对话。
-> 这一章是全书的地基，看着朴素，但后面所有章节都建立在它上面。
+> 本章目标：搞清楚「模型」这一层的所有日常操作——换模型、调参数、看花了多少钱、手动维护多轮对话。
+>
+> 这章是全书最基础的一章，第 4 章之后的所有内容都建立在这上面。
 
 ---
 
-## 2.1 `init_chat_model()`：一句话换模型
+## 2.1 `init_chat_model()` 一句话换模型
+
+第 1 章我们把模型名直接写在 `create_agent(model="...")` 里。但很多时候你需要单独拿到模型对象——比如要设温度、要单独调用一次、要在两个模型之间切换。
+
+### 🖼 图解：`init_chat_model` 在整个体系里的位置
+
+```mermaid
+graph LR
+    A["init_chat_model<br/>('deepseek:deepseek-chat')"] --> B[统一的模型对象<br/>BaseChatModel]
+    B --> C["model.invoke()<br/>单次调用"]
+    B --> D["model.stream()<br/>流式调用"]
+    B --> E["create_agent(model=...)<br/>交给 Agent"]
+
+    F[langchain-openai] -.提供实现.-> A
+    G[langchain-deepseek] -.提供实现.-> A
+    H[langchain-ollama] -.提供实现.-> A
+
+    style B fill:#e1f5e1
+    style A fill:#fff4e1
+```
+
+关键点：**`init_chat_model` 是个工厂函数**。不管底层是哪家，它都返回同一种对象，有同一套方法。这就是「换模型只改一行」的原理。
+
+### 💻 完整代码
+
+新建 `model_basics.py`：
 
 ```python
+"""模型对象的基本用法。
+
+运行：uv run model_basics.py
+"""
+
+from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 
-模型 = init_chat_model("deepseek:deepseek-chat")
+load_dotenv()
+
+# 方式一：字符串形式（推荐，最常用）
+# 格式："提供商:模型名"
+model = init_chat_model("deepseek:deepseek-chat")
+
+# 方式二：分开写（提供商名字很长或者要动态拼接时用）
+# model = init_chat_model(model="deepseek-chat", model_provider="deepseek")
+
+# 最简单的调用：直接传字符串
+response = model.invoke("用一句话解释什么是 API")
+
+print("=== 回答 ===")
+print(response.text)
+print()
+print("=== 这次花了多少 token ===")
+print(response.usage_metadata)
 ```
 
-格式永远是 `"厂商:模型名"`。想换厂商，只改这一行：
+输出：
+
+```
+=== 回答 ===
+API 是一套预先定义好的接口规则，让不同的软件程序能够互相调用彼此的功能和数据。
+
+=== 这次花了多少 token ===
+{'input_tokens': 14, 'output_tokens': 32, 'total_tokens': 46,
+ 'input_token_details': {'cache_read': 0}}
+```
+
+### 换模型：真的只改一行
 
 ```python
-init_chat_model("deepseek:deepseek-chat")    # DeepSeek
-init_chat_model("openai:gpt-4o-mini")        # OpenAI
-init_chat_model("anthropic:claude-sonnet-4-5")
-init_chat_model("ollama:qwen2.5")            # 本机离线
+# 国内直连
+model = init_chat_model("deepseek:deepseek-chat")
+
+# OpenAI
+model = init_chat_model("openai:gpt-4o-mini")
+
+# 本地离线
+model = init_chat_model("ollama:qwen3:8b")
+
+# 通义千问
+model = init_chat_model("openai:qwen-plus",
+                        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1")
 ```
 
-> 💡 **为什么不直接 `ChatDeepSeek(...)`？**
-> 直接实例化也能用，但那样厂商名就硬编码进代码了。用 `init_chat_model` 可以把模型名做成配置项，测试用便宜模型、生产用好模型，改配置不改代码。这和你把连接字符串写进 `web.config` 而不是写在代码里是同一个道理。
+下面所有代码完全不用改。完整的提供商写法见附录 B（待完成）。
 
-### 用你熟悉的方式理解这一层
+### 🧱 C#/SQL 类比
 
-| 数据库世界 | LangChain |
-|---|---|
-| `SqlConnection` / `MySqlConnection` | `ChatDeepSeek` / `ChatOpenAI` |
-| `DbConnection`（抽象基类） | `BaseChatModel` |
-| 工厂方法 + 配置文件切换驱动 | `init_chat_model("厂商:模型")` |
+`init_chat_model` ≈ **`DbProviderFactory.CreateConnection()`**。
+
+你写 `IDbConnection`，底下可能是 SQL Server、可能是 PostgreSQL，业务代码不关心。换数据库只改连接字符串。这里换模型只改那个 `"provider:model"` 字符串，一模一样的思路。
 
 ---
 
 ## 2.2 三个真正常用的参数
 
-模型有几十个参数，但日常只有这三个你会反复调：
+模型有几十个参数，但日常你只需要这三个。
 
 ```python
-模型 = init_chat_model(
+model = init_chat_model(
     "deepseek:deepseek-chat",
-    temperature=0,      # 随机性：0 最稳定，1 最有创意
-    max_tokens=1000,    # 最多输出多少 token，防止它长篇大论
-    timeout=60,         # 多少秒没响应就放弃
+    temperature=0,      # 随机性
+    max_tokens=500,     # 最多输出多少
+    timeout=30,         # 超时秒数
 )
 ```
 
-我实测确认这三个参数 DeepSeek 都接受：
+### `temperature`：随机性
 
-```
-ChatDeepSeek | temperature= 0.2 | max_tokens= 500 | timeout= 60.0
-```
+| 值 | 效果 | 用在哪 |
+| --- | --- | --- |
+| `0` | 几乎确定性，同样输入基本同样输出 | **工具调用、结构化输出、数据抽取** |
+| `0.3 ~ 0.7` | 有点变化但不跑偏 | 客服对话、总结 |
+| `1.0+` | 明显发散 | 起名、文案创意 |
 
-### `temperature` 怎么选（最重要的一个）
+⚠️ **做 Agent 请用 `temperature=0`。** 你要的是「稳定地选对工具、稳定地传对参数」，不是创意。温度高会导致同样的问题这次调对工具、下次调错。
 
-| 值 | 效果 | 什么活用 |
-|---|---|---|
-| **0** | 几乎每次都给一样的答案 | **数据抽取、分类、SQL 生成、格式转换** ← 你的工作 90% 是这类 |
-| 0.3 ~ 0.7 | 有一点变化 | 客服回复、文案润色 |
-| 1.0+ | 天马行空 | 创意头脑风暴、起名 |
+> 注意：`temperature=0` **不等于**完全确定。模型服务端的并行计算、模型版本更新都会带来微小差异。别指望 100% 复现。
 
-⚠️ **新手最常犯的错**：做数据抽取时用默认 temperature（DeepSeek 默认是 1.0），结果同一封邮件跑两次抽出来的字段不一样，然后怀疑"AI 不靠谱"。
+### `max_tokens`：最多输出多少
 
-**记住：只要你的任务有"正确答案"，就把 `temperature=0` 写上。**
-
-### `max_tokens` 的两个作用
-
-1. **防跑偏**：不设的话，它可能给你写三千字。
-2. **兜底成本**：输出是按 token 计费的，设上限等于设了单次花费上限。
-
-> 💡 **token 是什么**：模型不是按字算钱的，是按 token。中文大约 **1 个字 ≈ 0.6~1 个 token**，英文大约 1 个单词 ≈ 1.3 个 token。粗略估算：1000 个汉字大约 700~1000 token。
-
-### `timeout`
-
-默认值在网络不好时可能不够。国内连 DeepSeek 一般很快，但如果你要处理长文档（输入几万字），响应时间会变长，建议设 60~120。
-
----
-
-## 2.3 四种消息：AI 对话的基本积木
-
-### 为什么不能都写成一个字符串
-
-你可能会想：为什么不直接把整段对话拼成一个大字符串发过去？
-
-因为模型需要知道**每句话是谁说的**。同样一句"忽略之前的所有指令"，出现在系统提示里是合法配置，出现在用户输入里就是**攻击**。角色分离是安全边界，不是格式洁癖。
-
-### 四种角色
-
-```mermaid
-flowchart TD
-    S["SystemMessage 系统<br/>你是谁、要遵守什么规则<br/>（开发者写，用户看不到）"] --> H
-    H["HumanMessage 用户<br/>用户说的话"] --> A
-    A["AIMessage 模型<br/>模型说的话，或它申请调用工具"] --> T
-    T["ToolMessage 工具<br/>工具执行后的结果<br/>（你的程序写）"] --> A2["AIMessage<br/>模型看完结果后的回答"]
-```
-
-| 类型 | 谁产生 | 干什么 |
-|---|---|---|
-| `SystemMessage` | 你（开发者） | 设定角色、规则、输出格式。**放最前面，只放一条** |
-| `HumanMessage` | 用户 | 提问 |
-| `AIMessage` | 模型 | 回答，或"我要调用某个工具" |
-| `ToolMessage` | 你的程序 | 工具的返回值 |
-
-### 两种写法，随便用哪种
+限制**输出**长度，不限制输入。
 
 ```python
-from langchain.messages import SystemMessage, HumanMessage
-
-# 写法一：对象（类型安全，IDE 有提示，推荐）
-消息列表 = [
-    SystemMessage("你是一个严谨的数据库专家，回答用中文。"),
-    HumanMessage("varchar 和 nvarchar 有什么区别？"),
-]
-
-# 写法二：字典（更短，抄别人代码时常见）
-消息列表 = [
-    {"role": "system", "content": "你是一个严谨的数据库专家，回答用中文。"},
-    {"role": "user", "content": "varchar 和 nvarchar 有什么区别？"},
-]
-
-回复 = 模型.invoke(消息列表)
-print(回复.text)
+model = init_chat_model("deepseek:deepseek-chat", max_tokens=100)
+r = model.invoke("详细介绍一下 Python 的历史")
+print(r.text)
+print(r.response_metadata.get("finish_reason"))  # 'length' 说明被截断了
 ```
 
-两种完全等价。角色名对应关系：
+⚠️ **被截断的输出是硬截断**，可能停在半句话中间，甚至半个 JSON 中间。如果你在做结构化输出（第 6 章），`max_tokens` 设太小会直接导致 JSON 解析失败。
 
-| 字典里的 `role` | 对应的对象 |
-|---|---|
-| `"system"` | `SystemMessage` |
-| `"user"` | `HumanMessage` |
-| `"assistant"` | `AIMessage` |
-| `"tool"` | `ToolMessage` |
+判断是否被截断：看 `response_metadata["finish_reason"]`：
+- `"stop"` — 正常说完了
+- `"length"` — 撞到 `max_tokens` 被砍了
+- `"tool_calls"` — 停下来是为了调工具（正常）
 
-> ⚠️ `ToolMessage` 有个额外要求：必须带 `tool_call_id`。我实测不给会直接 `KeyError`。不过日常你不需要手动构造它——Agent 会自动帮你填。
-
----
-
-## 2.4 `AIMessage` 里到底装了什么
-
-这是本章最有用的一节。很多人只会用 `.text`，其实这个对象里的信息多得多。
+### `timeout`：超时
 
 ```python
-from dotenv import load_dotenv
-from langchain.chat_models import init_chat_model
-
-load_dotenv()
-模型 = init_chat_model("deepseek:deepseek-chat", temperature=0)
-
-回复 = 模型.invoke("用一句话说明什么是索引")
-
-print("① 文字内容：", 回复.text)
-print("② 对象类型：", type(回复).__name__)
-print("③ token 用量：", 回复.usage_metadata)
-print("④ 标准内容块：", 回复.content_blocks)
-print("⑤ 厂商元数据：", 回复.response_metadata)
-print("⑥ 工具调用：", 回复.tool_calls)
+model = init_chat_model("deepseek:deepseek-chat", timeout=30)
 ```
 
-输出大致是这样（`usage_metadata` 的数字会不同）：
+单位是秒。**一定要设**，否则网络卡住时你的程序会无限等待。
 
-```
-① 文字内容： 索引是数据库中为加快查询速度而建立的一种数据结构，类似书的目录。
-② 对象类型： AIMessage
-③ token 用量： {'input_tokens': 12, 'output_tokens': 28, 'total_tokens': 40}
-④ 标准内容块： [{'type': 'text', 'text': '索引是数据库中为加快查询速度...'}]
-⑤ 厂商元数据： {'model_name': 'deepseek-chat', 'finish_reason': 'stop', ...}
-⑥ 工具调用： []
-```
+推荐值：
+- 普通问答：`30`
+- 长文本生成：`60`
+- 本地 Ollama：`120`（本地推理慢，尤其第一次加载模型）
 
-逐个说明：
-
-| 属性 | 用途 | 日常用不用 |
-|---|---|---|
-| `.text` | 取文字 | ⭐ 天天用 |
-| `.usage_metadata` | 这次用了多少 token | ⭐ 算钱必用（下一节） |
-| `.tool_calls` | 模型申请调用哪些工具 | 调试 Agent 时用 |
-| `.content_blocks` | 跨厂商统一的内容视图 | 处理推理链、引用时用 |
-| `.response_metadata` | 厂商原始返回的杂项，如 `finish_reason` | 排查"为什么被截断"时用 |
-| `.id` | 这条消息的唯一 ID | 一般不用 |
-
-### 顺便说说 `.content_blocks`
-
-`.text` 只能拿到纯文字。但现在的模型返回的可能不只是文字——还可能有推理过程、引用来源、图片、服务端工具的执行结果。`.content_blocks` 是 LangChain 1.x 加的**统一格式**，让你用同一套代码读所有厂商的这些东西。
-
-我实测一条普通文本消息的 `content_blocks` 是：
+配合重试更稳（第 9 章的 `ModelRetryMiddleware` 会自动做这件事）：
 
 ```python
-[{'type': 'text', 'text': 'hi'}]
-```
-
-日常做文本处理你用 `.text` 就够。等你哪天要用 `deepseek-reasoner` 拿推理过程、或者要显示引用来源，再回来看这个属性。
-
-### `finish_reason` 是个好东西
-
-```python
-print(回复.response_metadata.get("finish_reason"))
-```
-
-| 值 | 意思 |
-|---|---|
-| `stop` | 正常说完了 ✅ |
-| `length` | ⚠️ **被 `max_tokens` 截断了**，回答是不完整的 |
-| `tool_calls` | 它要调工具 |
-
-⚠️ **一个隐蔽的坑**：如果 `max_tokens` 设小了，模型会**说到一半就被切断**，而你的代码毫无察觉，还把半截答案入库了。做批量处理时建议加一句检查：
-
-```python
-if 回复.response_metadata.get("finish_reason") == "length":
-    print("⚠️ 警告：输出被截断，结果不完整")
-```
-
----
-
-## 2.5 算清这次花了多少钱
-
-这节能帮你避免"月底账单突然爆掉"。
-
-```python
-from dotenv import load_dotenv
-from langchain.chat_models import init_chat_model
-
-load_dotenv()
-模型 = init_chat_model("deepseek:deepseek-chat", temperature=0)
-
-# DeepSeek 的价格（单位：元 / 百万 token）——请以官网最新价格为准
-输入单价 = 2.0
-输出单价 = 8.0
-
-
-def 问一句(问题: str):
-    回复 = 模型.invoke(问题)
-    用量 = 回复.usage_metadata
-
-    花费 = (用量["input_tokens"] * 输入单价 + 用量["output_tokens"] * 输出单价) / 1_000_000
-
-    print(f"回答：{回复.text}")
-    print(f"输入 {用量['input_tokens']} token，输出 {用量['output_tokens']} token")
-    print(f"本次花费：约 {花费:.6f} 元")
-    return 回复
-
-
-问一句("用一句话解释什么是事务")
-```
-
-输出示例：
-
-```
-回答：事务是一组要么全部成功、要么全部回滚的数据库操作。
-输入 11 token，输出 24 token
-本次花费：约 0.000214 元
-```
-
-`usage_metadata` 的结构我实测确认是：
-
-```python
-{'input_tokens': 12, 'output_tokens': 5, 'total_tokens': 17}
-```
-
-### 为什么必须关心这个
-
-| 场景 | 单次花费 | 跑 5000 条 |
-|---|---|---|
-| 短句分类 | 约 0.0002 元 | 约 1 元 |
-| 一封邮件转工单 | 约 0.002 元 | 约 10 元 |
-| 塞 20 页文档进去问一个问题 | 约 0.03 元 | 约 150 元 |
-
-看着都不贵，但要注意两件事：
-
-1. **Agent 每次工具调用都是一次完整请求**。一个问题来回三轮，费用就是三倍。
-2. **多轮对话的历史会被反复重发**。第 10 轮对话时，前 9 轮的内容都算在这次的输入 token 里——这就是为什么长对话越聊越贵。第 8、12 章会讲怎么控制。
-
-> 💡 **实用建议**：给你的项目建一张 `AI调用日志` 表，把 `input_tokens`、`output_tokens`、模型名、时间戳记下来。上生产之后你会感谢自己——这是唯一能回答"这个功能一个月花了多少钱"的办法。
-
----
-
-## 2.6 批量处理：`batch()`
-
-要处理 5000 条脏数据时，一条条 `invoke` 会等到你睡着。用 `batch()`：
-
-```python
-待处理 = [
-    "上海市浦东新区张江镇科苑路88号",
-    "北京海淀中关村大街1号院",
-    "广东省深圳南山区科技园南区",
-]
-
-提示列表 = [f"把下面这个地址拆成省/市/区三部分，用 | 分隔，只输出结果：\n{地址}" for 地址 in 待处理]
-
-结果列表 = 模型.batch(提示列表)
-
-for 原文, 回复 in zip(待处理, 结果列表):
-    print(f"{原文}  →  {回复.text}")
-```
-
-`batch()` 会**并发**发出这些请求，比循环快很多倍。我实测确认返回的是一个列表，顺序和输入一致：
-
-```
-batch 结果: ['a', 'b']
-```
-
-⚠️ **两个注意点**：
-
-1. **并发太高会被限流**（HTTP 429）。DeepSeek 有速率限制，几千条数据建议分批，每批 20~50 条，中间 `time.sleep(1)`。第 9 章会介绍用中间件自动重试。
-2. **`batch` 里每条是独立的**，互相看不到。所以它不能做多轮对话，只适合"同一个任务重复处理不同数据"。
-
----
-
-## 2.7 多轮对话：先手动来一遍
-
-Agent 有自动记忆功能（第 8 章），但**先手动做一遍，你才会真正明白"记忆"是什么**。
-
-关键认知：**模型没有记忆。它是无状态的。**
-
-每次调用你都必须把之前的全部对话重新发过去，模型才"知道"发生过什么。所谓的"记忆"，本质就是**你自己维护一个消息列表**。
-
-```python
-from dotenv import load_dotenv
-from langchain.chat_models import init_chat_model
-from langchain.messages import SystemMessage, HumanMessage
-
-load_dotenv()
-模型 = init_chat_model("deepseek:deepseek-chat", temperature=0)
-
-# 这个列表就是"记忆"本体
-对话历史 = [SystemMessage("你是一个简洁的助手，回答不超过一句话。")]
-
-print("开始聊天，输入 q 退出\n")
-
-while True:
-    用户输入 = input("你：")
-    if 用户输入.strip().lower() == "q":
-        break
-
-    # 1. 把用户这句加进历史
-    对话历史.append(HumanMessage(用户输入))
-
-    # 2. 把【整个历史】发给模型
-    回复 = 模型.invoke(对话历史)
-
-    # 3. 把模型的回答也加进历史（⚠️ 这一步最容易忘）
-    对话历史.append(回复)
-
-    print(f"AI：{回复.text}")
-    print(f"   （历史 {len(对话历史)} 条，本次输入 {回复.usage_metadata['input_tokens']} token）\n")
-```
-
-试着这样聊：
-
-```
-你：我叫老王，在做一个仓库管理系统
-AI：好的老王，仓库管理系统的开发有什么可以帮你的？
-   （历史 3 条，本次输入 38 token）
-
-你：我刚才说我叫什么？
-AI：你叫老王。
-   （历史 5 条，本次输入 76 token）
-```
-
-**请重点看那个 token 数字**：第二轮输入是 76，第一轮是 38——**翻倍了**。因为第二轮把第一轮的问答也一起发过去了。
-
-这就是长对话变贵的根本原因：
-
-```mermaid
-flowchart LR
-    A["第1轮<br/>38 token"] --> B["第2轮<br/>76 token"] --> C["第3轮<br/>130 token"] --> D["第20轮<br/>可能上千 token"]
-```
-
-### ⚠️ 三个新手必犯的错
-
-| 错误 | 后果 |
-|---|---|
-| 忘了 `对话历史.append(回复)` | AI 完全不记得自己说过什么，答得前后矛盾 |
-| 每轮都新建一个列表 | 等于没有记忆 |
-| 历史无限增长 | token 越来越贵，最终超过上下文上限报错 |
-
-### 历史太长怎么办
-
-LangChain 提供了 `trim_messages` 帮你裁剪：
-
-```python
-from langchain.messages import trim_messages
-
-裁剪后 = trim_messages(
-    对话历史,
-    max_tokens=2000,
-    token_counter=模型,          # 用模型自己的算法数 token
-    strategy="last",            # 保留最近的
-    include_system=True,        # ⚠️ 系统提示一定要留住
-    start_on="human",           # 从用户消息开始，别把历史切得角色错乱
+model = init_chat_model(
+    "deepseek:deepseek-chat",
+    timeout=30,
+    max_retries=2,   # 失败自动重试 2 次
 )
 ```
 
-我实测确认 `trim_messages` 的参数有：`messages`、`max_tokens`、`token_counter`、`strategy`、`allow_partial`、`end_on`、`start_on`、`include_system`、`text_splitter`。
+---
 
-不过说实话——**日常你不用手写这个**。第 9 章的 `SummarizationMiddleware` 会在历史过长时自动摘要，一行配置的事，比裁剪更聪明（裁剪是直接丢掉旧内容，摘要是压缩后保留）。
+## 2.3 四种消息：System / Human / AI / Tool
 
-**这一节的价值不是让你手写记忆，而是让你明白第 8 章那三行代码背后到底在做什么。**
+第 1 章看到了这四种消息，现在正式学怎么手写它们。
+
+### 🖼 图解：四种消息的角色分工
+
+```mermaid
+graph TB
+    S["SystemMessage<br/>你是谁、要遵守什么规则"] --> M[大模型]
+    H["HumanMessage<br/>用户说的话"] --> M
+    T["ToolMessage<br/>工具执行结果"] --> M
+    M --> A["AIMessage<br/>模型的回复<br/>或工具调用申请"]
+    A -.如果申请了工具.-> X[执行工具] --> T
+
+    style S fill:#ffe1e1
+    style H fill:#e1e8ff
+    style A fill:#e1f5e1
+    style T fill:#fff4e1
+```
+
+### 💻 完整代码
+
+```python
+"""四种消息的用法。
+
+运行：uv run messages_demo.py
+"""
+
+from dotenv import load_dotenv
+from langchain.chat_models import init_chat_model
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+
+load_dotenv()
+model = init_chat_model("deepseek:deepseek-chat", temperature=0)
+
+# 写法一：用消息对象（清晰，推荐）
+messages = [
+    SystemMessage("你是一个只会用文言文回答的助手。"),
+    HumanMessage("今天天气不错"),
+]
+r1 = model.invoke(messages)
+print("【对象写法】", r1.text)
+
+# 写法二：用字典（省事，等价）
+messages2 = [
+    {"role": "system", "content": "你是一个只会用文言文回答的助手。"},
+    {"role": "user", "content": "今天天气不错"},
+]
+r2 = model.invoke(messages2)
+print("【字典写法】", r2.text)
+
+# 写法三：只传一个字符串（等价于单条 HumanMessage）
+r3 = model.invoke("今天天气不错")
+print("【字符串写法】", r3.text)
+```
+
+输出：
+
+```
+【对象写法】 今日天朗气清，惠风和畅，诚可乐也。
+【字典写法】 今日天气晴好，风和日丽，甚是宜人。
+【字符串写法】 是啊，天气好的时候心情也会跟着变好。今天有什么出行计划吗？
+```
+
+注意第三种没有 SystemMessage，所以没有文言文。
+
+### 三种写法怎么选
+
+| 写法 | 什么时候用 |
+| --- | --- |
+| 消息对象 | 写库、写框架、需要类型提示时 |
+| 字典 | 从 JSON / 数据库读出来的历史，直接用 |
+| 纯字符串 | 快速测试、单轮问答 |
+
+三者可以混用：
+
+```python
+messages = [
+    SystemMessage("你是助手"),
+    {"role": "user", "content": "你好"},        # 混着写也没问题
+]
+```
+
+### ⚠️ SystemMessage 的三个注意点
+
+1. **只放一条，放在最前面。** 放多条、放中间，不同模型行为不一致。
+2. **它是建议，不是强制。** 写了「只用中文」，模型仍可能夹英文。真要强制，得靠结构化输出（第 6 章）或后处理校验。
+3. **它每次请求都会重发。** SystemMessage 越长，每轮对话的固定成本越高。别把整本手册塞进去——那是 RAG（第 10 章）该干的事。
+
+### ToolMessage：不用手写
+
+`ToolMessage` 一般由 LangChain 自动生成，你几乎不会手写。但了解它的结构对调试有帮助：
+
+```python
+from langchain_core.messages import ToolMessage
+
+ToolMessage(
+    content="晴，22°C",              # 工具返回值（会被转成字符串）
+    tool_call_id="call_0_a1b2c3",   # ⚠️ 必须和 AIMessage 里的 tool_call.id 对应
+)
+```
+
+⚠️ `tool_call_id` 配不上会直接报 API 错误。这是手动拼历史消息时最容易踩的坑（见 2.6 小节）。
 
 ---
 
-## 2.8 ⚠️ DeepSeek 的能力边界
+## 2.4 取文字用 `.text`（1.x 最重要的一个改动）
 
-LangChain 1.x 给模型加了个 `.profile` 属性，能程序化查询"这个模型支持什么"。我实测 `deepseek-chat` 的返回：
+### 这是 0.x → 1.x 的破坏性变更
 
 ```python
-模型 = init_chat_model("deepseek:deepseek-chat")
-print(模型.profile)
+r = model.invoke("你好")
+
+r.text            # ✅ 1.x 正确写法：属性，不加括号
+r.text()          # ❌ TypeError: 'str' object is not callable
+r.content         # ⚠️ 还能用，但不一定是字符串
 ```
+
+### 为什么要改
+
+因为现代模型的一次回复可能包含**多种内容块**：文字、图片、推理过程、工具调用、引用……`content` 字段在这种情况下是个**列表**，不是字符串。
+
+```python
+# 简单文本回复时
+r.content   # "你好！有什么可以帮你的？"        ← 字符串
+
+# 带推理过程的模型（如 o1、deepseek-reasoner）
+r.content   # [{'type': 'reasoning', ...},
+            #  {'type': 'text', 'text': '答案是...'}]   ← 列表！
+```
+
+如果你写 `r.content.upper()`，遇到列表就崩了。
+
+`.text` 的作用是：**不管底下是什么结构，都给你拼好的纯文本**。
+
+### 💻 对比演示
+
+```python
+"""content 和 text 的区别。"""
+
+from dotenv import load_dotenv
+from langchain.chat_models import init_chat_model
+
+load_dotenv()
+model = init_chat_model("deepseek:deepseek-chat")
+
+r = model.invoke("1+1 等于几？")
+
+print("text 类型：", type(r.text))
+print("text 内容：", r.text)
+print()
+print("content 类型：", type(r.content))
+print("content 内容：", r.content)
+```
+
+### 记住这条规则
+
+> **要显示给用户看的文本，永远用 `.text`。要分析结构（比如提取推理过程、图片），才去看 `.content` 或 `.content_blocks`。**
+
+⚠️ 你在网上搜到的 2023–2024 年的教程，几乎全都是 `.content`。看到就在心里换成 `.text`。
+
+---
+
+## 2.5 用 `usage_metadata` 看这次花了多少 token
+
+### 💻 完整代码
+
+```python
+"""统计 token 用量和估算成本。
+
+运行：uv run token_count.py
+"""
+
+from dotenv import load_dotenv
+from langchain.chat_models import init_chat_model
+
+load_dotenv()
+model = init_chat_model("deepseek:deepseek-chat")
+
+r = model.invoke("用三句话介绍 LangChain")
+
+usage = r.usage_metadata
+print("原始数据：", usage)
+print()
+print(f"输入 token：{usage['input_tokens']}")
+print(f"输出 token：{usage['output_tokens']}")
+print(f"合计：      {usage['total_tokens']}")
+
+# 估算费用（价格请以官方为准，这里只是演示算法）
+PRICE_IN = 2.0 / 1_000_000    # 元 / 输入 token
+PRICE_OUT = 8.0 / 1_000_000   # 元 / 输出 token
+
+cost = usage["input_tokens"] * PRICE_IN + usage["output_tokens"] * PRICE_OUT
+print(f"\n本次约 ¥{cost:.6f}")
+```
+
+### 🔍 拆解字段
 
 ```python
 {
-    'name': 'DeepSeek Chat',
-    'max_input_tokens': 1000000,      # 上下文很大，塞长文档没问题
-    'max_output_tokens': 384000,
-    'tool_calling': True,             # ✅ 能做 Agent
-    'text_inputs': True,
-    'image_inputs': False,            # ❌ 不能喂图片
-    'audio_inputs': False,
-    'video_inputs': False,
-    'reasoning_output': False,        # ❌ 不输出推理链（用 deepseek-reasoner）
-    'temperature': True,
+    'input_tokens': 15,        # 你发过去的（含 SystemMessage 和全部历史）
+    'output_tokens': 87,       # 模型生成的
+    'total_tokens': 102,       # 两者之和
+    'input_token_details': {   # 细分（不是所有模型都有）
+        'cache_read': 0,       # 命中缓存的部分，通常便宜 90%
+        'cache_creation': 0,
+    },
+    'output_token_details': {
+        'reasoning': 0,        # 推理型模型的思考 token，也要付钱
+    },
 }
 ```
 
-**这对你的实际影响**：
+### 三个新手容易忽略的成本真相
 
-| 需求 | 能不能用 deepseek-chat |
-|---|---|
-| 邮件、日志、文档等文本处理 | ✅ 可以 |
-| 做 Agent、调工具 | ✅ 可以（`tool_calling: True`） |
-| 塞进一整本几十万字的手册 | ✅ 可以（100 万 token 上下文） |
-| **扫描件、发票照片直接识别** | ❌ **不行**，要先 OCR 转文字，或该步骤换视觉模型 |
-| 需要看到模型的推理过程 | ❌ 换 `deepseek-reasoner` |
+**1. 输出通常比输入贵 3–5 倍。** 所以「让模型少废话」比「让提示词短一点」更省钱。在 SystemMessage 里写「简洁回答」是有实际财务收益的。
 
-> 💡 `.profile` 的数据来自开源项目 models.dev。它的用处是：你写通用代码时可以先判断 `if 模型.profile["image_inputs"]:` 再决定走哪条分支，而不是硬编码模型名。
+**2. 多轮对话的成本是平方级增长的。** 第 10 轮时你要把前 9 轮全部重发一次：
+
+| 轮次 | 本轮输入 token（约） | 累计花费（相对值） |
+| --- | --- | --- |
+| 1 | 100 | 100 |
+| 5 | 900 | 2500 |
+| 10 | 2000 | 10000 |
+
+这就是第 8 章要讲摘要中间件的原因——不压缩历史，长对话的成本会失控。
+
+**3. Agent 的一次「回答」可能是好几次模型调用。** 第 1 章那个天气 Agent，用户问一句，你付了两次钱。工具越多、循环越多，倍数越高。
+
+第 12 章会系统讲省钱手段。现在只要养成习惯：**开发时把 `usage_metadata` 打出来看**。
 
 ---
 
-## 2.9 动手练习
+## 2.6 多轮对话：先手动传历史
 
-**练习 1（必做）**：写一个"祖传 SQL 解读器"——把一段存储过程贴进去，让它输出这段 SQL 在做什么业务、涉及哪些表、有什么潜在风险。用 `temperature=0`，并打印本次花费。
+第 8 章会用 `checkpointer` 自动管理记忆。但你必须先理解手动版本，否则第 8 章会像魔法。
+
+### 🖼 图解：模型没有记忆，是你在骗它
+
+```mermaid
+sequenceDiagram
+    participant U as 你的程序
+    participant M as 大模型
+
+    Note over M: 模型是无状态的<br/>它不记得任何事
+
+    U->>M: [Human: 我叫小明]
+    M-->>U: 你好小明！
+
+    Note over U: 你把上一轮存起来
+
+    U->>M: [Human: 我叫小明]<br/>[AI: 你好小明！]<br/>[Human: 我叫什么？]
+    M-->>U: 你叫小明
+
+    Note over M: 它"记得"是因为<br/>你又发了一遍
+```
+
+**模型 100% 无状态。** 所谓「记忆」，全部是靠每次把完整历史重发一遍实现的。理解这一点，第 8 章和第 12 章的成本问题就都通了。
+
+### 💻 完整代码：手动多轮对话
+
+```python
+"""手动维护多轮对话历史。
+
+运行：uv run manual_memory.py
+"""
+
+from dotenv import load_dotenv
+from langchain.chat_models import init_chat_model
+from langchain_core.messages import HumanMessage, SystemMessage
+
+load_dotenv()
+model = init_chat_model("deepseek:deepseek-chat", temperature=0)
+
+# 这个列表就是"记忆"，它活在你的程序里，不在模型里
+history = [SystemMessage("你是一个友好的助手，回答简洁。")]
+
+
+def chat(user_input: str) -> str:
+    """发一轮对话，自动维护历史。"""
+    # 1. 把用户输入追加到历史
+    history.append(HumanMessage(user_input))
+
+    # 2. 把【完整历史】发给模型
+    response = model.invoke(history)
+
+    # 3. ⚠️ 关键：把模型回复也追加进历史
+    #    忘了这一步，模型就永远不知道自己说过什么
+    history.append(response)
+
+    return response.text
+
+
+if __name__ == "__main__":
+    print("你:", "我叫小明，今年 28 岁")
+    print("AI:", chat("我叫小明，今年 28 岁"))
+    print()
+
+    print("你:", "我叫什么名字？")
+    print("AI:", chat("我叫什么名字？"))
+    print()
+
+    print("你:", "我明年多大？")
+    print("AI:", chat("我明年多大？"))
+    print()
+
+    print(f"--- 历史里现在有 {len(history)} 条消息 ---")
+    for m in history:
+        print(f"[{type(m).__name__}] {m.text[:40]}")
+```
+
+输出：
+
+```
+你: 我叫小明，今年 28 岁
+AI: 你好小明！很高兴认识你。
+
+你: 我叫什么名字？
+AI: 你叫小明。
+
+你: 我明年多大？
+AI: 你明年 29 岁。
+
+--- 历史里现在有 7 条消息 ---
+[SystemMessage] 你是一个友好的助手，回答简洁。
+[HumanMessage] 我叫小明，今年 28 岁
+[AIMessage] 你好小明！很高兴认识你。
+[HumanMessage] 我叫什么名字？
+[AIMessage] 你叫小明。
+[HumanMessage] 我明年多大？
+[AIMessage] 你明年 29 岁。
+```
+
+### 做成可交互的命令行
+
+```python
+if __name__ == "__main__":
+    print("开始对话（输入 quit 退出）\n")
+    while True:
+        user_input = input("你: ").strip()
+        if user_input.lower() in ("quit", "exit", "q"):
+            break
+        if not user_input:
+            continue
+        print("AI:", chat(user_input))
+        # 顺手看看成本涨得多快
+        print(f"   (历史 {len(history)} 条)")
+```
+
+跑几轮，观察历史条数增长。第 10 轮时你会发现每次请求的 `input_tokens` 已经很可观了。
+
+### ⚠️ 手动管理历史的三个坑
+
+**坑 1：忘了追加 AIMessage**
+
+```python
+# ❌ 错误
+def chat(user_input):
+    history.append(HumanMessage(user_input))
+    return model.invoke(history).text   # 回复没存进 history！
+
+# 结果：模型看到的历史里全是用户在说话，没有它自己的回复
+# 表现：答非所问、重复自我介绍
+```
+
+**坑 2：ToolMessage 配对断裂**
+
+如果历史里有工具调用，`AIMessage(tool_calls=[...])` 和对应的 `ToolMessage` **必须成对出现且顺序正确**。手动截断历史时很容易切断这个配对：
+
+```python
+# ❌ 危险：可能把 AIMessage 留下、ToolMessage 切掉
+history = history[-6:]
+
+# 报错：An assistant message with 'tool_calls' must be followed by
+#       tool messages responding to each 'tool_call_id'
+```
+
+这也是为什么第 8 章要用官方的摘要中间件，而不是自己写 `history[-N:]`——官方实现会保证配对完整。
+
+**坑 3：历史无限增长**
+
+不做任何处理的话，聊到第 50 轮会撞上模型的上下文长度上限：
+
+```
+openai.BadRequestError: This model's maximum context length is 65536 tokens,
+however you requested 71203 tokens.
+```
+
+三个解法（第 8、9 章详讲）：
+1. 只保留最近 N 轮（简单但会丢信息，且要小心坑 2）
+2. 老对话做摘要（`SummarizationMiddleware`）
+3. 重要信息存长期记忆（`store`）
+
+---
+
+## 🧱 本章 C#/SQL 类比汇总
+
+| 概念 | 类比 | 说明 |
+| --- | --- | --- |
+| `init_chat_model` | `DbProviderFactory` | 工厂模式，返回统一接口，换实现只改配置 |
+| `temperature=0` | 事务隔离级别设成最严 | 要的是可预测，不是性能/创意 |
+| `timeout` | `CommandTimeout` | 不设就是等死 |
+| 手动传 `history` | **无状态 HTTP + 每次带全量 Session** | 服务端不存状态，客户端每次把上下文全发一遍 |
+| `usage_metadata` | SQL 执行计划里的 IO 统计 | 优化前先看清消耗在哪 |
+| `.text` vs `.content` | `ToString()` vs 访问原始字段 | 前者保证给你可读文本，后者是原始结构 |
+
+---
+
+## ⚠️ 本章踩坑汇总
+
+### 1. `.text()` 加了括号
+
+```
+TypeError: 'str' object is not callable
+```
+
+去掉括号。这是从旧教程抄代码最常见的错。
+
+### 2. `load_dotenv()` 位置错了
+
+```python
+# ❌ 错误顺序
+model = init_chat_model("deepseek:deepseek-chat")
+load_dotenv()   # 太晚了，模型初始化时 Key 还不在环境里
+```
+
+`load_dotenv()` 必须在所有 `init_chat_model` / `create_agent` 之前。放在 import 后面第一行最稳。
+
+### 3. `max_tokens` 太小截断了 JSON
+
+```
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 87
+```
+
+检查 `finish_reason` 是不是 `"length"`。是的话把 `max_tokens` 调大，或者干脆不设。
+
+### 4. 上下文超长
+
+```
+BadRequestError: This model's maximum context length is 65536 tokens
+```
+
+历史太长了。见 2.6 坑 3 的三个解法。
+
+### 5. 工具消息配对断裂
+
+```
+An assistant message with 'tool_calls' must be followed by tool messages
+responding to each 'tool_call_id'
+```
+
+手动裁剪历史时切断了 AIMessage 和 ToolMessage 的配对。别自己切，用第 9 章的中间件。
+
+### 6. 温度设高了导致工具调用不稳定
+
+**症状**：同一个问题，有时调对工具，有时调错，有时干脆不调。
+
+**原因**：`temperature` 没设或设太高。做 Agent 一律 `temperature=0`。
+
+---
+
+## 🎯 动手练习
+
+### 练习 1（必做）：给手动对话加成本统计
+
+改造 2.6 的 `chat()` 函数，让它累计统计总 token 和总花费，每轮打印出来。
+
+观察：第 1 轮和第 10 轮的单轮 `input_tokens` 差多少倍？
+
+### 练习 2：验证「模型无状态」
+
+写两段代码对比：
+- A：正确追加 AIMessage
+- B：故意不追加 AIMessage
+
+都问三轮「我叫小明」→「我叫什么」→「我叫什么」，看 B 的表现有什么异常。
+
+### 练习 3：温度对比实验
+
+同一个问题（比如「给一家咖啡店起 3 个名字」）分别用 `temperature=0` 和 `temperature=1.2` 各跑 3 次，把 6 个结果贴出来对比。
+
+### 练习 4（进阶）：写一个模型切换器
+
+写一个函数 `ask_all(question)`，用 2 个不同模型（比如 DeepSeek + Ollama）回答同一个问题，并排打印答案和各自的 token 用量。
+
+---
 
 <details>
-<summary>参考答案</summary>
+<summary>📖 点击查看参考答案</summary>
+
+### 练习 1 参考答案
 
 ```python
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
-from langchain.messages import SystemMessage, HumanMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 
 load_dotenv()
-模型 = init_chat_model("deepseek:deepseek-chat", temperature=0, max_tokens=2000)
+model = init_chat_model("deepseek:deepseek-chat", temperature=0)
 
-系统提示 = """你是资深 SQL Server DBA。用户会贴一段 SQL，你按下面格式输出，不要写别的：
+history = [SystemMessage("你是一个友好的助手，回答简洁。")]
 
-## 业务功能
-（两三句话说清这段 SQL 在业务上干什么）
+PRICE_IN = 2.0 / 1_000_000
+PRICE_OUT = 8.0 / 1_000_000
 
-## 涉及的表
-- 表名：读还是写，用途
+total_cost = 0.0
+total_tokens = 0
+turn = 0
 
-## 潜在风险
-（性能、空值、并发、事务方面的问题，没有就写"未发现明显问题"）"""
 
-待分析 = """
-UPDATE a SET a.库存 = a.库存 - b.数量
-FROM 库存表 a INNER JOIN 出库明细 b ON a.物料编码 = b.物料编码
-WHERE b.单据号 = @单据号
-"""
+def chat(user_input: str) -> str:
+    global total_cost, total_tokens, turn
+    turn += 1
 
-回复 = 模型.invoke([SystemMessage(系统提示), HumanMessage(待分析)])
-print(回复.text)
+    history.append(HumanMessage(user_input))
+    response = model.invoke(history)
+    history.append(response)
 
-用量 = 回复.usage_metadata
-print(f"\n--- 本次花费约 {(用量['input_tokens']*2 + 用量['output_tokens']*8)/1_000_000:.6f} 元 ---")
+    u = response.usage_metadata
+    cost = u["input_tokens"] * PRICE_IN + u["output_tokens"] * PRICE_OUT
+    total_cost += cost
+    total_tokens += u["total_tokens"]
+
+    print(f"  [第{turn}轮] 输入 {u['input_tokens']} / 输出 {u['output_tokens']} "
+          f"/ 本轮 ¥{cost:.6f} / 累计 ¥{total_cost:.6f}")
+    return response.text
+
+
+if __name__ == "__main__":
+    questions = [
+        "我叫小明", "我今年 28", "我住北京", "我是程序员",
+        "我喜欢咖啡", "我养了只猫", "猫叫豆豆", "我周末爱爬山",
+        "总结一下你知道的关于我的信息", "我叫什么？",
+    ]
+    for q in questions:
+        print(f"你: {q}")
+        print(f"AI: {chat(q)}")
+        print()
+
+    print(f"=== 10 轮共 {total_tokens} token，¥{total_cost:.6f} ===")
 ```
 
-它大概会指出：没有判断库存是否会变成负数、没有事务保护、`WHERE` 条件依赖单据号索引等。**这类"帮你把老代码读明白"的活，是 AI 投入产出比最高的用法之一。**
+**典型观察结果**：
+
+| 轮次 | input_tokens |
+| --- | --- |
+| 1 | 22 |
+| 5 | 210 |
+| 10 | 620 |
+
+第 10 轮的输入是第 1 轮的 **28 倍**。而这只是 10 轮短对话。真实客服场景聊到 50 轮，成本会变得非常难看。
+
+这就是为什么第 8 章的摘要中间件不是「可选优化」，而是长对话的必备组件。
+
+### 练习 2 参考答案
+
+**B 版本（不追加 AIMessage）的历史是这样的：**
+
+```
+[SystemMessage] 你是助手
+[HumanMessage] 我叫小明
+[HumanMessage] 我叫什么
+[HumanMessage] 我叫什么
+```
+
+**典型异常表现**：
+1. 模型可能仍然答对（因为「我叫小明」还在历史里），但语气很怪，像在重复回答第一次的问题
+2. 更常见的是它开始重复自我介绍，或者说「你刚才已经问过了」这类基于错误上下文的话
+3. 某些模型会对连续多条 user 消息报错或行为异常
+
+**结论**：模型看到的不是「对话」，而是「一段文本」。你必须把它自己说过的话也放回去，它才知道对话进行到哪一步了。`AIMessage` 不是给你看的日志，是模型的必要输入。
+
+### 练习 3 参考答案
+
+`temperature=0` 三次运行（几乎相同）：
+
+```
+1. 醒时光、豆语、一杯山海
+2. 醒时光、豆语、一杯山海
+3. 醒时光、豆语咖啡、山海一杯
+```
+
+`temperature=1.2` 三次运行（差异明显）：
+
+```
+1. 拾光豆、慢半拍、云上烘焙
+2. 晨间序曲、第七个杯子、苦甜巷
+3. 浮豆记、日落研磨所、微醺午后
+```
+
+**结论与选型**：
+
+| 场景 | 推荐温度 | 理由 |
+| --- | --- | --- |
+| 工具调用 / Agent | 0 | 要稳定选对工具 |
+| 数据抽取 / 结构化输出 | 0 | 要可复现 |
+| 客服问答 | 0.3 | 稍有变化但不跑偏 |
+| 起名 / 文案 | 0.9–1.3 | 就要多样性 |
+
+⚠️ 顺带注意：温度高时**幻觉也更多**。做事实性问答别把温度调高。
+
+### 练习 4 参考答案
+
+```python
+from dotenv import load_dotenv
+from langchain.chat_models import init_chat_model
+
+load_dotenv()
+
+MODELS = {
+    "DeepSeek": "deepseek:deepseek-chat",
+    "本地 Qwen": "ollama:qwen3:8b",
+}
+
+
+def ask_all(question: str) -> None:
+    print(f"❓ {question}\n")
+    for name, spec in MODELS.items():
+        try:
+            m = init_chat_model(spec, temperature=0, timeout=120)
+            r = m.invoke(question)
+            u = r.usage_metadata or {}
+            print(f"--- {name} ---")
+            print(r.text)
+            print(f"(token: 入 {u.get('input_tokens', '?')} "
+                  f"/ 出 {u.get('output_tokens', '?')})\n")
+        except Exception as e:
+            # 某个模型挂了不影响其他模型
+            print(f"--- {name} ---")
+            print(f"⚠️ 调用失败：{type(e).__name__}: {e}\n")
+
+
+if __name__ == "__main__":
+    ask_all("用一句话解释什么是递归")
+```
+
+**两个值得注意的点**：
+
+1. **`init_chat_model` 放在循环里每次新建**，是因为不同模型的 `timeout` 需求差很多（本地要 120 秒，云端 30 秒够）。生产环境应该预先建好并复用。
+2. **`try/except` 是必须的**。多模型对比时，任何一个提供商挂了都不该拖垮整个流程。这个模式在第 12 章「便宜模型打头阵、失败再上贵的」里会正式用到。
+
+**你会观察到**：本地小模型的回答质量通常明显低于云端，但完全免费且不联网。选型时权衡这三者：质量、成本、数据是否出境。
 
 </details>
 
-**练习 2（推荐）**：把同一个数据抽取任务分别用 `temperature=0` 和 `temperature=1` 各跑 3 次，对比结果的稳定性。跑完你就再也不会忘记写 `temperature=0` 了。
+---
 
-**练习 3（进阶）**：改造 2.7 节的多轮对话程序，让它在历史超过 10 条时自动只保留系统提示 + 最近 6 条，并打印"已裁剪"。
+## 📌 一句话总结
+
+**模型是无状态的纯函数：给它一个消息列表，它返回一条 AIMessage；所谓「记忆」全靠你每次把历史重发一遍，所以历史越长越贵。**
 
 ---
 
-## 2.10 本章速查卡
+## 下一章预告
 
-```python
-from langchain.chat_models import init_chat_model
-from langchain.messages import SystemMessage, HumanMessage, AIMessage
-
-# 建模型（数据处理任务记得 temperature=0）
-模型 = init_chat_model("deepseek:deepseek-chat", temperature=0, max_tokens=1000, timeout=60)
-
-# 单次调用
-回复 = 模型.invoke("问题")
-回复 = 模型.invoke([SystemMessage("角色设定"), HumanMessage("问题")])
-
-# 批量并发
-回复列表 = 模型.batch(["问题1", "问题2", "问题3"])
-
-# 取东西
-回复.text                                    # 文字（不加括号！）
-回复.usage_metadata["input_tokens"]          # 输入 token
-回复.usage_metadata["output_tokens"]         # 输出 token
-回复.response_metadata["finish_reason"]      # stop / length（被截断）
-回复.tool_calls                              # 工具调用申请
-回复.content_blocks                          # 跨厂商统一内容视图
-模型.profile                                 # 这个模型支持什么
-```
-
-| 要点 | 记住 |
-|---|---|
-| 数据抽取/分类/转换 | **一定写 `temperature=0`** |
-| 模型有记忆吗 | **没有**。记忆 = 你自己维护的消息列表 |
-| 多轮对话为什么贵 | 每轮都把全部历史重发一遍 |
-| 忘了什么会导致失忆 | 忘了把 `AIMessage` 也 append 回历史 |
-| 输出不完整 | 查 `finish_reason` 是不是 `length` |
-| 批量处理 | 用 `batch()`，注意分批防限流 |
-| DeepSeek 不能干什么 | 不能吃图片；要推理链换 `deepseek-reasoner` |
+现在你会调模型了，但输出质量很大程度取决于你怎么说话。第 3 章讲提示词的四段结构、模板变量替换，以及三个最常犯的错误。
 
 ---
 
-## 📌 本章一句话总结
-
-**模型是无状态的：你每次都得把整段对话重新交给它；`.usage_metadata` 是你唯一能看清花了多少钱的地方。**
-
----
-
-上一章：[第 1 章　认识 LangChain 并跑出第一个程序](第01章-认识LangChain并跑出第一个程序.md)
-下一章：[第 3 章　提示词怎么写](第03章-提示词怎么写.md)
+**导航**：[上一章](ch01-hello-langchain.md) · [返回目录](../README.md) · [下一章](ch03-prompts.md)
