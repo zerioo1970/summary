@@ -25,9 +25,9 @@
 | 第 1 章 认识 LangChain，并跑出第一个程序 | ✅ |
 | 第 2 章 模型与消息 | ✅ |
 | 第 3 章 提示词怎么写 | ✅ |
-| **第 4 章 工具：给 AI 装上手脚** | ✅ |
-| **第 5 章 Agent：`create_agent`** | ✅ |
-| 第 6 章 结构化输出 | 📝 |
+| 第 4 章 工具：给 AI 装上手脚 | ✅ |
+| 第 5 章 Agent：`create_agent` | ✅ |
+| **第 6 章 结构化输出：拿到能直接入库的数据** | ✅ |
 | 第 7 章 流式输出 | 📝 |
 | 第 8–13 章 / 两个项目 / 附录 | 📝 |
 
@@ -79,13 +79,14 @@
 - ⚠️ 三个新手会撞的限制（**实测结果和官方文档不完全一致，如实写出**）
 - 5.5 实战：旅行规划助手
 
-**第 6 章 结构化输出：拿到能直接入库的数据**
-- 6.1 为什么「请只返回 JSON」不靠谱
-- 6.2 用 Pydantic 定义你要的形状
-- 6.3 `response_format` 一行搞定
-- 6.4 三种策略，一句话选型：不确定就用 `AutoStrategy`
+**[第 6 章 结构化输出：拿到能直接入库的数据](docs/ch06-structured-output.md)**
+- 6.1 为什么「请只返回 JSON」不靠谱（五种真实翻车方式）
+- 6.2 用 Pydantic 定义你要的形状（⚠️ 类名/docstring/Field 描述都是给模型看的）
+- 6.3 `response_format` 一行搞定 —— 结果在 `result["structured_response"]`
+- 6.4 三种策略，一句话选型（**实测：DeepSeek 走 `ToolStrategy`，OpenAI 走 `ProviderStrategy`**）
 - ⚠️ 提示式 JSON 输出在 1.x 已被移除，旧教程写法会失效
-- 6.5 实战：把一段投诉邮件变成工单记录
+- 6.5 校验失败怎么兜：`handle_errors` 四种取值实测
+- 6.6 实战：把投诉邮件批量变成工单记录（含成本估算）
 
 **第 7 章 流式输出：别让用户看着空白屏幕**
 - 7.1 `stream()` 做打字机效果（最简写法）
@@ -188,10 +189,14 @@ code/
 │   ├── tool_basics.py        ← 不需要 Key，看模型到底能"看到"什么
 │   ├── tool_errors.py        ← 工具报错的三种处理方案
 │   └── real_tools.py         ← 权限隔离 + 查库三道保险（最重要的一个）
-└── ch05/
-    ├── manual_agent.py       ← 手写 30 行极简 Agent 循环
-    ├── inspect_agent.py      ← 调试函数，可直接抄进你的项目
-    └── travel_agent.py       ← 综合实战：旅行规划助手
+├── ch05/
+│   ├── manual_agent.py       ← 手写 30 行极简 Agent 循环
+│   ├── inspect_agent.py      ← 调试函数，可直接抄进你的项目
+│   └── travel_agent.py       ← 综合实战：旅行规划助手
+└── ch06/
+    ├── extract_basic.py      ← 结构化输出最小示例
+    ├── strategies.py         ← 不需要 Key，看框架给模型的"人造工具"长什么样
+    └── extract_ticket.py     ← 实战：邮件批量转工单（可直接改造后用于生产）
 ```
 
 准备环境：

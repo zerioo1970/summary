@@ -1317,4 +1317,4 @@ V3 完整       ✅ 调用了，参数 {'city': '东京'}
 
 ---
 
-**导航**：[上一章](ch04-tools.md) · [返回目录](../README.md) · 下一章 第 6 章 结构化输出（编写中）
+**导航**：[上一章](ch04-tools.md) · [返回目录](../README.md) · [下一章](ch06-structured-output.md)
