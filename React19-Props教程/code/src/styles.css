@@ -1,0 +1,74 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  line-height: 1.6;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+}
+
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.nav button {
+  padding: 6px 12px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.nav button.active {
+  border-color: #4a7dff;
+  font-weight: 600;
+}
+
+.card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 12px 0;
+}
+
+.card h3 {
+  margin: 0 0 8px;
+}
+
+.card p {
+  margin: 4px 0;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-foot {
+  border-top: 1px solid #ddd;
+  margin-top: 8px;
+  padding-top: 8px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  border: 1px solid #e0a800;
+  font-size: 12px;
+}
+
+button + button {
+  margin-left: 8px;
+}
