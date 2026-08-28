@@ -282,16 +282,12 @@ TAP 解决一个现实难题：**新员工还没注册任何验证方式，怎�
 ```mermaid
 graph TD
     A[这个人是什么角色] --> B{是否为管理员<br/>或高风险人群}
-    B -->|是| C[设备绑定 passkey<br/>或 FIDO2 硬件密钥]
+    B -->|是 设备绑定 passkey<br/>或 FIDO2 硬件密钥| Z[首次注册统一用<br/>临时访问密码 TAP]
     B -->|否| D{是否使用<br/>公司 Windows 电脑}
-    D -->|是| E[Windows Hello<br/>加 passkey 备用]
+    D -->|是 Windows Hello<br/>加 passkey 备用| Z
     D -->|否| F{是否有可用手机<br/>并愿意安装应用}
-    F -->|是| G[Authenticator 中的<br/>passkey 加 TOTP 备用]
-    F -->|否| H[FIDO2 硬件安全密钥<br/>由公司发放]
-    C --> I[首次注册用<br/>临时访问密码 TAP]
-    E --> I
-    G --> I
-    H --> I
+    F -->|是 Authenticator 中的<br/>passkey 加 TOTP 备用| Z
+    F -->|否 FIDO2 硬件安全密钥<br/>由公司发放| Z
 ```
 
 ### 2.84.2 无手机 / 不能带手机场景的方案
