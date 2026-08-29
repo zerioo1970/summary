@@ -91,7 +91,7 @@ graph TD
 | Office LTSC 2024 | 支持至 **2029-10-09** |
 | 经典 Outlook | 至少支持到 **2029 年** |
 | Teams 会议录制默认过期 | **120 天** |
-| **Teams 许可来源** | 净新订阅**不随 E3 提供**，需单独购买 Teams Enterprise |
+| **Teams 许可来源** | 按正式报价中的准确SKU判断：E3 with Teams已包含；E3 (no Teams)需另配适用Teams产品 |
 | 已删除用户 OneDrive 保留 | 默认 **30 天** + 93 天删除状态 |
 | **Office 激活的联网间隔** | 首次必须联网，此后**每 30 天**至少一次 |
 
