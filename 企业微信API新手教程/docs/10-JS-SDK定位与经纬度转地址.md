@@ -225,7 +225,7 @@ function getLocation(callback) {
     }, TIMEOUT_MS);
 
     wx.getLocation({
-        type: 'gcj02',
+        type: 'gcj02',                  // 必须显式指定，默认的 wgs84 会导致偏移数百米
         success: function (res) {
             if (finished) {
                 return;

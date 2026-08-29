@@ -93,24 +93,24 @@ pip install pyodbc
 # -*- coding: utf-8 -*-
 """V1：从数据库读任务并发送。"""
 
-import pyodbc
-import wecom          # 第 2 章的模块
+import pyodbc          # SQL Server 驱动，需 pip install pyodbc
+import wecom           # 第 2 章的模块
 
-CONN_STR = (
+CONN_STR = (                                        # 括号内多行字符串会自动拼接
     "DRIVER={ODBC Driver 17 for SQL Server};"
     "SERVER=localhost;DATABASE=WeComTutorial;"
-    "Trusted_Connection=yes;"
+    "Trusted_Connection=yes;"                       # 用 Windows 身份验证，不传账号密码
 )
 
-conn = pyodbc.connect(CONN_STR)
-cursor = conn.cursor()
+conn = pyodbc.connect(CONN_STR)                     # 建立连接
+cursor = conn.cursor()                              # 游标，用来执行语句和取结果
 
 cursor.execute("SELECT Id, ToUser, Content FROM MessageTask")
-for row in cursor.fetchall():
-    wecom.send_text(row.Content, to_user=row.ToUser)
+for row in cursor.fetchall():                       # fetchall 一次取回全部行
+    wecom.send_text(row.Content, to_user=row.ToUser)   # row.列名 直接取值
     print(f"已发送任务 {row.Id}")
 
-conn.close()
+conn.close()                                        # 用完关闭连接
 ```
 
 ## 两个字段长度的依据
@@ -202,8 +202,8 @@ for task in tasks:
 
     try:
         problems = wecom.send_text(task.Content, to_user=task.ToUser)
-        new_status = 2 if not problems else 3
-    except Exception as ex:
+        new_status = 2 if not problems else 3    # 有问题记 3，无问题记 2
+    except Exception as ex:                      # 捕获异常，避免一条失败中断整批
         print(f"任务 {task.Id} 发送失败：{ex}")
         new_status = 3
 

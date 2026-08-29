@@ -45,16 +45,19 @@
 新建 `v1.py`，把三处引号里的值换成你自己的：
 
 ```python
-import requests
+import requests                                     # HTTP 请求库，需先 pip install requests
 
 CORP_ID = "你的企业ID"
 SECRET = "你的应用Secret"
-AGENT_ID = 1000002
+AGENT_ID = 1000002                                  # 数字，不加引号
 USER_ID = "你的UserId"
 
+# 第一步：用 Secret 换 token
+# params 会拼成 URL 的 ?corpid=..&corpsecret=..；.json() 把返回文本转成 Python 字典
 token = requests.get("https://qyapi.weixin.qq.com/cgi-bin/gettoken",
                      params={"corpid": CORP_ID, "corpsecret": SECRET}).json()["access_token"]
 
+# 第二步：用 token 发消息。params 放 URL 参数，json 放请求体
 requests.post("https://qyapi.weixin.qq.com/cgi-bin/message/send",
               params={"access_token": token},
               json={"touser": USER_ID, "msgtype": "text", "agentid": AGENT_ID,
@@ -241,17 +244,17 @@ AGENT_ID = 1000002
 USER_ID = "你的UserId"
 BASE = "https://qyapi.weixin.qq.com/cgi-bin"
 
-r = requests.get(f"{BASE}/gettoken",
+r = requests.get(f"{BASE}/gettoken",               # f"" 可直接把变量嵌进字符串
                  params={"corpid": CORP_ID, "corpsecret": SECRET}).json()
-if r["errcode"] != 0:                              # 新增
-    raise RuntimeError(f"取 token 失败：{r}")        # 新增
+if r["errcode"] != 0:                              # 新增：errcode 为 0 才是成功
+    raise RuntimeError(f"取 token 失败：{r}")        # 新增：抛异常中断，别静默往下走
 token = r["access_token"]
 
 r = requests.post(f"{BASE}/message/send", params={"access_token": token},
                   json={"touser": USER_ID, "msgtype": "text", "agentid": AGENT_ID,
                         "text": {"content": "V2 消息"}}).json()
-if r["errcode"] != 0:                              # 新增
-    raise RuntimeError(f"发送失败：{r}")             # 新增
+if r["errcode"] != 0:                              # 新增：每次调用都要查
+    raise RuntimeError(f"发送失败：{r}")             # 新增：把整个返回带上，便于看 errmsg
 print("发送成功")
 ```
 
@@ -338,8 +341,8 @@ if r["errcode"] != 0:
     raise RuntimeError(f"发送失败：{r}")
 
 # 新增：第三层判断
-invalid = r.get("invaliduser", "")
-if invalid:
+invalid = r.get("invaliduser", "")      # 全部成功时可能没有这个字段，故用 .get 加默认值
+if invalid:                             # 非空字符串为真，空字符串为假
     print(f"警告：以下成员未收到：{invalid}")
     print("原因通常是该成员不在应用可见范围内，或 UserId 拼写错误")
 else:
@@ -412,13 +415,13 @@ import requests
 def post_json(url, params, payload):
     """带超时和异常处理的 POST。"""
     try:
-        r = requests.post(url, params=params, json=payload, timeout=10)
+        r = requests.post(url, params=params, json=payload, timeout=10)  # 最多等 10 秒
         r.raise_for_status()          # HTTP 状态码非 2xx 时抛异常
         return r.json()
-    except requests.exceptions.Timeout:
+    except requests.exceptions.Timeout:          # 具体异常写在前面
         raise RuntimeError(
             "请求超时。注意：消息可能已经发出，直接重试会导致重复发送。")
-    except requests.exceptions.RequestException as ex:
+    except requests.exceptions.RequestException as ex:   # 宽泛异常写在后面
         raise RuntimeError(f"网络请求失败：{ex}")
 
 
@@ -429,8 +432,8 @@ r = post_json(f"{BASE}/message/send", {"access_token": token},
 if r["errcode"] != 0:
     raise RuntimeError(f"发送失败：{r}")
 
-invalid = r.get("invaliduser", "")
-print(f"未收到：{invalid}" if invalid else "全部发送成功")
+invalid = r.get("invaliduser", "")               # .get 取不到时返回空串，不会抛异常
+print(f"未收到：{invalid}" if invalid else "全部发送成功")   # 三元表达式，条件写在中间
 ```
 
 ## 新增行解释
@@ -535,7 +538,7 @@ def post_json(url, params, payload):
 def get_token():
     r = requests.get(f"{config.BASE_URL}/gettoken",
                      params={"corpid": config.CORP_ID,
-                             "corpsecret": config.APP_SECRET},
+                             "corpsecret": config.APP_SECRET},   # 从配置读，不写死在代码里
                      timeout=10).json()
     if r["errcode"] != 0:
         raise RuntimeError(f"取 token 失败：{r}")
@@ -626,15 +629,15 @@ import time
 import requests
 import config
 
-_token_cache = {}     # 新增：键是 Secret，值是 token 和过期时间
+_token_cache = {}     # 新增：键是 Secret，值是 token 和过期时间。下划线开头表示模块内部用
 
 
 def get_token(secret=None):
     """取 access_token，优先使用缓存。"""
-    secret = secret or config.APP_SECRET
+    secret = secret or config.APP_SECRET          # 不传就用应用 Secret（or 取第一个真值）
 
     cached = _token_cache.get(secret)
-    if cached and cached["expire_at"] > time.time():
+    if cached and cached["expire_at"] > time.time():   # time.time() 返回当前秒数
         return cached["token"]                    # 命中缓存，直接返回
 
     r = requests.get(f"{config.BASE_URL}/gettoken",
@@ -743,14 +746,14 @@ def send_text(to_user="", to_party="", to_tag="", content=""):
     """发送文本消息。三种收件人可任意组合，结果取并集。"""
     token = get_token()
 
-    payload = {
+    payload = {                                   # 字典，对应 JSON 对象
         "msgtype": "text",
         "agentid": config.AGENT_ID,
-        "text": {"content": content},
+        "text": {"content": content},             # 嵌套字典，名字要和 msgtype 一致
     }
     # 只把非空的收件人字段放进请求，避免传空字符串
     if to_user:
-        payload["touser"] = to_user
+        payload["touser"] = to_user               # 字典可随时新增键
     if to_party:
         payload["toparty"] = to_party
     if to_tag:
@@ -861,7 +864,7 @@ def send_message(msgtype, body, to_user="", to_party="", to_tag=""):
     payload = {
         "msgtype": msgtype,
         "agentid": config.AGENT_ID,
-        msgtype: body,          # 关键：用 msgtype 的值作为对象名
+        msgtype: body,          # 关键：键用变量而非字符串，两者永远一致
     }
     if to_user:
         payload["touser"] = to_user
@@ -1063,10 +1066,10 @@ def truncate_by_bytes(text, max_bytes=2000):
     if len(text.encode("utf-8")) <= max_bytes:
         return text                      # 没超限，原样返回
 
-    kept = []
-    used = 0
-    for ch in text:
-        size = len(ch.encode("utf-8"))   # 这个字符占几个字节
+    kept = []                            # 收集保留下来的字符
+    used = 0                             # 已用掉的字节数
+    for ch in text:                      # 逐个字符，不是逐个字节
+        size = len(ch.encode("utf-8"))   # 这个字符占几个字节（中文通常 3）
         if used + size > max_bytes:
             break                        # 再加就超了，停下
         kept.append(ch)
@@ -1455,10 +1458,10 @@ def describe_error(result):
 
 def truncate_by_bytes(text, max_bytes=2000):
     """按字节上限截断，逐字符累加以避免切断中文。"""
-    if len(text.encode("utf-8")) <= max_bytes:
+    if len(text.encode("utf-8")) <= max_bytes:   # encode 后取 len 才是字节数
         return text
 
-    kept, used = [], 0
+    kept, used = [], 0                           # 一行给两个变量赋值
     for ch in text:
         size = len(ch.encode("utf-8"))
         if used + size > max_bytes:

@@ -84,16 +84,18 @@ cursor = conn.cursor()
 cursor.execute("SELECT Id, Content FROM MessageTask WHERE Status = 0")
 tasks = cursor.fetchall()
 
-for task in tasks:
+for task in tasks:                                  # 逐条处理，缩进内是循环体
     # 取这条任务的收件人
-    cursor.execute("SELECT UserId FROM MessageRecipient WHERE TaskId = ?", task.Id)
-    users = [r.UserId for r in cursor.fetchall()]
+    cursor.execute("SELECT UserId FROM MessageRecipient WHERE TaskId = ?",
+                   task.Id)                         # ? 是占位符，绝不能拼字符串
+    users = [r.UserId for r in cursor.fetchall()]   # 取出 UserId 列，得到字符串列表
 
-    wecom.send_text(task.Content, to_user="|".join(users))
+    wecom.send_text(task.Content,
+                    to_user="|".join(users))        # 多个收件人用竖线连接
 
     cursor.execute("UPDATE MessageTask SET Status = 2 WHERE Id = ?", task.Id)
-    conn.commit()
-    print(f"任务 {task.Id} 已发送给 {len(users)} 人")
+    conn.commit()                                   # 必须提交，否则更新会被回滚
+    print(f"任务 {task.Id} 已发送给 {len(users)} 人")   # len() 取列表长度
 
 conn.close()
 ```
@@ -283,9 +285,9 @@ def send_task(cursor, conn, task):
     total_batches = (len(users) + BATCH_SIZE - 1) // BATCH_SIZE
     print(f"任务 {task.Id}：{len(users)} 人，分 {total_batches} 批")
 
-    for i in range(0, len(users), BATCH_SIZE):
-        batch = users[i:i + BATCH_SIZE]
-        batch_no = i // BATCH_SIZE + 1
+    for i in range(0, len(users), BATCH_SIZE):      # 步长为 900，i 依次取 0、900、1800…
+        batch = users[i:i + BATCH_SIZE]             # 切片取出这一批，末批不足也不会越界
+        batch_no = i // BATCH_SIZE + 1              # // 是整除，算出当前是第几批
 
         try:
             wecom.send_text(task.Content, to_user="|".join(batch),
@@ -358,14 +360,15 @@ def _mark_recipients(cursor, conn, task_id, users, status,
     if not users:
         return
 
+    # "?" * 3 得到 "???"，再用逗号连接成 "?,?,?"，凑出 IN 子句需要的占位符
     placeholders = ",".join("?" * len(users))
     cursor.execute(f"""
         UPDATE MessageRecipient
         SET Status = ?, ErrCode = ?, ErrMsg = ?,
             SentAt = CASE WHEN ? = 2 THEN SYSDATETIME() ELSE SentAt END
         WHERE TaskId = ? AND UserId IN ({placeholders})
-    """, status, errcode, errmsg[:500] if errmsg else None,
-        status, task_id, *users)
+    """, status, errcode, errmsg[:500] if errmsg else None,   # 先截断再入库，避免超长报错
+        status, task_id, *users)                              # *users 把列表展开成多个参数
     conn.commit()
 
 
@@ -408,9 +411,9 @@ def send_task(cursor, conn, task):
                              errmsg=str(ex))
             continue
 
-        # 关键：用差集算出成功的人
-        failed = _parse_invalid(problems)
-        succeeded = [u for u in batch if u not in failed]
+        # 关键：企业微信只返回失败的人，成功的人要自己算
+        failed = _parse_invalid(problems)                    # 集合，查找比列表快
+        succeeded = [u for u in batch if u not in failed]    # 本批减去失败的，即成功的
 
         _mark_recipients(cursor, conn, task.Id, succeeded, 2)
         _mark_recipients(cursor, conn, task.Id, list(failed), 3,
@@ -558,8 +561,8 @@ def extract_errcode(exception):
     第 2 章的 describe_error 输出形如 'errcode=60011, errmsg=...'
     """
     import re
-    m = re.search(r"errcode=(\d+)", str(exception))
-    return int(m.group(1)) if m else None
+    m = re.search(r"errcode=(\d+)", str(exception))   # 括号是捕获组，\d+ 匹配连续数字
+    return int(m.group(1)) if m else None             # group(1) 取第一个括号里的内容
 
 
 def handle_task_failure(cursor, conn, task, exception):
@@ -983,7 +986,8 @@ def import_from_excel(cursor, conn, path, sheet_name=None):
 
     ok, skipped, errors = 0, 0, []
 
-    # min_row=2 跳过表头
+    # min_row=2 跳过表头；values_only 只取值不取单元格对象
+    # enumerate 同时给出序号和内容，start=2 让行号与 Excel 里看到的一致
     for row_no, row in enumerate(ws.iter_rows(min_row=2, values_only=True),
                                  start=2):
         # 跳过完全空行
@@ -1126,7 +1130,7 @@ _should_stop = False
 
 def _on_signal(signum, frame):
     """收到停止信号时只设标志，不立即退出。"""
-    global _should_stop
+    global _should_stop        # 要修改模块级变量必须声明 global，否则只改局部副本
     _should_stop = True
     print("\n收到停止信号，将在当前任务完成后退出...")
 
@@ -1158,11 +1162,11 @@ def main_loop():
 
             if not tasks:
                 # 没任务才休眠。分段睡，便于及时响应停止信号
-                for _ in range(POLL_INTERVAL):
+                for _ in range(POLL_INTERVAL):   # 下划线表示这个变量用不上
                     if _should_stop:
                         break
-                    time.sleep(1)
-                continue
+                    time.sleep(1)                # 睡 1 秒，不要一次睡满 15 秒
+                continue                         # 跳过本轮剩余代码，直接进入下一轮
 
             for task in tasks:
                 if _should_stop:
