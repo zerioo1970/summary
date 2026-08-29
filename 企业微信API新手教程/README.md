@@ -5,18 +5,23 @@
 面向第一次接触企业微信开发 API 的开发者，采用以下技术：
 
 - **Python**：独立完成企业微信群发通知、素材上传
-- **C# ASP.NET WebForms**：独立完成员工查询、身份登录、JS-SDK 和回调处理
-- **IIS**：部署 WebForms 并提供 HTTPS 地址
+- **C# ASP.NET WebForms**：在第 6～11 章独立完成员工查询、身份登录、JS-SDK 和回调处理
+- **React 19 + TypeScript + Vite**：在第 14 章构建手机端 H5
+- **Ant Design Mobile**：提供适合企业微信手机端的交互组件
+- **.NET 10 ASP.NET Core Minimal API**：在第 14 章负责 OAuth、企业微信 API、JS-SDK 签名和 SQL Server API
+- **IIS**：部署 WebForms，以及通过 ANCM 承载 .NET 10 应用
 - **SQL Server**：保存员工缓存、消息任务、签到记录和日志
 
 ## 核心开发原则
 
-同一个功能场景只使用一种语言：
+同一个服务端业务只保留一套实现：
 
-- Python 功能直接调用企业微信 API，不调用 C# WebForms
+- Python 功能直接调用企业微信 API，不调用 C# WebForms 或 .NET 10 API
 - C# WebForms 功能直接调用企业微信 API，不调用 Python
-- 两者可读写同一个 SQL Server，但不通过 HTTP 或命令行互相调用
-- Python 和 C# 各自管理自己的 `access_token` 缓存
+- 第 14 章的 React 只负责 UI、路由和调用本站 Minimal API，不直接调用需要 Secret 的企业微信服务端接口
+- Secret、`access_token`、ticket 和数据库连接串只保存在服务端；浏览器只接收必要的业务 DTO 与签名结果
+- 各服务端实现可以读写同一个 SQL Server，但不通过命令行互相调用
+- Python、WebForms 和 .NET 10 各自管理自己的 `access_token` 缓存
 
 ## 目录
 
@@ -35,17 +40,22 @@
 | [11 C# WebForms 回调处理](./docs/11-CSharp-WebForms回调处理.md) | C# | 07 |
 | [12 部署与故障排查](./docs/12-部署与故障排查.md) | 运维 | 全部 |
 | [13 Windows Server 2022 从零搭建](./docs/13-Windows-Server-2022搭建IIS服务器.md) | 运维 | 无（可最先读） |
+| [14 React 19 + TypeScript + Vite + Ant Design Mobile + .NET 10 Minimal API](./docs/14-React19-TypeScript-Vite-AntDesignMobile-DotNet10-MinimalAPI.md) | TypeScript + C# | 01、03、07、08、09（12、13 按需） |
 
 ## 从裸机开始的读者请注意
 
-**第 13 章是从零搭建服务器的操作手册，它应该在第 7 章之前做**，编号靠后只是因为后补。
+**第 13 章是从零搭建服务器的操作手册，它应该在第 7 章之前做**，编号靠后只是因为后补。第 13 章覆盖 Windows Server、IIS、DNS、证书等通用基础，但明确不负责 ASP.NET Core 承载；第 14 章会继续安装 .NET 10 Hosting Bundle、配置 ANCM 和 No Managed Code 应用池。
 
 ```text
 第 1 到 6 章（本机开发，无需服务器）
       ↓
-第 13 章（搭建 Windows Server 2022 + IIS + SSL）
+第 13 章（Windows Server + IIS + SSL 通用基础）
       ↓
-第 7 到 12 章（域名配置、免登录、JS-SDK、回调、上线）
+第 7 到 12 章（WebForms 路线）
+
+或：01、03、07～09 的原理与配置
+      ↓
+第 14 章（React H5 + .NET 10 完整实战）
 ```
 
 ## 三个阶段
@@ -61,6 +71,10 @@
 **阶段三（11–12）：上线**
 
 回调接收和生产部署。
+
+**独立现代栈实战（14）**
+
+第 14 章不依赖 WebForms 源码，从空项目开始建立 React 手机端、.NET 10 Minimal API、OAuth、通讯录同步、SQL Server、JS-SDK 扫码和 IIS 同源部署。建议先完成第 1、3、7～9 章的配置和原理部分；服务器通用准备参考第 13 章。
 
 ## 编写方式
 
@@ -89,13 +103,15 @@
 | 11 | 已完成 | 11 个版本递进 |
 | 12 | 已完成 | 按上线阶段组织，含错误码速查与故障决策树 |
 | 13 | 已完成 | 10 个阶段，每阶段一道验证关卡 |
+| 14 | 已完成 | 12 个版本递进，React + Minimal API 端到端实战 |
 
-**全部 13 章编写完成。**
+**全部 14 章编写完成。**
 
 ## 编写标准
 
 - 递进式：每版只加一两个功能点，用「上一版的问题」引出
 - 每个新增行都解释作用，不只给代码
 - 原理配图，图宽不超过 2 列节点
-- 每章结尾有自测表和勾选式完成标准
+- 现代前后端章节标明浏览器、Minimal API、企业微信和 SQL Server 中哪一层发生变化
+- 每章结尾有完整请求流、自测表和勾选式完成标准
 - 明确列出会踩的坑：现象、原因、解决办法
