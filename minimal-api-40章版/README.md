@@ -1,13 +1,13 @@
-# ASP.NET Core 10 Minimal API 教程（第 1 至 40 章）
+# ASP.NET Core 10 Minimal API 教程（第 1 至 41 章）
 
 从 Hello World 到前后端交互与首次部署 · Kestrel 专题与三项目附录版
 适用版本：.NET SDK 10.x / ASP.NET Core 10 / C# 14 ｜ 编写日期：2026-07-18
 
-全书 **40 章 + 3 附录**，含 56 张插图、271 个表格、278 段代码。
+全书 **41 章 + 3 附录**，含 58 张插图、271 个表格、278 段代码。
 
 ## 如何阅读
 
-- **看成品 Word**：`ASP.NET-Core-10-Minimal-API-教程-第1至40章.docx`（由下面的 Markdown 合成，带可点击目录）
+- **看成品 Word**：`ASP.NET-Core-10-Minimal-API-教程-第1至41章.docx`（由下面的 Markdown 合成，带可点击目录）
 - **在 GitHub 上直接读**：进入 `chapters/`，每章一个 Markdown 文件，可在线渲染（图片、代码高亮都有）
 - **原始上传版**：`ASP.NET-Core-10-Minimal-API-教程-第1至40章-附录C前端交互完整版.docx`（原封不动保留作为存档）
 
@@ -15,10 +15,10 @@
 
 ```
 minimal-api-40章版/
-├── ASP.NET-Core-10-Minimal-API-教程-第1至40章.docx          # 由 MD 合成的成品
+├── ASP.NET-Core-10-Minimal-API-教程-第1至41章.docx          # 由 MD 合成的成品
 ├── ...-附录C前端交互完整版.docx                              # 原始上传存档（未改动）
-├── chapters/          # 47 个 Markdown（封面 + 使用说明 + 40 章 + 3 附录 + 参考资料/审阅说明）
-├── images/            # 56 张插图
+├── chapters/          # 48 个 Markdown（封面 + 使用说明 + 41 章 + 3 附录 + 参考资料/审阅说明）
+├── images/            # 58 张插图
 ├── template/reference.docx   # pandoc 样式模板（中文字体/代码块/提示框/A4）
 ├── build.sh           # 一键把 md + 图片合成 Word
 └── src/               # 转换与维护脚本
@@ -29,17 +29,17 @@ minimal-api-40章版/
 
 ## 全书目录
 
-**基础入门（1–8）**：1 .NET 10 与 Minimal API · 2 准备开发环境 · 3 Hello World · 4 Kestrel 专题 · 5 VS Code 与 Visual Studio · 6 OpenAPI 3.1 与 Swagger · 7 第一次发布和部署 · 8 前后端最常用的交互操作
+**基础入门（1–9）**：1 .NET 10 与 Minimal API · 2 准备开发环境 · 3 Hello World · 4 Kestrel 专题 · 5 VS Code 与 Visual Studio · 6 OpenAPI 3.1 与 Swagger · 7 第一次发布和部署 · **8 一台服务器部署多个 Minimal API（FDD + 独立目录/端口 + 服务托管）** · 9 前后端最常用的交互操作
 
-**核心机制（9–14）**：9 路由与 HTTP 方法 · 10 参数绑定 · 11 返回值与响应生成 · 12 HttpContext · 13 依赖注入 · 14 配置、环境与密钥
+**核心机制（10–15）**：10 路由与 HTTP 方法 · 11 参数绑定 · 12 返回值与响应生成 · 13 HttpContext · 14 依赖注入 · 15 配置、环境与密钥
 
-**工程能力（15–23）**：15 日志 · 16 中间件与请求管道 · 17 Endpoint Filter · 18 .NET 10 内置验证 · 19 异常处理与统一错误响应 · 20 RESTful 设计 · 21 EF Core 10 · 22 DTO、映射与分层 · 23 拆分膨胀的 Program.cs
+**工程能力（16–24）**：16 日志 · 17 中间件与请求管道 · 18 Endpoint Filter · 19 .NET 10 内置验证 · 20 异常处理与统一错误响应 · 21 RESTful 设计 · 22 EF Core 10 · 23 DTO、映射与分层 · 24 拆分膨胀的 Program.cs
 
-**安全与进阶（24–32）**：24 身份认证 · 25 授权与权限模型 · 26 Web API 安全 · 27 文件、流与实时响应 · 28 缓存 · 29 后台任务与消息处理 · 30 调用外部服务 · 31 性能原理与优化 · 32 健康检查与可观测性
+**安全与进阶（25–33）**：25 身份认证 · 26 授权与权限模型 · 27 Web API 安全 · 28 文件、流与实时响应 · 29 缓存 · 30 后台任务与消息处理 · 31 调用外部服务 · 32 性能原理与优化 · 33 健康检查与可观测性
 
-**交付（33–37）**：33 自动化测试 · 34 代码质量与团队协作 · 35 高级发布与生产运行 · 36 Docker 容器化 · 37 CI/CD
+**交付（34–38）**：34 自动化测试 · 35 代码质量与团队协作 · 36 高级发布与生产运行 · 37 Docker 容器化 · 38 CI/CD
 
-**综合实战（38–40）**：38 需求与架构设计 · 39 实现业务功能 · 40 加固、测试与交付
+**综合实战（39–41）**：39 需求与架构设计 · 40 实现业务功能 · 41 加固、测试与交付
 
 **附录**：A TodoLite 单文件任务清单 · B TaskBoard 数据库任务系统 · C 从原生 fetch 到 Axios 与 React 19
 

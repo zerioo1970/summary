@@ -12,6 +12,6 @@ pandoc $FILES \
   --reference-doc="$DIR/template/reference.docx" \
   --toc --toc-depth=2 \
   -f markdown+east_asian_line_breaks \
-  -o "$DIR/ASP.NET-Core-10-Minimal-API-教程-第1至40章.docx"
+  -o "$DIR/ASP.NET-Core-10-Minimal-API-教程-第1至41章.docx"
 
-echo "已生成: $DIR/ASP.NET-Core-10-Minimal-API-教程-第1至40章.docx"
+echo "已生成: $DIR/ASP.NET-Core-10-Minimal-API-教程-第1至41章.docx"

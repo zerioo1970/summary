@@ -147,7 +147,7 @@ return Results.Ok(result);
 
 -   serverTime每次请求都会重新计算，所以刷新页面时会变化。
 
--   JSON字段名默认采用Web JSON命名规则；第11章会介绍统一配置。
+-   JSON字段名默认采用Web JSON命名规则；第12章会介绍统一配置。
 
 ## 3.6 第四步：接收路由参数和查询参数
 
