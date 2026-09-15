@@ -66,9 +66,7 @@ Kestrel是跨平台的：同一套ASP.NET Core应用可以在Windows、Linux和m
 
 一次请求的输入是HTTP方法、URL、请求头和可选请求体；Kestrel把这些网络数据呈现为HttpContext。管道处理完成后，状态码、响应头和JSON响应体再由Kestrel写回客户端。
 
-![浏览器、操作系统端口、Kestrel、ASP.NET Core中间件、Minimal API端点和HTTP响应之间的完整请求流程](../images/image3.png){width="6.299212598425197in" height="3.031496062992126in"}
-
-图4-1　一次HTTP请求经过Kestrel并返回的完整路径
+![图4-1　一次HTTP请求经过Kestrel并返回的完整路径](../images/image3.png){width="6.299212598425197in" height="3.031496062992126in"}
 
 ## 4.4 dotnet run、CreateBuilder、Build和app.Run()分别做什么
 
@@ -87,9 +85,7 @@ app.MapGet("/api/hello", () => "Hello"); // 登记业务端点
 app.Run(); // 启动Host，Kestrel开始监听
 ```
 
-![dotnet run、CreateBuilder、Build、app.Run、端口绑定和Now listening on日志之间的启动顺序](../images/image4.png){width="6.299212598425197in" height="3.543307086614173in"}
-
-图4-2　从dotnet run到Kestrel开始监听端口的启动过程
+![图4-2　从dotnet run到Kestrel开始监听端口的启动过程](../images/image4.png){width="6.299212598425197in" height="3.543307086614173in"}
 
 ## 4.5 第一步：从父目录创建KestrelDemo项目
 
@@ -520,9 +516,7 @@ Kestrel可以作为直接面向网络的边缘服务器，并不是技术上必�
 
 常见Linux部署中，Nginx监听公网443端口，Kestrel只监听127.0.0.1:5000；systemd负责让应用进程常驻和自动重启。IIS/Nginx是网络入口，systemd或Windows Service是进程管理者，Kestrel是ASP.NET Core应用的服务器入口，这三类职责不要混在一起。
 
-![开发环境浏览器直接访问Kestrel，以及生产环境客户端经IIS、Nginx或云入口转发到Kestrel的对比](../images/image5.png){width="6.299212598425197in" height="2.9921259842519685in"}
-
-图4-3　开发环境直接访问Kestrel与生产反向代理拓扑
+![图4-3　开发环境直接访问Kestrel与生产反向代理拓扑](../images/image5.png){width="6.299212598425197in" height="2.9921259842519685in"}
 
   --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **反向代理后的协议为什么可能变了　**公网客户端使用HTTPS，而代理转给Kestrel的内部连接可能是HTTP。应用需要在可信代理边界内正确处理X-Forwarded-For和X-Forwarded-Proto，否则生成的链接、客户端IP、认证回调或HTTPS重定向可能出错。第36章会继续讲生产发布与Forwarded Headers。

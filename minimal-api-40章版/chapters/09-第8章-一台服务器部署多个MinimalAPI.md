@@ -8,9 +8,7 @@
 
 > **【本章操作路线】** 判断该不该用这套方式 → 选 FDD 发布 → 定目录与端口台账 → 让应用监听自己的端口 → 注册成 Windows 服务或 systemd 单元 → 挂反向代理做统一入口 → 只升级/回滚一个应用 → 分层排错
 
-![一台服务器上跑多个 Minimal API 的布局](../images/ch8_multiapp_layout.png)
-
-图8-1　一台服务器上跑多个 Minimal API 的布局
+![图8-1　一台服务器上跑多个 Minimal API 的布局](../images/ch8_multiapp_layout.png)
 
 ## 8.1 为什么这套组合在企业里最常见
 
@@ -243,9 +241,7 @@ Windows 上用 IIS 做反向代理需要安装 **URL Rewrite** 和 **ARR（Appli
 
 这一节回答一个很实际的问题：**改了订单 API，怎么只换它、不碰另外两个。**
 
-![只升级一个应用：releases 存版本，current 指向在用版本](../images/ch8_release_switch.png)
-
-图8-2　只升级一个应用：releases 存版本，current 指向在用版本
+![图8-2　只升级一个应用：releases 存版本，current 指向在用版本](../images/ch8_release_switch.png)
 
 关键是让服务始终指向 `current`，而 `current` 的内容可以整体替换。
 

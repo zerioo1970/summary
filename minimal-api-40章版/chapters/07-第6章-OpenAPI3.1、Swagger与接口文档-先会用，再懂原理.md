@@ -70,9 +70,7 @@ Swagger UI读取这份OpenAPI文档，然后自动生成可视化网页。日常
 
 -   Scalar：另一种读取OpenAPI文档的交互页面，不是Swagger UI。
 
-![图5-1　Minimal API、OpenAPI文档与Swagger UI之间的关系](../images/image9.png){width="6.102362204724409in" height="3.2418799212598426in"}
-
-图6-1　Minimal API、OpenAPI文档与Swagger UI之间的关系
+![图6-1　Minimal API、OpenAPI文档与Swagger UI之间的关系](../images/image9.png){width="6.102362204724409in" height="3.2418799212598426in"}
 
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **生活化比喻　**Minimal API像真正做菜的厨房；OpenAPI标准像菜单的统一写法；/openapi/v1.json像这家餐厅的具体菜单；Swagger UI像读取菜单后生成的电子点餐屏。点餐屏不会做菜，它只负责展示选择并把订单送到厨房。
@@ -236,9 +234,7 @@ MinimalApiSwaggerDemo/\
 
   ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-![图5-2A　项目文件与运行时网址的区别](../images/image10.png){width="6.102362204724409in" height="3.1189851268591426in"}
-
-图6-2A　项目文件与运行时网址的区别
+![图6-2A　项目文件与运行时网址的区别](../images/image10.png){width="6.102362204724409in" height="3.1189851268591426in"}
 
 ## 6.7 编写第一个Program.cs：每一段只做一件事
 
@@ -539,9 +535,7 @@ dotnet run
 
 -   第9步：后端返回状态码、响应头和JSON；Swagger UI收到响应后，把这些内容显示在Server response区域。
 
-![图5-2　Swagger UI从读取OpenAPI说明书到显示真实API响应的完整链路](../images/image11.png){width="6.299212598425197in" height="3.3464566929133857in"}
-
-图6-2　Swagger UI从读取OpenAPI说明书到显示真实API响应的完整链路
+![图6-2　Swagger UI从读取OpenAPI说明书到显示真实API响应的完整链路](../images/image11.png){width="6.299212598425197in" height="3.3464566929133857in"}
 
   ---------------------------------------------------------------------------------------------------------------
   **最关键的一句话　**Swagger UI是浏览器客户端；OpenAPI JSON是中间说明书；Minimal API才是真正执行C#代码的后端。
@@ -676,9 +670,7 @@ record UpdateTaskRequest(string Title, bool Completed);
 
 把Program.cs替换为示例6-17，保存后执行dotnet build和dotnet run。假设终端显示https://localhost:7123，就打开https://localhost:7123/swagger。端口仍然以你的终端为准。
 
-![图5-3　Swagger UI页面从上到下的查看顺序](../images/image12.png){width="6.102362204724409in" height="3.2418799212598426in"}
-
-图6-3　Swagger UI页面从上到下的查看顺序
+![图6-3　Swagger UI页面从上到下的查看顺序](../images/image12.png){width="6.102362204724409in" height="3.2418799212598426in"}
 
 ### 6.12.1 测试GET /api/tasks
 
@@ -692,9 +684,7 @@ record UpdateTaskRequest(string Title, bool Completed);
 
 54. 把completed改成true再执行，确认返回结果随筛选条件变化。
 
-![图5-4　使用Swagger UI测试带查询参数GET请求的六个动作](../images/image13.png){width="6.102362204724409in" height="3.2418799212598426in"}
-
-图6-4　使用Swagger UI测试带查询参数GET请求的六个动作
+![图6-4　使用Swagger UI测试带查询参数GET请求的六个动作](../images/image13.png){width="6.102362204724409in" height="3.2418799212598426in"}
 
 ### 6.12.2 测试GET /api/tasks/{id}和404
 
@@ -726,9 +716,7 @@ record UpdateTaskRequest(string Title, bool Completed);
 }
 ```
 
-![图5-5　创建资源并继续使用POST返回的任务编号](../images/image14.png){width="6.102362204724409in" height="3.2418799212598426in"}
-
-图6-5　创建资源并继续使用POST返回的任务编号
+![图6-5　创建资源并继续使用POST返回的任务编号](../images/image14.png){width="6.102362204724409in" height="3.2418799212598426in"}
 
 ### 6.12.4 用新id测试PUT
 

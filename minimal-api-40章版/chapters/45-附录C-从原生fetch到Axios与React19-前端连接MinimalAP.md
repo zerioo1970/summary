@@ -8,9 +8,7 @@
 
   ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-![原生fetch页面、Axios页面和React 19页面都通过HTTP与JSON访问同一个ASP.NET Core 10 Minimal API。](../images/image53.png){width="6.299212598425197in" height="3.4295713035870516in"}
-
-图C-1　三种前端共用同一个Minimal API及HTTP契约
+![图C-1　三种前端共用同一个Minimal API及HTTP契约](../images/image53.png){width="6.299212598425197in" height="3.4295713035870516in"}
 
 ## C.1 先分清五个容易混在一起的名词
 
@@ -93,9 +91,7 @@ FrontendClients/
 
 浏览器得到响应后，fetch返回一个Response对象。这个对象的status和ok告诉你HTTP是否成功，headers保存响应头，json()或text()才会读取并解析响应体。最后，JavaScript修改DOM或React状态，用户才在页面上看见结果。
 
-![用户点击后，JavaScript通过fetch发送POST，Kestrel和Minimal API处理后返回201与JSON，浏览器解析并更新页面。](../images/image54.png){width="6.299212598425197in" height="3.4295713035870516in"}
-
-图C-2　一次fetch请求从点击到页面更新的完整往返
+![图C-2　一次fetch请求从点击到页面更新的完整往返](../images/image54.png){width="6.299212598425197in" height="3.4295713035870516in"}
 
 **示例C-2　浏览器可能发出的HTTP请求（为了讲解而简化）**
 
@@ -238,9 +234,7 @@ return data;
 
 带application/json或Authorization等条件的跨源请求可能触发预检。浏览器先发送OPTIONS，询问服务器是否允许该源、方法和请求头；预检通过后才发送真正的POST、PUT或DELETE。页面代码通常不需要手写OPTIONS。
 
-![浏览器先用OPTIONS预检跨源JSON和Authorization请求，服务器允许后再发送真正POST并返回结果。](../images/image55.png){width="6.299212598425197in" height="3.5695538057742784in"}
-
-图C-3　跨源写请求的CORS预检与真正业务请求
+![图C-3　跨源写请求的CORS预检与真正业务请求](../images/image55.png){width="6.299212598425197in" height="3.5695538057742784in"}
 
 **示例C-6　只允许两个明确开发源的CORS配置**
 
@@ -994,9 +988,7 @@ loadTasks();
 
 但React不会替你定义HTTP方法、理解状态码、修好CORS或取得认证令牌。如果先学React而不理解Network中发生了什么，一旦出现Failed to fetch、401或预检失败，就很难判断问题。前面的原生fetch部分正是React调试的基础。
 
-![React组件首次渲染后由useEffect请求API，JSON到达后setTasks更新状态并触发重新渲染。](../images/image56.png){width="6.299212598425197in" height="3.289588801399825in"}
-
-图C-4　React状态、渲染与HTTP请求形成的循环
+![图C-4　React状态、渲染与HTTP请求形成的循环](../images/image56.png){width="6.299212598425197in" height="3.289588801399825in"}
 
 ## C.22 创建React 19项目并固定开发端口
 
