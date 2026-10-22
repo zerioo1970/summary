@@ -7,8 +7,8 @@
     <!-- viewport-fit=cover：页面铺满刘海区域，再由 CSS 的 safe-area 自己留白 -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>待办 H5</title>
-    <!-- 引用源码里的 CSS，构建时 Vite 会把它打包成 /assets/index-xxxx.css -->
-    <link rel="stylesheet" href="/src/style.css" />
+    <!-- style.css 由构建脚本原样复制到 wwwroot 根目录 -->
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
     <h1>我的待办</h1>
@@ -22,6 +22,7 @@
 
     <ul id="list"></ul>
 
-    <script type="module" src="/src/main.ts"></script>
+    <!-- 引用 tsc 编译出来的 main.js；type="module" 不能省，原因见第 2 章 -->
+    <script type="module" src="/main.js"></script>
   </body>
 </html>

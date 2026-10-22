@@ -10,7 +10,14 @@ app.UseDefaultFiles();
 
 // 请求路径能对上 wwwroot 里的某个文件，就直接把文件发出去，后面的接口不再执行；
 // 对不上（比如 /api/todos）就放行给下面的 MapGet / MapPost。
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    // main.js 每次构建都叫同一个名字。不加这个头，浏览器可能继续用缓存里的旧版本。
+    // no-cache 的意思不是"不缓存"，而是"用之前先问服务器一句有没有变"：
+    // 没变时服务器只回 304（没有内容），代价很小。
+    OnPrepareResponse = ctx =>
+        ctx.Context.Response.Headers.CacheControl = "no-cache",
+});
 
 var todos = new List<Todo>
 {

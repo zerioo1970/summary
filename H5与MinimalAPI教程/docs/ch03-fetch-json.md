@@ -49,7 +49,8 @@ graph TB
 
     <ul id="list"></ul>
 
-    <script type="module" src="/src/main.ts"></script>
+    <!-- 引用 tsc 编译出来的 main.js；type="module" 不能省，原因见第 2 章 -->
+    <script type="module" src="/main.js"></script>
   </body>
 </html>
 ```
@@ -259,9 +260,9 @@ dotnet run
 |---|---|---|
 | 提交后页面提示 `请求失败：HTTP 415` | 没写 `Content-Type: application/json` | 在 `headers` 里加上 |
 | 列表里出现 `undefined`，构建却没报错 | interface 的字段名和后端返回的 JSON 对不上（大小写或拼写） | 打开 `/api/todos` 看实际返回的 JSON，照着改 interface |
-| 用 `npx vite` 打开 `localhost:5173` 的页面，列表出不来，提示请求失败 | 5173 是 Vite 自己的开发服务器，它没有 `/api/todos`，请求根本没到后端 | 本教程统一用 `npm run build` 后访问 `localhost:5080`（开发服务器要配代理，不在本教程范围） |
+| 在文件夹里双击 `index.html` 打开，列表是空的，也没有任何提示 | 地址栏变成了 `file:///...`：`/main.js` 指向磁盘根目录，`/api/todos` 也没有后端来响应，脚本根本没运行（实测） | 一律通过后端访问 `http://localhost:5080/` |
 | 点一下"添加"，整页刷新了一次，地址栏末尾多了 `?` | 漏了 `e.preventDefault()`，浏览器按默认方式整页提交了表单 | 在 submit 处理函数第一行加上 |
-| 改了代码、刷新页面，效果还是旧的 | `npm run build` 其实失败了（比如 `tsc` 报未使用变量），wwwroot 里还是上一次的产物 | 每次构建都看一眼最后有没有 `✓ built in` |
+| 改了代码、刷新页面，效果还是旧的 | `npm run build` 其实失败了（比如 `tsc` 报未使用变量），构建停在第一步，wwwroot 里还是上一次的产物 | 每次构建都看一眼输出里有没有 `error TS` |
 | 后端返回了错误，页面却没有提示 | 没检查 `res.ok` | 所有请求都走统一的 `request` 函数 |
 
 ## 🎯 动手练习
@@ -286,7 +287,7 @@ fetch 发请求、检查 res.ok、按约定的形状读 JSON：页面和接口�
 
 ---
 
-**导航**：[上一章](ch02-vite-build-static-files.md) · [返回目录](../README.md) · [下一章](ch04-mobile.md)
+**导航**：[上一章](ch02-tsc-build-static-files.md) · [返回目录](../README.md) · [下一章](ch04-mobile.md)
 
 ---
 

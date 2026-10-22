@@ -2,12 +2,12 @@
   "name": "h5-frontend",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "build": "tsc && vite build"
+    "clean": "node -e \"require('node:fs').rmSync('../Backend/wwwroot', { recursive: true, force: true })\"",
+    "copy": "node -e \"require('node:fs').cpSync('index.html', '../Backend/wwwroot/index.html')\"",
+    "build": "tsc --noEmit && npm run clean && tsc && npm run copy"
   },
   "devDependencies": {
-    "typescript": "~5.9.3",
-    "vite": "^8.3.5"
+    "typescript": "~5.9.3"
   }
 }

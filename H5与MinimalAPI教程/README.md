@@ -1,8 +1,8 @@
 # H5 页面 + Minimal API 入门教程
 
-> 版本基线：**.NET 10 SDK**（实测 `10.0.402`，`net10.0`）｜**Node.js 20.19+ 或 22.12+**｜**Vite 8.3.x**｜**TypeScript 5.9.x**（`strict` 开启，无 `any`）
+> 版本基线：**.NET 10 SDK**（实测 `10.0.402`，`net10.0`）｜**TypeScript 5.9.x**（`strict` 开启，无 `any`）｜Node.js 任一维护期 LTS（只用来运行 `tsc`）
 >
-> 后端按本教程主题使用 .NET 10 Minimal API；前端不用框架，直接写 TypeScript，由 Vite 构建。
+> 后端按本教程主题使用 .NET 10 Minimal API；前端只有 `index.html` + TypeScript，用 `tsc` 编译，**不用任何打包工具和框架**。
 
 ---
 
@@ -32,7 +32,7 @@
 
 **[第 1 章 先把接口立起来：Minimal API 返回 JSON](docs/ch01-minimal-api-json.md)**：不写页面，用浏览器和 curl 验证 GET/POST 接口、JSON 和状态码。
 
-**[第 2 章 页面源码放 Frontend，产物交给后端发](docs/ch02-vite-build-static-files.md)**：Vite 把 TypeScript 构建到 `wwwroot`，`UseDefaultFiles` + `UseStaticFiles` 把页面发给浏览器。
+**[第 2 章 页面源码放 Frontend，产物交给后端发](docs/ch02-tsc-build-static-files.md)**：`tsc` 把 TypeScript 编译到 `wwwroot`、复制 `index.html`，`UseDefaultFiles` + `UseStaticFiles` 把页面发给浏览器。
 
 **[第 3 章 页面用 fetch 调接口：显示列表、新增待办](docs/ch03-fetch-json.md)**：fetch 读写 JSON，检查 `res.ok`，错误信息显示到页面上。
 
@@ -50,11 +50,10 @@ h5-demo/
 │   └── wwwroot/                ← 构建产物，不手改，不提交（.gitignore）
 └── Frontend/
     ├── index.html              ← 页面源码
+    ├── style.css               ← 样式源码（第 4 章加入）
     ├── src/main.ts             ← 脚本源码
-    ├── src/style.css           ← 样式源码
-    ├── tsconfig.json
-    ├── vite.config.ts          ← outDir: ../Backend/wwwroot
-    └── package.json            ← npm run build = tsc && vite build
+    ├── tsconfig.json           ← outDir: ../Backend/wwwroot
+    └── package.json            ← npm run build = 检查类型 → 清空 → tsc 编译 → 复制 html/css
 ```
 
 日常开发循环：
@@ -97,15 +96,16 @@ dotnet run           # 打开 http://localhost:5080/
 
 | 想做的事 | 改哪里 |
 | --- | --- |
-| 前端改由 Nginx/CDN 单独部署 | `vite.config.ts` 删掉 `outDir`（产物进 `Frontend/dist/`），后端删掉 `UseDefaultFiles`/`UseStaticFiles`；用 Nginx 把 `/api` 反向代理到后端，保持同源，不用配 CORS |
-| 改代码后不想每次手动 build | 用 Vite 开发服务器 + `server.proxy` 把 `/api` 转发到 5080 |
-| 换成 React | 把 `Frontend/` 换成 Vite `react-ts` 模板，`outDir` 照旧指向 `../Backend/wwwroot` |
+| 前端改由 Nginx/CDN 单独部署 | 把 `tsconfig.json` 的 `outDir` 和 `package.json` 里 `clean`/`copy` 的目标都改成 `dist`，后端删掉 `UseDefaultFiles`/`UseStaticFiles`；用 Nginx 把 `/api` 反向代理到后端，保持同源，不用配 CORS |
+| 改 `.ts` 后不想每次手动 build | 在 `Frontend/` 另开一个窗口运行 `npx tsc --watch`，保存即编译（改了 `index.html`/`style.css` 仍要 `npm run build`） |
+| 脚本拆成多个文件 | `import` 路径写编译后的名字：`from "./api.js"`（见第 2 章踩坑表） |
+| 要用 npm 上的第三方库、或者换成 React | 这时 `tsc` 不够用了，需要引入打包工具 |
 | 数据落库 | 把内存 `List<Todo>` 换成数据库访问，接口签名不变，前端不用改 |
 
 ---
 
 ## 关于代码可靠性
 
-- 后端在 .NET SDK `10.0.402` 上编译运行；前端用 Vite `8.3.5` + TypeScript `5.9.3` 构建。
+- 后端在 .NET SDK `10.0.402` 上编译运行；前端用 TypeScript `5.9.3` 的 `tsc` 编译。
 - 正文里的状态码、报错原文、构建输出、`innerWidth` 等数值，都来自实际运行（curl + 无头 Chromium 模拟 iPhone 14）。
 - 以下内容沙箱里无法验证，正文中已标 ⚠️：Windows 防火墙命令、Windows `cmd` 下的 curl 写法、iOS Safari 对小于 16px 输入框的自动放大、刘海屏 safe-area 的实际效果。

@@ -282,7 +282,7 @@ curl -i -X POST http://localhost:5080/api/todos -H "Content-Type: application/js
 
 ---
 
-**导航**：[返回目录](../README.md) · [下一章](ch02-vite-build-static-files.md)
+**导航**：[返回目录](../README.md) · [下一章](ch02-tsc-build-static-files.md)
 
 ---
 

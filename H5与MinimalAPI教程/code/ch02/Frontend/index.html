@@ -9,7 +9,8 @@
     <h1>我的待办</h1>
     <p id="status">脚本还没运行</p>
 
-    <!-- 指向 TypeScript 源码。构建时 Vite 会把它换成编译好的 /assets/index-xxxx.js -->
-    <script type="module" src="/src/main.ts"></script>
+    <!-- 引用的是 tsc 编译出来的 main.js，不是 src/main.ts：浏览器只认 JavaScript -->
+    <!-- type="module"：编译结果里有 export 语句，普通 script 标签执行会报语法错误 -->
+    <script type="module" src="/main.js"></script>
   </body>
 </html>

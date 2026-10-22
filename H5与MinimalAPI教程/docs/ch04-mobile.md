@@ -10,7 +10,7 @@
 
 - 上一章你已经会了：页面用 fetch 调接口，显示列表、新增待办。
 - 需要的环境：手机和电脑连**同一个 Wi-Fi**。
-- 本章要改的文件：`Backend/Properties/launchSettings.json`、`Frontend/index.html`，新建 `Frontend/src/style.css`。`main.ts` 和 `Program.cs` 不改。
+- 本章要改的文件：`Backend/Properties/launchSettings.json`、`Frontend/index.html`，`Frontend/package.json`（`copy` 多复制一个文件），新建 `Frontend/style.css`。`main.ts` 和 `Program.cs` 不改。
 
 ## 正文
 
@@ -34,8 +34,8 @@
     <!-- viewport-fit=cover：页面铺满刘海区域，再由 CSS 的 safe-area 自己留白 -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>待办 H5</title>
-    <!-- 引用源码里的 CSS，构建时 Vite 会把它打包成 /assets/index-xxxx.css -->
-    <link rel="stylesheet" href="/src/style.css" />
+    <!-- style.css 由构建脚本原样复制到 wwwroot 根目录 -->
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
     <h1>我的待办</h1>
@@ -49,7 +49,8 @@
 
     <ul id="list"></ul>
 
-    <script type="module" src="/src/main.ts"></script>
+    <!-- 引用 tsc 编译出来的 main.js；type="module" 不能省，原因见第 2 章 -->
+    <script type="module" src="/main.js"></script>
   </body>
 </html>
 ```
@@ -133,10 +134,10 @@ graph TB
 
 **反例**：只在电脑上使用的后台管理页面，不需要把所有按钮都做到 44px 高，那样会浪费大量屏幕空间。
 
-💻 **代码**：新建样式文件：
+💻 **代码**：在 `Frontend/` 目录新建样式文件（和 `index.html` 放在一起，不放进 `src/`，因为 `tsc` 只处理 `.ts`）：
 
 ```css
-/* code/ch04/Frontend/src/style.css */
+/* code/ch04/Frontend/style.css */
 
 /* 宽度包含 padding 和边框，否则 width:100% 再加 padding 会把横向撑出屏幕 */
 * {
@@ -208,7 +209,13 @@ li {
 }
 ```
 
-构建（`Frontend/` 目录执行 `npm run build`）后，输出里多了一行 `assets/index-xxxx.css`。
+`package.json` 的 `copy` 改成复制两个文件（📄 `code/ch04/Frontend/package.json` 里只有这一行变化）：
+
+```json
+"copy": "node -e \"for (const f of ['index.html', 'style.css']) require('node:fs').cpSync(f, '../Backend/wwwroot/' + f)\"",
+```
+
+构建（`Frontend/` 目录执行 `npm run build`）后，`Backend/wwwroot/` 里有 `index.html`、`main.js`、`style.css` 三个文件。
 
 🔍 **拆解运行结果**（模拟 iPhone 14 实测）：
 
