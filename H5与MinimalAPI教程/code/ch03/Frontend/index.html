@@ -1,0 +1,23 @@
+<!-- code/ch03/Frontend/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>待办 H5</title>
+  </head>
+  <body>
+    <h1>我的待办</h1>
+
+    <form id="form">
+      <input id="title" placeholder="输入待办事项" autocomplete="off" />
+      <button id="addBtn" type="submit">添加</button>
+    </form>
+
+    <!-- 出错时在这里显示后端返回的 message -->
+    <p id="msg"></p>
+
+    <ul id="list"></ul>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
