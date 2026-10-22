@@ -1,0 +1,28 @@
+<!-- code/ch04/Frontend/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- 告诉手机浏览器：按屏幕真实宽度排版，不要假装自己是 980px 宽的电脑屏幕 -->
+    <!-- viewport-fit=cover：页面铺满刘海区域，再由 CSS 的 safe-area 自己留白 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>待办 H5</title>
+    <!-- style.css 由构建脚本原样复制到 wwwroot 根目录 -->
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <h1>我的待办</h1>
+
+    <form id="form">
+      <input id="title" placeholder="输入待办事项" autocomplete="off" />
+      <button id="addBtn" type="submit">添加</button>
+    </form>
+
+    <p id="msg"></p>
+
+    <ul id="list"></ul>
+
+    <!-- 引用 tsc 编译出来的 main.js；type="module" 不能省，原因见第 2 章 -->
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

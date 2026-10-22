@@ -1,0 +1,70 @@
+/* code/ch04/Frontend/style.css */
+
+/* 宽度包含 padding 和边框，否则 width:100% 再加 padding 会把横向撑出屏幕 */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f5f5f5;
+  /* 刘海屏顶部、iPhone 底部横条的高度由系统提供；普通屏幕上这两个值是 0 */
+  padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+}
+
+h1 {
+  font-size: 20px;
+  margin: 16px 0;
+}
+
+form {
+  display: flex;
+  gap: 8px;
+}
+
+input {
+  /* 输入框占满剩余宽度，按钮保持自身宽度 */
+  flex: 1;
+  /* 小于 16px 时，iPhone 的 Safari 会在聚焦输入框时自动放大整页 */
+  font-size: 16px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+button {
+  font-size: 16px;
+  padding: 0 16px;
+  /* 手指的点击面积比鼠标大得多，44px 是 iOS 人机界面指南建议的最小触控尺寸 */
+  min-height: 44px;
+  border: 0;
+  border-radius: 6px;
+  background: #1677ff;
+  color: #fff;
+}
+
+button:disabled {
+  background: #999;
+}
+
+#msg {
+  color: #d4380d;
+  /* 先占住一行高度：报错信息出现时，下面的列表不会突然往下跳 */
+  min-height: 1.2em;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: #fff;
+  margin-bottom: 8px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  min-height: 44px;
+  /* 用户输入的超长英文或网址不换行会把页面横向撑开 */
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,13 @@
+{
+  "name": "h5-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('../Backend/wwwroot', { recursive: true, force: true })\"",
+    "copy": "node -e \"for (const f of ['index.html', 'style.css']) require('node:fs').cpSync(f, '../Backend/wwwroot/' + f)\"",
+    "build": "tsc --noEmit && npm run clean && tsc && npm run copy"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  }
+}

@@ -1,0 +1,9 @@
+# .NET 编译输出
+bin/
+obj/
+
+# 前端依赖
+node_modules/
+
+# 构建产物：由 Frontend 的 npm run build 生成，不手改、不提交
+**/Backend/wwwroot/

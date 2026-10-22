@@ -1,0 +1,24 @@
+<!-- code/ch03/Frontend/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>待办 H5</title>
+  </head>
+  <body>
+    <h1>我的待办</h1>
+
+    <form id="form">
+      <input id="title" placeholder="输入待办事项" autocomplete="off" />
+      <button id="addBtn" type="submit">添加</button>
+    </form>
+
+    <!-- 出错时在这里显示后端返回的 message -->
+    <p id="msg"></p>
+
+    <ul id="list"></ul>
+
+    <!-- 引用 tsc 编译出来的 main.js；type="module" 不能省，原因见第 2 章 -->
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
