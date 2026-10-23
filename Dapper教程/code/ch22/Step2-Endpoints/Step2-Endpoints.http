@@ -1,0 +1,48 @@
+# code/ch22/Step2-Endpoints/Step2-Endpoints.http
+# 在 VS 里打开本文件，点每个请求上方的「发送请求」（或右键 → 发送请求）
+# 端口要和 Properties/launchSettings.json 里的 applicationUrl 一致
+@host = http://localhost:5080
+
+### 1 客户列表
+GET {{host}}/customers
+
+### 2 申请单详情（含明细）
+GET {{host}}/requests/1
+
+### 3 不存在的申请单 → 404
+GET {{host}}/requests/99
+
+### 4 新建申请单 → 201
+POST {{host}}/requests
+Content-Type: application/json
+
+{
+  "requestNo": "PR20261102",
+  "customerId": 3,
+  "applicant": "王芳",
+  "remark": "新客户首单",
+  "items": [
+    { "productId": 1, "qty": 1, "requestPrice": 172000 },
+    { "productId": 3, "qty": 2, "requestPrice": 25000 }
+  ]
+}
+
+### 5 单号重复 → 409
+POST {{host}}/requests
+Content-Type: application/json
+
+{ "requestNo": "PR20261102", "customerId": 3, "applicant": "王芳", "items": [] }
+
+### 6 产品不存在 → 400，整张单据回滚
+POST {{host}}/requests
+Content-Type: application/json
+
+{
+  "requestNo": "PR20261103",
+  "customerId": 3,
+  "applicant": "王芳",
+  "items": [
+    { "productId": 1, "qty": 1, "requestPrice": 172000 },
+    { "productId": 99, "qty": 1, "requestPrice": 1 }
+  ]
+}
