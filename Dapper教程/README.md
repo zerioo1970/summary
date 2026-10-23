@@ -37,7 +37,7 @@ VS 操作都给出了精确的菜单路径。需要截图的位置都留了 `�
 ### 第一部分 起步：先跑起来，再看清原理
 
 **[第 1 章 搭环境：VS 2026 + .NET 10 + SQL Server](docs/ch01-setup.md)**
-做出一个能连你的实例、用 ADO.NET 打印客户列表的控制台程序。新概念：SDK 风格 csproj、NuGet 包引用、连接字符串（默认加密）。
+先用一页讲清 Dapper 是什么、不是什么；再搭好环境，用 ADO.NET 写出对照组；最后预览 Dapper 一行版本。新概念：SDK 风格 csproj、NuGet 包引用、连接字符串（默认加密）。
 
 **第 2 章 第一个 Dapper 查询** 📝
 把 20 行 `reader.GetXxx` 换成一行 `Query<T>`。新概念：扩展方法、`Query<T>`、列名→属性自动映射。

@@ -2,7 +2,13 @@
 
 ## 这一章解决什么问题
 
-后面 22 章的例子都要在同一个项目、同一个库上跑。本章先做出一个**能连上你的 SQL Server、按 Ctrl+F5 就能输出客户列表**的控制台程序，再把三个最常卡人的环节讲清楚：项目文件、NuGet 包、连接字符串。
+动手之前，你得先知道 Dapper 是什么、要学成什么样。另外，后面 22 章的例子都要在同一个项目、同一个库上跑。
+
+所以本章做三件事：
+
+1. 先用一页讲清 Dapper 是什么、不是什么。
+2. 做出一个**能连上你的 SQL Server、按 Ctrl+F5 就能输出客户列表**的控制台程序。这一步用的是你熟悉的 ADO.NET，作为后面的对照组。顺带把三个最常卡人的环节讲清楚：项目文件、NuGet 包、连接字符串。
+3. 最后预览同样的功能用 Dapper 写是什么样子。
 
 ## 开始之前
 
@@ -20,6 +26,41 @@
 ---
 
 ## 正文
+
+### 1.0 先认识 Dapper：它是什么、不是什么
+
+**一句话**：Dapper 是一个微型 ORM（micro-ORM，对象关系映射，指把查询结果和 C# 对象互相转换的工具）。**SQL 还是你自己写**，它只做两件事：
+
+- 把**查询结果**变成对象（替你写 `while (reader.Read())` 那一段）；
+- 把**对象**变成 SQL 参数（替你写一行行的 `cmd.Parameters.Add(...)`）。
+
+它由 Stack Overflow 团队开发并开源，这个网站自己就在用它。
+
+#### 🖼 Dapper 处在哪一层
+
+```mermaid
+graph TB
+    A["你的 C# 代码<br/>SQL 照样自己写"] --> B["Dapper<br/>给连接对象加了 Query/Execute 等方法"]
+    B --> C["ADO.NET（Microsoft.Data.SqlClient）<br/>SqlConnection / SqlCommand / DataReader"]
+    C --> D["SQL Server"]
+```
+
+关键点：Dapper **不替代** ADO.NET，而是**建在 ADO.NET 上面**。你熟悉的 `SqlConnection` 照用，连接字符串、事务、存储过程、连接池也都还是 ADO.NET 那一套。所以本章搭好的 ADO.NET 环境，后面会原样沿用。
+
+#### Dapper 管什么、不管什么
+
+| Dapper 替你做 | Dapper 不做（仍然是你的事） |
+|---|---|
+| 结果集一列一列赋值给对象属性 | 写 SQL：不会替你生成 `SELECT`/`INSERT` |
+| 根据对象生成 SqlParameter | 建表、改表结构（没有"迁移"功能） |
+| 连接没打开时，自动打开再关上 | 跟踪对象改了哪些字段、自动保存 |
+| 缓存映射规则，第二次执行更快 | 管理连接字符串、处理异常 |
+
+**反例（什么时候不该选 Dapper）**：如果团队不想手写 SQL，希望改了 C# 类就能自动生成表结构和增删改语句，那应该选 EF Core 这类完整的 ORM。两者的详细取舍放在附录 D。
+
+> 本章后面几节暂时还用不到 Dapper。先把环境和对照组搭好，1.5 节再看 Dapper 版本。
+
+---
 
 ### 1.1 准备示例库 PriceDemo
 
@@ -304,6 +345,53 @@ Console.WriteLine($"共 {customers.Count} 个客户");
 
 ---
 
+### 1.5 预览：同一件事，Dapper 怎么写
+
+下面这段代码和 1.4 节读的是同一张表，输出也完全相同。**这里只是让你先看看效果**，每一行为什么能这样写，第 2 章再讲。
+
+```csharp
+// code/ch01/Preview/Program.cs
+// 第 1 章结尾的预览：和 PriceDemo 读同一张表，换成 Dapper 写。第 2 章再逐行讲解。
+using Dapper;                      // 引入 Dapper 的扩展方法
+using Microsoft.Data.SqlClient;
+
+const string connStr =
+    "Server=.;Database=PriceDemo;Integrated Security=True;TrustServerCertificate=True;";
+
+using var conn = new SqlConnection(connStr);   // 不用手动 Open：Dapper 发现连接是关闭的，会自己打开再关上
+
+// 这一行替代了 PriceDemo 里 while (reader.Read()) 那一整段
+var customers = conn.Query<Customer>("SELECT Id, Name, City, Level FROM dbo.Customer ORDER BY Id").ToList();
+
+foreach (var c in customers)
+    Console.WriteLine($"{c.Id}  {c.Name}  {c.City}  {c.Level}");
+
+Console.WriteLine($"共 {customers.Count} 个客户");
+
+public class Customer
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+    public string City { get; set; } = "";
+    public string Level { get; set; } = "";
+}
+```
+
+实测输出和 1.4 节完全相同：3 个客户，最后一行是 `共 3 个客户`，只是少了开头那行版本信息。
+
+两种写法对比：
+
+| 对比项 | 1.4 节 ADO.NET | 1.5 节 Dapper |
+|---|---|---|
+| 把结果变成 `List<Customer>` | `new SqlCommand` + `ExecuteReader` + `while` 循环 + 每列一行赋值，共 15 行 | 1 行 `Query<Customer>(...)` |
+| 列名对应属性 | 每列手写一次 `GetOrdinal("列名")` | 按名字自动对上：列 `Name` 对应属性 `Name` |
+| 类型转换 | 自己挑 `GetInt32`/`GetString`，挑错运行时才报错 | 按属性类型自动转换 |
+| `conn.Open()` | 必须写 | 可以不写 |
+
+> 想现在就跑：项目在 [`code/ch01/Preview/`](../code/ch01/Preview/)，它的 csproj 比 PriceDemo 多一行 `<PackageReference Include="Dapper" Version="2.1.89" />`。不跑也没关系，第 2 章会带你一步一步装包、运行。
+
+---
+
 ## 🧱 类比：和你熟悉的 WebForm 项目对照
 
 | 事情 | WebForm（.NET Framework） | 本教程（.NET 10） |
@@ -347,7 +435,7 @@ Console.WriteLine($"共 {customers.Count} 个客户");
 
 ## 下一章
 
-那 4 行 `reader.GetXxx(GetOrdinal(...))`，换成 Dapper 只要一行。第 2 章做这件事。
+动手安装 Dapper，把 1.5 节那一行跑起来，并弄清它为什么不写 `Open()`、不写 `GetOrdinal` 也能工作。
 
 ---
 
