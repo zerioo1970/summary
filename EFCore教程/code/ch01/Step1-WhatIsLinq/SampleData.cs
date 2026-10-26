@@ -1,7 +1,7 @@
-// code/ch01/Step1-Lambda/SampleData.cs
+// code/ch01/Step1-WhatIsLinq/SampleData.cs
 namespace EfCoreStudy;
 
-// 第 1–3 章不连数据库，数据就放在内存里。每次调用都返回一份新的 List，互不影响
+// 第 1–4 章不连数据库，数据就放在内存里。每次调用都返回一份新的 List，互不影响
 public static class SampleData
 {
     public static List<Product> Products() =>

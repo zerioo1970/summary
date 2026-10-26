@@ -1,4 +1,4 @@
-// code/ch01/Step1-Lambda/Program.cs
+// code/ch01/Step2-Lambda/Program.cs
 using EfCoreStudy;
 
 var products = SampleData.Products();

@@ -1,4 +1,4 @@
-// code/ch01/Step2-Where/Program.cs
+// code/ch01/Step3-Where/Program.cs
 using EfCoreStudy;
 
 var products = SampleData.Products();
