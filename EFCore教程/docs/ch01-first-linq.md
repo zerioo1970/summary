@@ -9,12 +9,8 @@ EF Core 查数据库用的也是这套写法。所以前 3 章先不连数据库
 ## 开始之前
 
 - 你已经会：C# 的类、`List<T>`、`foreach`；SQL 的 `SELECT ... FROM ... WHERE`。
-- 需要的环境：
-
-| 项 | 要求 | 怎么确认 |
-|---|---|---|
-| Visual Studio 2026 | 已勾选工作负荷「ASP.NET 和 Web 开发」（自带 .NET 10 SDK，第 14 章也要用） | 开始菜单打开「Visual Studio Installer」→ VS 2026 那一栏点「修改」→「工作负荷」页查看 |
-| 数据库 | **本章不需要** | 第 4 章才连 SQL Server |
+- 需要的环境：Visual Studio 2026，已勾选工作负荷「ASP.NET 和 Web 开发」（自带 .NET 10 SDK，第 14 章也要用）。确认方法：开始菜单打开「Visual Studio Installer」→ VS 2026 那一栏点「修改」→「工作负荷」页查看。
+- 数据库：**本章不需要**，第 4 章才连 SQL Server。
 
 > 预计耗时：60 分钟。
 
@@ -80,23 +76,54 @@ public static class SampleData
 
 > 仓库里每一节是一个独立项目（[`code/ch01/`](../code/ch01/) 下的 `Step1-Lambda`、`Step2-Where`……），方便你对照。你自己练习时**只用 `Ch01Linq` 一个项目就行**，每节把 `Program.cs` 整个替换掉。`Product.cs` 和 `SampleData.cs` 在各个文件夹里内容相同。
 
----
-
 ### 1.2 概念一：lambda 表达式
 
-**白话定义**：lambda 是一种**省掉方法名的简写方法**。`p => p.Price > 10000m` 读作"给我一个 p，返回 `p.Price > 10000m` 的结果"。
+**白话定义**：lambda 是**没有名字、直接写在用它的地方的方法**。`p => p.Price > 10000m` 读作："给我一个产品 p，我告诉你它的价格是不是大于 10000。"
 
-**业务场景**：判断"单价超过 1 万的算大件，要走审批"。这个判断只在一处用，专门写一个具名方法太重了，写成 lambda 就是一行。
+**业务场景**：产品列表页按"单价超过多少"筛选。这条规则只在这一处用，而且价格下限往往是用户在页面上输入的。
 
-**反例（什么时候不该用）**：判断逻辑超过两三个条件、或者在多个地方要复用（比如"是否需要审批"牵涉金额、客户等级、产品类别），就应该写成具名方法并起个好名字。挤在一行 lambda 里，别人读不懂，也没法单独调试。
+**反例（什么时候不该用）**：规则超过两三个条件、或者好几个地方都要用（比如"是否需要审批"牵涉金额、客户等级、产品类别），就应该写成具名方法并起个好名字。挤在一行 lambda 里，别人读不懂，也没法单独调试。
 
-#### 🖼 图解
+#### 先看问题：Where 需要你给它一条"规则"
+
+下一节要学的 `Where` 负责筛选。它内部做的事大致是这样（**示意，不是可运行代码**）：
+
+```text
+foreach (var p in products)
+{
+    if (规则(p))        // 每个产品都拿去问一下"规则"
+        结果.Add(p);    // 回答 true 的留下
+}
+```
+
+循环和 `Add` 它都替你写好了，**只有"规则"它不知道**，得由你提供。
+
+规则本身就是一个方法：给它一个产品，它回答 true 或 false。所以问题变成了：**怎么把一个方法交给另一个方法？**
+
+#### 你其实早就这样做过
+
+WebForm 里给按钮挂事件 `Button1.Click += Button1_Click;`：你写好方法 `Button1_Click`，然后把它**交给**按钮。你自己不调用它，用户点按钮时由按钮去调用。
+
+`Where` 是同一个道理：`products.Where(IsExpensive)` 就是把方法 `IsExpensive` 交给 `Where`，由 `Where` 在逐个检查产品时去调用。这是下面代码里的**写法 A**，完全能用。
+
+#### 🖼 图解：方法太短，就地简写
+
+`IsExpensive` 真正有用的只有一句 `p.Price > 10000m`，却要写 4 行，还要起个名字。所以 C# 允许你把它就地简写，每一步删掉一些编译器自己能推断出来的东西：
 
 ```mermaid
 graph TB
-    A["具名方法<br/>static bool IsExpensive(Product p)<br/>{ return p.Price > 10000m; }"] --> B["去掉 static bool IsExpensive<br/>去掉 return 和大括号"]
-    B --> C["lambda<br/>p => p.Price > 10000m"]
+    A["① 完整方法<br/>static bool IsExpensive(Product p)<br/>{ return p.Price > 10000m#59; }"] --> B["② 删掉 static bool 和方法名<br/>加上 => 分开参数和方法体<br/>(Product p) =><br/>{ return p.Price > 10000m#59; }"]
+    B --> C["③ 删掉参数类型 Product<br/>p => { return p.Price > 10000m#59; }"]
+    C --> D["④ 只有一句，删掉大括号和 return<br/>p => p.Price > 10000m"]
 ```
+
+| 步骤 | 为什么可以删 |
+|---|---|
+| ② 删方法名和返回类型 | 方法只在这里用一次，不需要名字；返回什么类型，编译器看 `p.Price > 10000m` 就知道是 `bool` |
+| ③ 删参数类型 | `Where` 作用在 `List<Product>` 上，编译器知道 p 一定是 `Product` |
+| ④ 删大括号和 `return` | 方法体只有一个表达式时，这个表达式的值就是返回值 |
+
+④ 就是 lambda。**它就是一个没有名字的方法，只是写得很短。**
 
 #### 💻 最小可运行代码
 
@@ -106,16 +133,24 @@ using EfCoreStudy;
 
 var products = SampleData.Products();
 
-// 写法 B：同一个判断写成 lambda，存进变量。Func<Product, bool> = 输入 Product、返回 bool
-Func<Product, bool> isExpensive = p => p.Price > 10000m;
+// 写法 A：把写好的方法交给 Where。只写方法名、不加括号——方法由 Where 去调用
+var listA = products.Where(IsExpensive).ToList();
 
-foreach (var p in products)
-{
-    // 两种写法结果必须完全一样
-    Console.WriteLine($"{p.Code,-8} 方法：{IsExpensive(p),-6} lambda：{isExpensive(p)}");
-}
+// 写法 B：同一条规则写成 lambda，直接写在括号里
+var listB = products.Where(p => p.Price > 10000m).ToList();
 
-// 写法 A：具名方法，你一直以来的写法
+Console.WriteLine($"写法 A：{listA.Count} 个");
+Console.WriteLine($"写法 B：{listB.Count} 个");
+foreach (var p in listB)
+    Console.WriteLine($"  {p.Code}  {p.Name}  {p.Price:N0}");
+
+// 价格下限往往是运行时才知道的（这里用字符串模拟用户在页面上的输入）
+// lambda 可以直接用外面的变量 minPrice；写法 A 的方法只收一个 Product 参数，做不到
+var minPrice = decimal.Parse("30000");
+var listC = products.Where(p => p.Price > minPrice).ToList();
+Console.WriteLine($"高于 {minPrice:N0} 的：{listC.Count} 个");
+
+// 写法 A 用到的具名方法：给它一个产品，它回答 true 或 false
 static bool IsExpensive(Product p)
 {
     return p.Price > 10000m;
@@ -129,42 +164,40 @@ static bool IsExpensive(Product p)
 实测输出：
 
 ```text
-US-100   方法：True   lambda：True
-US-200   方法：True   lambda：True
-PB-L01   方法：True   lambda：True
-PB-C02   方法：True   lambda：True
-PB-E03   方法：True   lambda：True
-GEL-250  方法：False  lambda：False
-CVR-01   方法：False  lambda：False
-PPR-110  方法：False  lambda：False
+写法 A：5 个
+写法 B：5 个
+  US-100  便携超声主机  180,000
+  US-200  彩超工作站  420,000
+  PB-L01  线阵探头  26,000
+  PB-C02  凸阵探头  24,000
+  PB-E03  腔内探头  31,000
+高于 30,000 的：3 个
 ```
 
-两列完全一致，说明 lambda 和具名方法做的是同一件事。
+- 写法 A 和写法 B 都找到 5 个，两句做的事完全一样。
+- 写法 A 只写方法名 `IsExpensive`，**不加括号**。加了括号就变成"现在就调用它"，而这里要的是"把方法交出去，让 `Where` 去调用"。按钮事件写 `Button1.Click += Button1_Click;` 也不加括号，道理相同。
+- 最后一段是写法 A 做不到的：规则里用到了外面的变量 `minPrice`。`IsExpensive` 只收一个 `Product` 参数，没地方放价格下限；lambda 写在 `Where` 的括号里，能直接用到上面定义的 `minPrice`。实际业务中的查询条件大多是这种情况，所以绝大多数时候都用 lambda。
 
-| 部分 | 含义 |
+| lambda 的部分 | 含义（按"给我什么 → 我回答什么"去读） |
 |---|---|
-| `Func<Product, bool>` | 变量的类型：一个"输入 `Product`、返回 `bool`"的方法。尖括号里**最后一个**是返回类型 |
-| `p` | 参数名，随便起。参数类型不用写，编译器从 `Func<Product, bool>` 推断出它是 `Product` |
-| `=>` | 分隔参数和方法体 |
-| `p.Price > 10000m` | 方法体。只有一个表达式时，它的值就是返回值，不用写 `return` |
+| `p` | `=>` 左边：参数，"给我一个产品 p"。名字随便起，习惯用类名的首字母 |
+| `=>` | 分开参数和方法体 |
+| `p.Price > minPrice` | `=>` 右边：返回值，"我告诉你它的价格是不是大于 minPrice" |
 
-单独定义一个 lambda 变量的写法，实际中很少用。lambda 真正的用处是**直接当参数传给 LINQ 方法**，下一节马上就会看到。
+> 到了第 4 章，EF Core 查数据库时**必须用 lambda**：它能读懂 lambda 里写的条件，翻译成 SQL 的 `WHERE`；交给它一个具名方法，它只看得到方法名，翻译不了。第 7 章细讲。
 
 #### 改坏一处试试
 
-把 `10000m` 改成 `10000.5`（去掉 `m`），生成时报错：
-
-```text
-error CS0019: Operator '>' cannot be applied to operands of type 'decimal' and 'double'
-```
-
-原因：带小数点、不带后缀的数字是 `double`，C# 不允许 `decimal` 和 `double` 直接比较。写成 `10000.5m`。
+| 改法 | 生成时的报错（实测） | 原因 |
+|---|---|---|
+| 写法 A 加上括号：`products.Where(IsExpensive())` | `error CS7036: There is no argument given that corresponds to the required parameter 'p' of 'IsExpensive(Product)'` | 加了括号就是"现在调用它"，可你没给它产品参数 |
+| 写法 B 的 `10000m` 改成 `10000.5`（去掉 `m`） | `error CS0019: Operator '>' cannot be applied to operands of type 'decimal' and 'double'` | 带小数点、不带后缀的数字是 `double`，C# 不允许 `decimal` 和 `double` 直接比较。写成 `10000.5m` |
 
 > 中文版 VS 的错误列表会显示中文译文，错误号（如 `CS0019`）相同。本教程贴的是编译器英文原文。
 
----
-
 ### 1.3 概念二：Where —— 筛选行
+
+上一节已经用过 `Where`，这一节把它讲完整。
 
 **白话定义**：`Where` 对集合里的每个元素调用一次你给的 lambda，只留下返回 `true` 的那些。作用就是 SQL 的 `WHERE`。
 
@@ -234,8 +267,6 @@ Where 写法：2 个
 |---|---|---|
 | `==` 写成 `=`：`p.Category = "探头"` | `error CS0029: Cannot implicitly convert type 'string' to 'bool'` | 写 SQL 写惯了，一个等号是 SQL 的比较；在 C# 里是赋值，赋值结果是 `string`，不是 `bool` |
 | 去掉 `.ToList()`，赋给 `List<Product>` 变量 | `error CS0266: Cannot implicitly convert type 'System.Collections.Generic.IEnumerable<EfCoreStudy.Product>' to 'System.Collections.Generic.List<EfCoreStudy.Product>'` | `Where` 返回的是 `IEnumerable<Product>`，不是 `List`。第 3 章细讲 |
-
----
 
 ### 1.4 概念三：Select —— 挑列、算列
 
@@ -321,17 +352,9 @@ error CS1061: '<anonymous type: string Code, string Name>' does not contain a de
 
 原因：`Select` 之后，每个元素只剩 `Code`、`Name` 两个属性，`Price` 已经没有了。这和 SQL 的逻辑执行顺序一致：**先 FROM、再 WHERE、最后 SELECT**。LINQ 把这个顺序直接写在了代码上。
 
----
+## 🧱 类比：SQL 和 LINQ 逐段对照
 
-## 🧱 类比：SQL、foreach、LINQ 三种写法对照
-
-同一个需求"探头类、有库存，取编码和名称"：
-
-| 写法 | 代码 |
-|---|---|
-| SQL | `SELECT Code, Name FROM Products WHERE Category = N'探头' AND Stock > 0` |
-| foreach | `foreach` + `if` + `list.Add(new ...)`，6–8 行 |
-| LINQ | `products.Where(p => p.Category == "探头" && p.Stock > 0).Select(p => new { p.Code, p.Name }).ToList()` |
+同一个需求"探头类、有库存，取编码和名称"，SQL 写 `SELECT Code, Name FROM Products WHERE Category = N'探头' AND Stock > 0`，LINQ 写 `products.Where(p => p.Category == "探头" && p.Stock > 0).Select(p => new { p.Code, p.Name }).ToList()`。逐段对照：
 
 | SQL | LINQ | 区别 |
 |---|---|---|
@@ -344,6 +367,7 @@ error CS1061: '<anonymous type: string Code, string Name>' does not contain a de
 | 现象 | 原因 | 怎么改 |
 |---|---|---|
 | `CS0029: Cannot implicitly convert type 'string' to 'bool'` | 比较写成了 `=`（SQL 习惯） | 改成 `==` |
+| `CS7036: There is no argument given that corresponds to the required parameter 'p'` | 把方法交给 `Where` 时加了括号：`Where(IsExpensive())` | 只写方法名 `Where(IsExpensive)`，或直接写 lambda |
 | `CS0019: Operator '>' cannot be applied to operands of type 'decimal' and 'double'` | `decimal` 属性和不带 `m` 的小数比较 | 数字后加 `m`：`99.5m` |
 | `Console.WriteLine(products.Where(...))` 打印出 `` System.Linq.Enumerable+ListWhereIterator`1[EfCoreStudy.Product] ``（实测） | 打印的是"查询对象"本身，不是里面的数据 | 先 `.ToList()`，再用 `foreach` 或 `string.Join` 输出 |
 | `products.Where(p => p.Code.StartsWith("pb"))` 一个都找不到（实测 0 个） | 内存里的字符串比较**区分大小写**，`"pb"` ≠ `"PB"` | 写对大小写，或用 `StartsWith("pb", StringComparison.OrdinalIgnoreCase)`（实测 3 个）。注意：到了 SQL Server 上，默认排序规则**不区分**大小写，同一句会找到 3 个，第 7 章细讲这种差异 |
