@@ -1,114 +1,134 @@
 #!/usr/bin/env python3
 # Ubuntu指令教程/tools/gen_readme.py
-# 作用：按 300 个指令的排名，生成 README.md 的目录部分，并给每个指令页加上“上一个 / 下一个”导航。
+# 作用：
+#   1. 生成 README.md 里的“分类目录”和“总目录对应表”；
+#   2. 给每个分类文件加上“上一类 / 下一类 / 返回总目录”导航；
+#   3. 检查每个指令在所属分类文件里都有锚点 <a id="cmd-指令名">。
 # 用法（在 Ubuntu指令教程/ 目录下执行）：python3 tools/gen_readme.py
 import os
 import re
+import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# (排名, 指令, 用途)。初级 1–100、中级 101–200、高级 201–300
+# 初级分类：(分类编号, 分类名, 一句话说明)。文件名为 docs/beginner/编号-分类名.md
+BEGINNER_CATEGORIES = [
+    ("01", "目录和文件操作", "浏览目录，复制、移动、删除、查找文件"),
+    ("02", "文件查看和编辑", "查看文件内容，在终端里编辑文件"),
+    ("03", "文本处理", "搜索、统计、排序、截取、比较文本"),
+    ("04", "压缩和打包", "tar、zip、gzip 三种格式的打包和解包"),
+    ("05", "用户和权限", "提权、切换用户、改密码、改权限、查登录记录"),
+    ("06", "软件包管理", "apt、dpkg、snap 装卸软件"),
+    ("07", "磁盘管理", "看空间、看分区、挂载和卸载"),
+    ("08", "进程管理", "查看、监控、结束进程，计时和定时刷新"),
+    ("09", "系统服务和开关机", "systemctl 管服务，重启和关机"),
+    ("10", "网络和远程连接", "IP、连通性、下载、HTTP 请求、ssh 远程"),
+    ("11", "系统信息和硬件", "版本、内核、时间、CPU、内存、PCI/USB 设备"),
+    ("12", "Shell使用", "清屏、历史、别名、环境变量、查帮助"),
+]
+
+# 300 个指令，按使用频率排名。初级写成“指令|用途|分类编号”，中高级暂只有“指令|用途”
 COMMANDS = """
-ls|列出目录内容
-cd|切换目录
-pwd|显示当前目录
-sudo|以管理员身份执行
-cat|查看文件内容
-cp|复制文件和目录
-mv|移动或重命名
-rm|删除文件和目录
-mkdir|新建目录
-touch|新建空文件或修改时间
-nano|简易文本编辑器
-apt|安装、升级、卸载软件
-clear|清屏
-echo|输出一行文本
-man|查看命令手册
-history|查看命令历史
-exit|退出 Shell 或脚本
-less|分页查看长文件
-head|查看文件开头
-tail|查看文件末尾、跟踪日志
-grep|按关键词搜索文本
-find|按条件查找文件
-chmod|修改文件权限
-chown|修改所有者和所属组
-df|查看磁盘空间
-du|查看目录占用的空间
-free|查看内存
-top|实时查看负载和进程
-ps|查看进程列表
-kill|结束进程
-ping|测试网络连通
-ip|查看 IP、网卡和路由
-wget|下载文件
-curl|发送 HTTP 请求
-tar|打包和解包
-zip|压缩成 zip
-unzip|解压 zip
-reboot|重启系统
-shutdown|关机或定时重启
-whoami|显示当前用户名
-uname|查看内核和系统信息
-date|显示和计算日期时间
-cal|显示日历
-which|查命令对应的程序位置
-whereis|查程序和手册的位置
-file|判断文件类型
-wc|统计行数、字数
-sort|排序
-uniq|去重和计数
-rmdir|删除空目录
-ln|创建链接
-more|简单的分页查看
-passwd|修改密码
-su|切换到其他用户
-hostname|查看主机名和本机 IP
-uptime|查看运行时长和负载
-lsb_release|查看 Ubuntu 版本
-vim|全功能的终端编辑器
-tree|树状显示目录
-alias|给命令起别名
-type|查看命令的真实身份
-help|bash 内建命令的帮助
-apt-get|脚本里用的包管理命令
-dpkg|安装和查询 .deb 包
-snap|管理 Snap 软件包
-systemctl|管理系统服务
-lsblk|列出磁盘和分区
-mount|挂载磁盘和分区
-umount|卸载磁盘和分区
-id|查看 UID 和所属组
-groups|查看所属组
-who|查看谁登录了系统
-w|查看谁在线、在做什么
-last|查看登录历史
-env|查看环境变量
-export|设置环境变量
-source|在当前 Shell 里执行脚本
-diff|比较文件差异
-cut|按列截取文本
-tee|同时输出到屏幕和文件
-gzip|压缩单个文件
-gunzip|解压 .gz 文件
-ssh|远程登录服务器
-scp|远程复制文件
-htop|更好用的进程监控
-fastfetch|一屏看清系统概况
-sleep|暂停一段时间
-watch|定时重复执行命令
-time|统计命令执行时间
-basename|从路径取文件名
-dirname|从路径取目录
-stat|查看文件详细属性
-locate|按文件名快速查找
-updatedb|更新 locate 的数据库
-lscpu|查看 CPU 信息
-lsusb|列出 USB 设备
-lspci|列出 PCI 设备
-nproc|显示 CPU 数量
-killall|按程序名结束进程
-xdg-open|用默认程序打开文件
+ls|列出目录内容|01
+cd|切换目录|01
+pwd|显示当前目录|01
+sudo|以管理员身份执行|05
+cat|查看文件内容|02
+cp|复制文件和目录|01
+mv|移动或重命名|01
+rm|删除文件和目录|01
+mkdir|新建目录|01
+touch|新建空文件或修改时间|01
+nano|简易文本编辑器|02
+apt|安装、升级、卸载软件|06
+clear|清屏|12
+echo|输出一行文本|03
+man|查看命令手册|12
+history|查看命令历史|12
+exit|退出 Shell 或脚本|12
+less|分页查看长文件|02
+head|查看文件开头|02
+tail|查看文件末尾、跟踪日志|02
+grep|按关键词搜索文本|03
+find|按条件查找文件|01
+chmod|修改文件权限|05
+chown|修改所有者和所属组|05
+df|查看磁盘空间|07
+du|查看目录占用的空间|07
+free|查看内存|11
+top|实时查看负载和进程|08
+ps|查看进程列表|08
+kill|结束进程|08
+ping|测试网络连通|10
+ip|查看 IP、网卡和路由|10
+wget|下载文件|10
+curl|发送 HTTP 请求|10
+tar|打包和解包|04
+zip|压缩成 zip|04
+unzip|解压 zip|04
+reboot|重启系统|09
+shutdown|关机或定时重启|09
+whoami|显示当前用户名|05
+uname|查看内核和系统信息|11
+date|显示和计算日期时间|11
+cal|显示日历|11
+which|查命令对应的程序位置|12
+whereis|查程序和手册的位置|12
+file|判断文件类型|01
+wc|统计行数、字数|03
+sort|排序|03
+uniq|去重和计数|03
+rmdir|删除空目录|01
+ln|创建链接|01
+more|简单的分页查看|02
+passwd|修改密码|05
+su|切换到其他用户|05
+hostname|查看主机名和本机 IP|10
+uptime|查看运行时长和负载|11
+lsb_release|查看 Ubuntu 版本|11
+vim|全功能的终端编辑器|02
+tree|树状显示目录|01
+alias|给命令起别名|12
+type|查看命令的真实身份|12
+help|bash 内建命令的帮助|12
+apt-get|脚本里用的包管理命令|06
+dpkg|安装和查询 .deb 包|06
+snap|管理 Snap 软件包|06
+systemctl|管理系统服务|09
+lsblk|列出磁盘和分区|07
+mount|挂载磁盘和分区|07
+umount|卸载磁盘和分区|07
+id|查看 UID 和所属组|05
+groups|查看所属组|05
+who|查看谁登录了系统|05
+w|查看谁在线、在做什么|05
+last|查看登录历史|05
+env|查看环境变量|12
+export|设置环境变量|12
+source|在当前 Shell 里执行脚本|12
+diff|比较文件差异|03
+cut|按列截取文本|03
+tee|同时输出到屏幕和文件|03
+gzip|压缩单个文件|04
+gunzip|解压 .gz 文件|04
+ssh|远程登录服务器|10
+scp|远程复制文件|10
+htop|更好用的进程监控|08
+fastfetch|一屏看清系统概况|11
+sleep|暂停一段时间|08
+watch|定时重复执行命令|08
+time|统计命令执行时间|08
+basename|从路径取文件名|01
+dirname|从路径取目录|01
+stat|查看文件详细属性|01
+locate|按文件名快速查找|01
+updatedb|更新 locate 的数据库|01
+lscpu|查看 CPU 信息|11
+lsusb|列出 USB 设备|11
+lspci|列出 PCI 设备|11
+nproc|显示 CPU 数量|11
+killall|按程序名结束进程|08
+xdg-open|用默认程序打开文件|12
 journalctl|查看 systemd 日志
 sed|流式文本替换
 awk|按列处理文本
@@ -312,68 +332,90 @@ bpftool|eBPF 程序管理
 """.strip().split("\n")
 
 assert len(COMMANDS) == 300, len(COMMANDS)
-ITEMS = [(i + 1, *line.split("|")) for i, line in enumerate(COMMANDS)]
-LEVELS = [("beginner", "初级", 1, 100), ("intermediate", "中级", 101, 200), ("advanced", "高级", 201, 300)]
+ITEMS = []  # (排名, 指令, 用途, 分类编号或 None)
+for i, line in enumerate(COMMANDS):
+    parts = line.split("|")
+    ITEMS.append((i + 1, parts[0], parts[1], parts[2] if len(parts) > 2 else None))
+
+CAT_NAME = {c[0]: c[1] for c in BEGINNER_CATEGORIES}
 
 
-def page_path(level_dir, rank, name):
-    # 文件名：三位编号-指令名.md；指令名里的空格换成连字符（docker compose → docker-compose）
-    return f"docs/{level_dir}/{rank:03d}-{name.replace(' ', '-')}.md"
+def cat_file(cat_id):
+    return f"docs/beginner/{cat_id}-{CAT_NAME[cat_id]}.md"
 
 
-def existing(path):
-    return os.path.exists(os.path.join(ROOT, path))
+def anchor(name):
+    return "cmd-" + name.replace(" ", "-")
 
 
-def build_tables():
+def build_category_table():
+    out = ["| 分类 | 个数 | 包含的指令 |", "|---|---|---|"]
+    for cid, cname, desc in BEGINNER_CATEGORIES:
+        cmds = [it for it in ITEMS if it[3] == cid]
+        links = "、".join(f"[{n}]({cat_file(cid)}#{anchor(n)})" for _, n, _, _ in cmds)
+        out.append(f"| [{cid} {cname}]({cat_file(cid)})<br/>{desc} | {len(cmds)} | {links} |")
+    return "\n".join(out)
+
+
+def build_index_table():
     out = []
-    for level_dir, level_cn, lo, hi in LEVELS:
-        rows = [it for it in ITEMS if lo <= it[0] <= hi]
-        done = sum(existing(page_path(level_dir, r, n)) for r, n, _ in rows)
-        out.append(f"### {level_cn}指令（{lo}–{hi}）\n")
-        if done == 0:
-            out.append("📝 待写。\n")
-        out.append("| 排名 | 指令 | 用途 | 状态 |")
-        out.append("|---|---|---|---|")
-        for r, n, use in rows:
-            p = page_path(level_dir, r, n)
-            if existing(p):
-                out.append(f"| {r} | [`{n}`]({p}) | {use} | ✅ |")
+    for title, lo, hi in [("初级指令（1–100）", 1, 100), ("中级指令（101–200）", 101, 200), ("高级指令（201–300）", 201, 300)]:
+        out.append(f"### {title}\n")
+        out.append("| 排名 | 指令 | 用途 | 所在分类 | 状态 |")
+        out.append("|---|---|---|---|---|")
+        for r, n, use, cid in ITEMS:
+            if not lo <= r <= hi:
+                continue
+            if cid:
+                out.append(f"| {r} | [`{n}`]({cat_file(cid)}#{anchor(n)}) | {use} | [{cid} {CAT_NAME[cid]}]({cat_file(cid)}) | ✅ |")
             else:
-                out.append(f"| {r} | `{n}` | {use} | 📝 |")
+                out.append(f"| {r} | `{n}` | {use} | 待分类 | 📝 |")
         out.append("")
     return "\n".join(out)
 
 
-FOOTER_RE = re.compile(r"\n---\n\n\[(?:← 上一个|返回目录)[^\n]*\n?\Z")
+def replace_block(text, begin, end, content):
+    head, rest = text.split(begin)
+    _, tail = rest.split(end)
+    return head + begin + "\n\n" + content + "\n\n" + end + tail
 
 
-def add_nav():
-    for level_dir, _, lo, hi in LEVELS:
-        rows = [it for it in ITEMS if lo <= it[0] <= hi and existing(page_path(level_dir, it[0], it[1]))]
-        for idx, (r, n, _) in enumerate(rows):
-            p = os.path.join(ROOT, page_path(level_dir, r, n))
-            text = FOOTER_RE.sub("\n", open(p, encoding="utf-8").read()).rstrip("\n") + "\n"
-            parts = []
-            if idx > 0:
-                pr, pn, _ = rows[idx - 1]
-                parts.append(f"[← 上一个：{pn}]({os.path.basename(page_path(level_dir, pr, pn))})")
-            parts.append("[返回目录](../../README.md)")
-            if idx < len(rows) - 1:
-                nr, nn, _ = rows[idx + 1]
-                parts.append(f"[下一个：{nn} →]({os.path.basename(page_path(level_dir, nr, nn))})")
-            text += "\n---\n\n" + " · ".join(parts) + "\n"
-            open(p, "w", encoding="utf-8").write(text)
+FOOTER_RE = re.compile(r"\n---\n\n\[(?:← 上一类|返回总目录)[^\n]*\n?\Z")
+
+
+def add_category_nav():
+    ids = [c[0] for c in BEGINNER_CATEGORIES]
+    for idx, cid in enumerate(ids):
+        p = os.path.join(ROOT, cat_file(cid))
+        text = FOOTER_RE.sub("\n", open(p, encoding="utf-8").read()).rstrip("\n") + "\n"
+        parts = []
+        if idx > 0:
+            prev = ids[idx - 1]
+            parts.append(f"[← 上一类：{CAT_NAME[prev]}]({os.path.basename(cat_file(prev))})")
+        parts.append("[返回总目录](../../README.md)")
+        if idx < len(ids) - 1:
+            nxt = ids[idx + 1]
+            parts.append(f"[下一类：{CAT_NAME[nxt]} →]({os.path.basename(cat_file(nxt))})")
+        open(p, "w", encoding="utf-8").write(text + "\n---\n\n" + " · ".join(parts) + "\n")
+
+
+def check_anchors():
+    missing = []
+    for r, n, _, cid in ITEMS:
+        if cid and f'<a id="{anchor(n)}"></a>' not in open(os.path.join(ROOT, cat_file(cid)), encoding="utf-8").read():
+            missing.append(n)
+    if missing:
+        sys.exit("以下指令在分类文件里找不到锚点：" + "、".join(missing))
 
 
 def main():
+    check_anchors()
     readme = os.path.join(ROOT, "README.md")
     s = open(readme, encoding="utf-8").read()
-    begin, end = "<!-- 目录开始：由 tools/gen_readme.py 生成，请勿手改 -->", "<!-- 目录结束 -->"
-    head, rest = s.split(begin)
-    _, tail = rest.split(end)
-    open(readme, "w", encoding="utf-8").write(head + begin + "\n\n" + build_tables() + "\n" + end + tail)
-    add_nav()
+    s = replace_block(s, "<!-- 分类目录开始 -->", "<!-- 分类目录结束 -->", build_category_table())
+    s = replace_block(s, "<!-- 总目录开始 -->", "<!-- 总目录结束 -->", build_index_table())
+    open(readme, "w", encoding="utf-8").write(s)
+    add_category_nav()
 
 
 if __name__ == "__main__":

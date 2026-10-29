@@ -7,8 +7,8 @@
 | `setup-demo.sh` | 建用户 tom 和演示目录 `~/demo`。在自己的测试机上用 `sudo bash setup-demo.sh` 也能建一份同样的环境 |
 | `u.sh` | 用 bwrap 进入 Ubuntu 根文件系统，逐行执行一个命令清单，输出 `$ 命令` 和结果 |
 | `norm.py` | 把 `ls -l` 风格的输出规整成普通 ext4 机器上的样子（去掉 SELinux 带来的 `+`，目录大小改为 4096，重新对齐列） |
-| `cmds/` | 各页面用到的命令清单 |
-| `gen_readme.py` | 生成 README 的目录表格，并给每个指令页加上“上一个 / 下一个”导航 |
+| `cmds/` | 各指令示例用到的命令清单，文件名前的数字是指令排名 |
+| `gen_readme.py` | 300 个指令的排名、用途和所属分类都登记在这里。它生成 README 的“分类目录”和“总目录对应表”，给每个分类文件加上“上一类 / 下一类”导航，并检查每个指令在分类文件里都有 `<a id="cmd-指令名">` 锚点 |
 
 ## 在一个新的 Linux 沙箱里重建
 
@@ -50,3 +50,9 @@ ROOT=1 bash u.sh cmds/063-064.txt   # 以 root 身份执行
 | `/home`、`/tmp` 是 tmpfs，updatedb 默认不收录 | locate 的演示改用 `/opt` |
 
 这些内容在页面里都标注了 `⚠️ 未实机验证`。
+
+## 新增指令的写法
+
+1. 在 `gen_readme.py` 的 `COMMANDS` 里给该指令补上分类编号（中级、高级要先在 `BEGINNER_CATEGORIES` 旁边新增对应级别的分类表）。
+2. 在对应分类文件里按排名顺序加入一节：先写 `<a id="cmd-指令名"></a>`，再写 `## 排名 指令：用途`，各小节用 `###`。
+3. 在 `Ubuntu指令教程/` 目录下执行 `python3 tools/gen_readme.py`。
