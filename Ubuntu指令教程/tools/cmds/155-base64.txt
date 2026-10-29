@@ -1,0 +1,8 @@
+echo -n "tom:Tom@2026" | base64
+echo "dG9tOlRvbUAyMDI2" | base64 -d; echo
+echo "价格表" | base64
+base64 readme.txt
+base64 -w 0 big.iso | wc -c
+echo "dG9tOlRvbUAyMDI2" | base64 -d | xxd 2>/dev/null | head -1
+echo "not-base64!!" | base64 -d
+echo -n "tom:Tom@2026" | base64 > a; echo "tom:Tom@2026" | base64

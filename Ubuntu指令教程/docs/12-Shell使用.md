@@ -1,34 +1,40 @@
-# 初级 · 12 Shell使用（13 个）
+# 12 Shell使用（★★★ 初级 13 个，★★ 中级 6 个）
 
-> 清屏、历史、别名、环境变量、查帮助。每个指令的结构：作用 · 基本格式 · 常用参数 · 常用示例 · ⚠️ 踩坑警告 · 一句话总结。标题前的三位数字是使用频率排名。演示环境见 [总目录](../../README.md#演示环境)。
+> 历史、别名、环境变量、帮助、脚本基础、终端复用。星级表示难度：★★★ 初级、★★ 中级、★ 高级。标题里的三位数字是使用频率排名。每个指令的结构：作用 · 基本格式 · 常用参数 · 常用示例 · ⚠️ 踩坑警告 · 一句话总结。演示环境见 [总目录](../README.md#演示环境)。
 
 <a id="本类目录"></a>
 
 ## 本类目录
 
-| 排名 | 指令 | 用途 |
-|---|---|---|
-| 13 | [`clear`](#cmd-clear) | 清屏 |
-| 15 | [`man`](#cmd-man) | 查看命令手册 |
-| 16 | [`history`](#cmd-history) | 查看命令历史 |
-| 17 | [`exit`](#cmd-exit) | 退出 Shell 或脚本 |
-| 44 | [`which`](#cmd-which) | 查命令对应的程序位置 |
-| 45 | [`whereis`](#cmd-whereis) | 查程序和手册的位置 |
-| 60 | [`alias`](#cmd-alias) | 给命令起别名 |
-| 61 | [`type`](#cmd-type) | 查看命令的真实身份 |
-| 62 | [`help`](#cmd-help) | bash 内建命令的帮助 |
-| 75 | [`env`](#cmd-env) | 查看环境变量 |
-| 76 | [`export`](#cmd-export) | 设置环境变量 |
-| 77 | [`source`](#cmd-source) | 在当前 Shell 里执行脚本 |
-| 100 | [`xdg-open`](#cmd-xdg-open) | 用默认程序打开文件 |
+| 排名 | 级别 | 指令 | 用途 |
+|---|---|---|---|
+| 13 | ★★★ | [`clear`](#cmd-clear) | 清屏 |
+| 15 | ★★★ | [`man`](#cmd-man) | 查看命令手册 |
+| 16 | ★★★ | [`history`](#cmd-history) | 查看命令历史 |
+| 17 | ★★★ | [`exit`](#cmd-exit) | 退出 Shell 或脚本 |
+| 44 | ★★★ | [`which`](#cmd-which) | 查命令对应的程序位置 |
+| 45 | ★★★ | [`whereis`](#cmd-whereis) | 查程序和手册的位置 |
+| 60 | ★★★ | [`alias`](#cmd-alias) | 给命令起别名 |
+| 61 | ★★★ | [`type`](#cmd-type) | 查看命令的真实身份 |
+| 62 | ★★★ | [`help`](#cmd-help) | bash 内建命令的帮助 |
+| 75 | ★★★ | [`env`](#cmd-env) | 查看环境变量 |
+| 76 | ★★★ | [`export`](#cmd-export) | 设置环境变量 |
+| 77 | ★★★ | [`source`](#cmd-source) | 在当前 Shell 里执行脚本 |
+| 100 | ★★★ | [`xdg-open`](#cmd-xdg-open) | 用默认程序打开文件 |
+| 139 | ★★ | [`screen`](#cmd-screen) | 终端会话保持 |
+| 140 | ★★ | [`tmux`](#cmd-tmux) | 终端复用 |
+| 172 | ★★ | [`read`](#cmd-read) | 读取输入 |
+| 173 | ★★ | [`test`](#cmd-test) | 条件判断 |
+| 175 | ★★ | [`bc`](#cmd-bc) | 计算器 |
+| 176 | ★★ | [`expr`](#cmd-expr) | 表达式求值 |
 
 ---
 
 <a id="cmd-clear"></a>
 
-## 013 clear：清屏
+## 013 ★★★&nbsp;&nbsp;clear：清屏
 
-> 级别：初级 · 软件包：`ncurses-bin`（系统自带）
+> 级别：★★★ 初级 · 软件包：`ncurses-bin`（系统自带）
 
 ### 1. 作用
 
@@ -71,9 +77,9 @@ clear
 
 <a id="cmd-man"></a>
 
-## 015 man：查看命令手册
+## 015 ★★★&nbsp;&nbsp;man：查看命令手册
 
-> 级别：初级 · 软件包：`man-db`
+> 级别：★★★ 初级 · 软件包：`man-db`
 
 ### 1. 作用
 
@@ -181,9 +187,9 @@ Options:
 
 <a id="cmd-history"></a>
 
-## 016 history：查看命令历史
+## 016 ★★★&nbsp;&nbsp;history：查看命令历史
 
-> 级别：初级 · 来源：bash 内建命令
+> 级别：★★★ 初级 · 来源：bash 内建命令
 
 ### 1. 作用
 
@@ -270,9 +276,9 @@ history | grep ssh
 
 <a id="cmd-exit"></a>
 
-## 017 exit：退出 Shell 或脚本
+## 017 ★★★&nbsp;&nbsp;exit：退出 Shell 或脚本
 
-> 级别：初级 · 来源：bash 内建命令
+> 级别：★★★ 初级 · 来源：bash 内建命令
 
 ### 1. 作用
 
@@ -344,9 +350,9 @@ $ bash -c "exit"; echo $?
 
 <a id="cmd-which"></a>
 
-## 044 which：查命令对应的程序位置
+## 044 ★★★&nbsp;&nbsp;which：查命令对应的程序位置
 
-> 级别：初级 · 软件包：`debianutils`
+> 级别：★★★ 初级 · 软件包：`debianutils`
 
 ### 1. 作用
 
@@ -421,9 +427,9 @@ cd is a shell builtin
 
 <a id="cmd-whereis"></a>
 
-## 045 whereis：查程序、手册和源码的位置
+## 045 ★★★&nbsp;&nbsp;whereis：查程序、手册和源码的位置
 
-> 级别：初级 · 软件包：`util-linux`
+> 级别：★★★ 初级 · 软件包：`util-linux`
 
 ### 1. 作用
 
@@ -478,9 +484,9 @@ bash 的结果里有两项：程序 `/usr/bin/bash` 和手册 `bash.1.gz`。ngin
 
 <a id="cmd-alias"></a>
 
-## 060 alias：给命令起别名
+## 060 ★★★&nbsp;&nbsp;alias：给命令起别名
 
-> 级别：初级 · 来源：bash 内建命令
+> 级别：★★★ 初级 · 来源：bash 内建命令
 
 ### 1. 作用
 
@@ -575,9 +581,9 @@ alias db01='ssh tom@192.168.1.10'
 
 <a id="cmd-type"></a>
 
-## 061 type：查看命令的真实身份
+## 061 ★★★&nbsp;&nbsp;type：查看命令的真实身份
 
-> 级别：初级 · 来源：bash 内建命令
+> 级别：★★★ 初级 · 来源：bash 内建命令
 
 ### 1. 作用
 
@@ -657,9 +663,9 @@ builtin
 
 <a id="cmd-help"></a>
 
-## 062 help：查看 bash 内建命令的帮助
+## 062 ★★★&nbsp;&nbsp;help：查看 bash 内建命令的帮助
 
-> 级别：初级 · 来源：bash 内建命令
+> 级别：★★★ 初级 · 来源：bash 内建命令
 
 ### 1. 作用
 
@@ -743,9 +749,9 @@ ls 是独立程序，用 `man ls` 或 `ls --help`。
 
 <a id="cmd-env"></a>
 
-## 075 env：查看环境变量，或带着变量运行命令
+## 075 ★★★&nbsp;&nbsp;env：查看环境变量，或带着变量运行命令
 
-> 级别：初级 · 软件包：`rust-coreutils`（系统自带）
+> 级别：★★★ 初级 · 软件包：`rust-coreutils`（系统自带）
 
 ### 1. 作用
 
@@ -826,9 +832,9 @@ bash 里也可以省略 env，直接写 `LANG=C date`，效果相同。
 
 <a id="cmd-export"></a>
 
-## 076 export：设置环境变量
+## 076 ★★★&nbsp;&nbsp;export：设置环境变量
 
-> 级别：初级 · 来源：bash 内建命令
+> 级别：★★★ 初级 · 来源：bash 内建命令
 
 ### 1. 作用
 
@@ -915,9 +921,9 @@ source ~/.bashrc
 
 <a id="cmd-source"></a>
 
-## 077 source：在当前 Shell 里执行脚本
+## 077 ★★★&nbsp;&nbsp;source：在当前 Shell 里执行脚本
 
-> 级别：初级 · 来源：bash 内建命令
+> 级别：★★★ 初级 · 来源：bash 内建命令
 
 ### 1. 作用
 
@@ -999,9 +1005,9 @@ activate 脚本要修改当前 Shell 的 PATH 和提示符，所以必须用 sou
 
 <a id="cmd-xdg-open"></a>
 
-## 100 xdg-open：用默认程序打开文件或网址
+## 100 ★★★&nbsp;&nbsp;xdg-open：用默认程序打开文件或网址
 
-> 级别：初级 · 软件包：`xdg-utils`（Ubuntu 26.04 为 1.2.1 版）
+> 级别：★★★ 初级 · 软件包：`xdg-utils`（Ubuntu 26.04 为 1.2.1 版）
 
 ### 1. 作用
 
@@ -1059,4 +1065,467 @@ xdg-open: no method available for opening 'readme.txt'
 
 ---
 
-[← 上一类：系统信息和硬件](11-系统信息和硬件.md) · [返回总目录](../../README.md)
+<a id="cmd-screen"></a>
+
+## 139 ★★&nbsp;&nbsp;screen：保持终端会话
+
+> 级别：★★ 中级 · 软件包：`screen`（4.09，需 `sudo apt install screen`）
+
+### 1. 作用
+
+`screen` 创建一个“虚拟终端会话”，程序在会话里运行。ssh 断开时，会话和里面的程序继续在服务器上运行；重新 ssh 上去，可以重新连回这个会话，看到原来的画面接着操作。
+
+跑几个小时的数据迁移、系统升级时，在 screen 里执行，就不怕网络断开。功能更多、更常用的是 [tmux](#cmd-tmux)，两者选一个即可。
+
+### 2. 基本格式
+
+```bash
+screen -S 会话名           # 新建并进入
+screen -ls                 # 列出会话
+screen -r 会话名           # 重新连回
+screen -dmS 会话名 命令    # 在后台新建会话并运行命令
+```
+
+### 3. 会话里的按键
+
+screen 的快捷键都以 `Ctrl+A` 开头：先按 `Ctrl+A`，松开，再按后面的键。
+
+| 按键 | 作用 |
+|---|---|
+| `Ctrl+A` `d` | 脱离（detach）会话，程序继续在后台运行 |
+| `Ctrl+A` `c` | 新建一个窗口 |
+| `Ctrl+A` `n` / `p` | 下一个 / 上一个窗口 |
+| `exit` | 结束当前窗口，所有窗口结束后会话关闭 |
+
+### 4. 常用示例
+
+```
+$ screen -dmS job sleep 300
+
+$ screen -ls
+There is a screen on:
+	NNN.job	(10/29/26 08:42:17)	(Detached)
+1 Socket in /home/tom/.screen.
+
+$ screen -S job -X quit
+
+$ screen -ls
+No Sockets found in /home/tom/.screen.
+```
+
+`NNN` 是会话的进程号。`Detached` 表示没有终端连着，程序在后台运行。`-X quit` 从外面关闭一个会话。
+
+> 测试环境里需要设置 `SCREENDIR=~/.screen`，所以输出显示的是 `/home/tom/.screen`；在普通 Ubuntu 上，会话文件放在 `/run/screen/` 下。交互式按键部分未实机验证。
+
+### 5. 一句话总结
+
+长任务放进 `screen -S 名字` 里跑，`Ctrl+A d` 脱离，`screen -r 名字` 回来。
+
+[↑ 回到本类目录](#本类目录)
+
+---
+
+<a id="cmd-tmux"></a>
+
+## 140 ★★&nbsp;&nbsp;tmux：终端复用
+
+> 级别：★★ 中级 · 软件包：`tmux`（3.6）
+
+### 1. 作用
+
+`tmux`（terminal multiplexer）和 screen 一样能让会话在 ssh 断开后继续运行，此外还能在一个终端窗口里**分屏**：左边看日志、右边改配置、下面跑命令。它是目前最常用的终端复用工具。
+
+### 2. 基本格式
+
+```bash
+tmux new -s 会话名         # 新建并进入
+tmux ls                    # 列出会话
+tmux attach -t 会话名      # 重新连回（可简写 tmux a -t 名字）
+tmux kill-session -t 会话名
+```
+
+### 3. 会话里的按键
+
+tmux 的快捷键以 `Ctrl+B` 开头（先按 `Ctrl+B`，松开，再按后面的键）。
+
+| 按键 | 作用 |
+|---|---|
+| `Ctrl+B` `d` | 脱离会话 |
+| `Ctrl+B` `%` | 左右分屏 |
+| `Ctrl+B` `"` | 上下分屏 |
+| `Ctrl+B` 方向键 | 在分屏之间切换 |
+| `Ctrl+B` `c` | 新建窗口 |
+| `Ctrl+B` `数字` | 切换到第几个窗口 |
+| `Ctrl+B` `[` | 进入滚动模式查看历史输出，按 `q` 退出 |
+
+### 4. 常用示例
+
+#### 4.1 后台会话
+
+```
+$ tmux new -d -s work 'sleep 300'; tmux ls
+work: 1 windows (created Thu Oct 29 08:42:05 2026)
+```
+
+`-d` 表示建好后不进入。
+
+#### 4.2 从外面向会话发送命令
+
+```
+$ tmux new -d -s deploy
+$ tmux send-keys -t deploy 'echo 部署中; date' Enter
+$ tmux capture-pane -p -t deploy
+...
+部署中
+Thu Oct 29 08:42:05 UTC 2026
+tom@ubuntu:~/demo$
+```
+
+`capture-pane -p` 把会话当前的屏幕内容打印出来。
+
+#### 4.3 典型用法
+
+```bash
+ssh db01
+tmux new -s upgrade
+sudo do-release-upgrade        # 网络断了也不怕
+# 重新 ssh 上来后：
+tmux attach -t upgrade
+```
+
+### 5. ⚠️ 踩坑警告
+
+| 现象 | 原因 | 怎么改 |
+|---|---|---|
+| `can't find session: nothere` | 会话名写错，或者会话已经结束 | `tmux ls` 查看 |
+| `no server running on /tmp/tmux-1000/default` | 没有任何会话在运行 | 用 `tmux new` 新建 |
+| 在 tmux 里鼠标滚轮不能翻看历史 | 默认没开启鼠标 | 用 `Ctrl+B [` 进入滚动模式；或在 `~/.tmux.conf` 写 `set -g mouse on` |
+
+### 6. 一句话总结
+
+`tmux new -s 名字` 开会话，`Ctrl+B d` 脱离，`tmux a -t 名字` 回来，`Ctrl+B %` 分屏。
+
+[↑ 回到本类目录](#本类目录)
+
+---
+
+<a id="cmd-read"></a>
+
+## 172 ★★&nbsp;&nbsp;read：在脚本里读取输入
+
+> 级别：★★ 中级 · 来源：bash 内建命令
+
+### 1. 作用
+
+`read` 从标准输入读取一行，存进变量。两个主要用途：
+
+- 脚本运行时向用户提问（“确认删除吗？”）；
+- 配合 while 循环逐行读取文件，每行拆成几个变量处理。
+
+### 2. 基本格式
+
+```bash
+read [参数] 变量名...
+```
+
+一行内容按空白拆开，依次赋给各个变量，多出来的都给最后一个变量。
+
+### 3. 常用参数
+
+| 参数 | 作用 |
+|---|---|
+| `-p "提示"` | 先显示提示文字 |
+| `-r` | 不把反斜杠当成转义符（处理文件时一律加上） |
+| `-s` | 输入时不显示（读密码） |
+| `-t 秒` | 超时时间 |
+| `-a 数组` | 读入数组 |
+
+### 4. 常用示例
+
+#### 4.1 向用户提问
+
+```bash
+read -p "确定要清空 /data/tmp 吗？(y/n) " ans
+if [ "$ans" = "y" ]; then
+    rm -rf /data/tmp/*
+fi
+```
+
+#### 4.2 拆分一行
+
+```
+$ read -r a b c <<< "U001 探头A 12000"; echo "编码=$a 价格=$c"
+编码=U001 价格=12000
+
+$ IFS=, read -r code name cat price <<< "U003,主机X,主机,280000"; echo "$name 的价格是 $price"
+主机X 的价格是 280000
+```
+
+`IFS=,` 只对这一条 read 生效，让它按逗号拆分。
+
+#### 4.3 逐行处理 CSV
+
+```
+$ while IFS=, read -r code name cat price; do echo "$code -> $price"; done < <(tail -n +2 src/products.csv)
+U001 -> 12000
+U002 -> 15000
+U003 -> 280000
+U004 -> 35
+U005 -> 12000
+```
+
+### 5. ⚠️ 踩坑警告
+
+| 现象 | 原因 | 怎么改 |
+|---|---|---|
+| 文件里的 `\` 不见了 | 没加 `-r`，反斜杠被当成转义符 | 一律写 `read -r` |
+| `cat 文件 \| while read ...` 循环里设置的变量，循环结束后就没了 | 管道让 while 在子 Shell 里运行 | 改成 `while ... done < 文件` |
+| 最后一行没被处理 | 文件最后一行没有换行符 | 写成 `while read -r line \|\| [ -n "$line" ]` |
+
+### 6. 一句话总结
+
+逐行读文件：`while IFS=, read -r a b c; do ...; done < 文件`。
+
+[↑ 回到本类目录](#本类目录)
+
+---
+
+<a id="cmd-test"></a>
+
+## 173 ★★&nbsp;&nbsp;test：条件判断
+
+> 级别：★★ 中级 · 来源：bash 内建命令
+
+### 1. 作用
+
+`test` 判断一个条件是否成立：文件是否存在、是不是目录、数字谁大、字符串是否相等。成立时退出码为 0，不成立为 1。脚本里的 `if` 判断几乎都靠它。
+
+`[ 条件 ]` 是 test 的另一种写法，**方括号两边必须有空格**。bash 还有增强版 `[[ 条件 ]]`。
+
+### 2. 基本格式
+
+```bash
+test 条件
+[ 条件 ]
+[[ 条件 ]]
+```
+
+### 3. 常用条件
+
+| 文件判断 | 含义 |
+|---|---|
+| `-e 路径` | 存在 |
+| `-f 路径` | 是普通文件 |
+| `-d 路径` | 是目录 |
+| `-s 路径` | 存在且不是空文件 |
+| `-r` / `-w` / `-x 路径` | 可读 / 可写 / 可执行 |
+
+| 数字比较 | 含义 |
+|---|---|
+| `-eq` / `-ne` | 等于 / 不等于 |
+| `-gt` / `-ge` | 大于 / 大于等于 |
+| `-lt` / `-le` | 小于 / 小于等于 |
+
+| 字符串 | 含义 |
+|---|---|
+| `"$a" = "$b"` | 相等 |
+| `"$a" != "$b"` | 不等 |
+| `-z "$a"` | 为空 |
+| `-n "$a"` | 不为空 |
+
+### 4. 常用示例
+
+```
+$ test -f readme.txt && echo 文件存在
+文件存在
+
+$ [ -d logs ] && echo 是目录
+是目录
+
+$ [ -e nothere ] || echo 不存在
+不存在
+
+$ [ 10 -gt 9 ] && echo "10 > 9"
+10 > 9
+
+$ [ "$USER" == "tom" ] && echo 是tom
+是tom
+
+$ [[ "U001" == U* ]] && echo "以 U 开头"
+以 U 开头
+```
+
+`&&` 表示前面成立才执行后面，`||` 表示前面不成立才执行后面。`[[ ]]` 支持 `==` 后面写通配符。
+
+脚本里的写法：
+
+```bash
+if [ ! -f /etc/app.conf ]; then
+    echo "缺少配置文件"
+    exit 1
+fi
+```
+
+### 5. ⚠️ 踩坑警告
+
+| 现象 | 原因 | 怎么改 |
+|---|---|---|
+| `[: =: unary operator expected` | 变量为空，`[ $x = "a" ]` 展开后变成了 `[ = "a" ]` | 变量一律加双引号：`[ "$x" = "a" ]` |
+| `[ $a > $b ]` 判断数字大小结果不对，还多了一个文件 | `>` 被当成了重定向 | 数字比较用 `-gt`，或用 `(( a > b ))` |
+| `[-f file]` 报 `command not found` | 方括号两边没有空格 | 写成 `[ -f file ]` |
+
+第一条的实测：
+
+```
+$ x=; [ $x = "a" ]
+bash: [: =: unary operator expected
+
+$ x=; [ "$x" = "a" ] || echo 安全的写法
+安全的写法
+```
+
+### 6. 一句话总结
+
+`[ -f 文件 ]` 判断文件，`-gt` 比数字，变量永远加双引号。
+
+[↑ 回到本类目录](#本类目录)
+
+---
+
+<a id="cmd-bc"></a>
+
+## 175 ★★&nbsp;&nbsp;bc：命令行计算器
+
+> 级别：★★ 中级 · 软件包：`bc`
+
+### 1. 作用
+
+bash 自己只能算整数（`$((10/3))` 得 3）。`bc` 是一个支持小数、任意精度的计算器，脚本里要算金额、百分比、平均值时用它。
+
+### 2. 基本格式
+
+```bash
+echo "表达式" | bc [-l]
+bc -l <<< "表达式"
+```
+
+### 3. 常用参数和设置
+
+| 写法 | 作用 |
+|---|---|
+| `scale=2` | 除法结果保留 2 位小数（默认 0 位） |
+| `-l` | 加载数学库，默认保留 20 位小数，可以用 `s()` `c()` `l()` `e()` 等函数 |
+| `obase=2` | 以二进制输出 |
+
+### 4. 常用示例
+
+```
+$ echo "10/3" | bc
+3
+
+$ echo "scale=2; 10/3" | bc
+3.33
+
+$ echo "12000 * 1.13" | bc
+13560.00
+
+$ echo "2^10" | bc
+1024
+
+$ echo "obase=2; 255" | bc
+11111111
+
+$ echo "12000 > 15000" | bc
+0
+```
+
+比较的结果：成立输出 1，不成立输出 0，脚本里可以用来比较小数：
+
+```bash
+if [ "$(echo "$price > 10000" | bc)" -eq 1 ]; then
+    echo "高价产品"
+fi
+```
+
+### 5. ⚠️ 踩坑警告
+
+| 现象 | 原因 | 怎么改 |
+|---|---|---|
+| `echo "10/3" \| bc` 得到 3 | 默认 scale=0，不保留小数 | 先写 `scale=2;` |
+| 乘法的结果小数位数和预期不同（`3.5*2` 得 `7.0`） | 乘法结果的小数位数取决于参与运算的数 | 需要固定格式时再用 printf 格式化 |
+
+### 6. 一句话总结
+
+要算小数就用 `echo "scale=2; 表达式" | bc`。
+
+[↑ 回到本类目录](#本类目录)
+
+---
+
+<a id="cmd-expr"></a>
+
+## 176 ★★&nbsp;&nbsp;expr：表达式求值（旧式写法）
+
+> 级别：★★ 中级 · 软件包：`rust-coreutils`（系统自带）
+
+### 1. 作用
+
+`expr` 计算整数表达式，或者处理字符串（长度、截取）。它是很早期的 Shell 脚本里的写法，现在 bash 有更方便的内建语法。认识它是为了读懂老脚本，新脚本用 `$(( ))` 和 `${ }`。
+
+### 2. 基本格式
+
+```bash
+expr 数字 运算符 数字      # 运算符两边必须有空格
+expr length 字符串
+expr substr 字符串 起始位置 长度
+```
+
+### 3. 常用示例
+
+```
+$ expr 5 + 3
+8
+
+$ expr 10 / 3
+3
+
+$ expr 5 \* 3
+15
+
+$ expr length "hello"
+5
+
+$ expr substr "U001-探头" 1 4
+U001
+```
+
+对应的 bash 写法：
+
+```
+$ echo $((5 + 3)) $((10 / 3)) $((10 % 3)) $((2 ** 10))
+8 3 1 1024
+```
+
+| expr | bash 内建写法 |
+|---|---|
+| `expr 5 + 3` | `$((5 + 3))` |
+| `expr length "$s"` | `${#s}` |
+| `expr substr "$s" 1 4` | `${s:0:4}` |
+
+### 4. ⚠️ 踩坑警告
+
+| 现象 | 原因 | 怎么改 |
+|---|---|---|
+| `expr 5 * 3` 报 `syntax error: unexpected argument 'big.iso'` | `*` 被 Shell 展开成了当前目录的文件名 | 写成 `5 \* 3`，或用 `$((5 * 3))` |
+| `expr 1.5 + 1` 报 `non-integer argument` | expr 只支持整数 | 小数用 [bc](#cmd-bc) |
+| `expr 5+3` 原样输出 `5+3` | 运算符两边没有空格，被当成了一个字符串 | 写成 `expr 5 + 3` |
+
+### 5. 一句话总结
+
+老脚本里的 `expr` 能看懂即可，新脚本用 `$(( ))`，小数用 bc。
+
+[↑ 回到本类目录](#本类目录)
+
+---
+
+[← 上一类：系统信息和硬件](11-系统信息和硬件.md) · [返回总目录](../README.md) · [下一类：性能监控 →](13-性能监控.md)

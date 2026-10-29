@@ -1,0 +1,30 @@
+hostnamectl 2>&1 | head -2
+timedatectl 2>&1 | head -2
+timedatectl list-timezones 2>&1 | grep -E "Asia/(Shanghai|Tokyo)"
+timedatectl list-timezones | wc -l
+ls -l /etc/localtime
+localectl 2>&1 | head -2
+locale
+locale -a
+dmesg 2>&1 | head -3
+lsmod | head -5
+lsmod | grep -E "^(ext4|xfs|overlay) "
+modinfo ext4 2>&1 | head -3
+modprobe -n -v br_netfilter 2>&1 | head -2
+vmstat
+vmstat 1 3
+vmstat -s | head -5
+vmstat -w 1 2
+iostat
+iostat -x 1 2 | tail -8
+iostat -dh 2>&1 | head -6
+iotop -b -n 1 2>&1 | head -5
+iftop -t -s 1 2>&1 | head -5
+journalctl --version | head -1
+journalctl 2>&1 | head -2
+systemd-analyze calendar daily
+systemd-analyze calendar "Mon..Fri 09:00"
+systemd-analyze calendar "*-*-* 02:30:00" --iterations=3
+systemd-analyze timespan "1h 30min"
+systemd-analyze 2>&1 | head -2
+systemd-analyze verify /usr/lib/systemd/system/ssh.service 2>&1 | head -3

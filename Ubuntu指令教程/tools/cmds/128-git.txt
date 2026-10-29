@@ -1,0 +1,23 @@
+git --version
+git config --global user.name "Tom"; git config --global user.email "tom@example.com"; git config --global init.defaultBranch main; git config --global --list
+git init price-app
+cd price-app; cp ../src/products.csv .; printf 'logs/\n*.log\n' > .gitignore; git status
+git add .; git status --short
+git commit -m "初始化：产品价格表"
+sed -i 's/,35$/,38/' products.csv; git status --short
+git diff
+git commit -am "凝胶价格调整为 38"
+git log --oneline
+git log -1 --stat | tail -4
+git switch -c feature/new-product
+echo "U006,新品,耗材,99" >> products.csv; git commit -qam "新增 U006"; git branch
+git switch main; git merge feature/new-product
+git log --oneline --graph | head -4
+git restore --staged products.csv 2>&1; echo "x" >> products.csv; git restore products.csv; git status --short; echo "工作区已恢复"
+git show --stat HEAD~1 | head -6
+git tag v1.0; git tag
+git remote add origin https://github.com/example/price-app.git; git remote -v
+git push origin main 2>&1 | tail -2
+cd ..; git clone price-app price-app-copy 2>&1; ls price-app-copy
+cd price-app; echo y >> products.csv; git pull 2>&1 | tail -1
+git commit -m "空提交" 2>&1 | tail -2

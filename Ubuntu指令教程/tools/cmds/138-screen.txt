@@ -1,0 +1,2 @@
+export SCREENDIR=$HOME/.screen; mkdir -p -m 700 $SCREENDIR; screen -dmS job sleep 300; screen -ls | sed -E 's/[0-9]+\.job/NNN.job/'
+screen -S job -X quit; screen -ls

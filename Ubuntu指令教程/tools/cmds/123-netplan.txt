@@ -1,0 +1,20 @@
+ls /etc/netplan/
+netplan --help 2>&1 | head -12
+mkdir -p /etc/netplan; printf 'network:\n  version: 2\n  ethernets:\n    enp0s3:\n      dhcp4: false\n      addresses: [192.168.1.20/24]\n      routes:\n        - to: default\n          via: 192.168.1.1\n      nameservers:\n        addresses: [223.5.5.5, 114.114.114.114]\n' > /etc/netplan/01-static.yaml; chmod 600 /etc/netplan/01-static.yaml; cat /etc/netplan/01-static.yaml
+netplan get
+netplan get ethernets.enp0s3.addresses
+netplan set ethernets.enp0s3.addresses=[192.168.1.21/24]; netplan get ethernets.enp0s3.addresses
+netplan generate 2>&1 | tail -2; ls /run/systemd/network/ 2>/dev/null
+printf 'network:\n  version: 2\n  ethernets:\n    enp0s3:\n    dhcp4: true\n' > /etc/netplan/02-bad.yaml; chmod 600 /etc/netplan/02-bad.yaml; netplan generate 2>&1 | head -4; rm /etc/netplan/02-bad.yaml
+chmod 644 /etc/netplan/01-static.yaml; netplan get 2>&1 | head -2
+netplan apply 2>&1 | head -2
+nmcli --version
+nmcli general status 2>&1 | head -2
+resolvectl status 2>&1 | head -2
+ufw --version
+ufw status 2>&1
+ufw allow 22/tcp 2>&1
+ufw status 2>&1 | head -3
+cat /etc/ufw/user.rules | grep -A1 "### tuple" | head -4
+ufw --dry-run allow from 192.168.1.0/24 to any port 1433 proto tcp 2>&1 | grep -E "^-A|tuple" | head -3
+ufw enable 2>&1 | tail -2

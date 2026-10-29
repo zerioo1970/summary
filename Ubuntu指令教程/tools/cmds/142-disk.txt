@@ -1,0 +1,26 @@
+update-alternatives --auto editor >/dev/null 2>&1; cd /root; truncate -s 1G disk.img; ls -lh disk.img
+fdisk -l disk.img
+printf 'g\nn\n1\n\n+200M\nn\n2\n\n\nw\n' | fdisk disk.img | tail -6
+fdisk -l disk.img | tail -4
+truncate -s 1G disk2.img; parted -s disk2.img mklabel gpt mkpart data ext4 1MiB 100%; parted -s disk2.img print
+parted -s disk2.img unit MiB print free | tail -4
+truncate -s 300M part.img; mkfs.ext4 part.img
+mkfs.ext4 -L data part.img 2>&1 | tail -2
+mkfs.ext4 -F -q -L data part.img; echo done
+truncate -s 100M fat.img; mkfs.vfat -n USB fat.img
+ls /usr/sbin/mkfs*
+blkid part.img fat.img
+blkid -s UUID -o value part.img
+fsck -n part.img
+e2fsck -f -n part.img
+fsck.vfat -n fat.img
+truncate -s 64M swap.img; chmod 600 swap.img; mkswap swap.img
+swapon --show
+cat /proc/swaps
+swapon swap.img
+free -h | grep Swap
+findmnt
+findmnt -t tmpfs | head -4
+findmnt -n -o SOURCE,FSTYPE /
+findmnt --verify 2>&1 | tail -3
+cat /etc/fstab

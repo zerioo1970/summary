@@ -1,0 +1,31 @@
+md5sum readme.txt big.iso
+sha256sum readme.txt big.iso
+sha256sum big.iso > big.iso.sha256; cat big.iso.sha256
+sha256sum -c big.iso.sha256
+echo x >> big.iso; sha256sum -c big.iso.sha256
+md5sum src/*.csv logs/*.log > files.md5; md5sum -c --quiet files.md5; echo "退出码=$?"
+split -b 1M big.iso part_; ls -l part_*
+split -l 2 -d --additional-suffix=.csv src/products.csv p_; ls p_*; cat p_01.csv
+cat part_* > big2.iso; cmp big.iso big2.iso && echo 完全一致
+split -n 3 logs/app.log chunk_; wc -l chunk_*
+dd if=/dev/zero of=test.img bs=1M count=50
+dd if=/dev/zero of=test2.img bs=1M count=50 status=progress 2>&1 | tr '\r' '\n' | tail -2
+dd if=big.iso of=head.bin bs=1k count=4 status=none; ls -l head.bin
+dd if=/dev/zero of=test3.img bs=1M count=100 oflag=direct 2>&1 | tail -1
+sync; echo synced
+sync -f .
+xz -k logs/app.log; ls -l logs/
+xz -l logs/app.log.xz
+xz -d -k -f logs/app.log.xz; xz -9 -T0 -k -f big.iso; ls -lh big.iso*
+bzip2 -k src/products.csv; ls -l src/
+bunzip2 -c src/products.csv.bz2 | head -2
+bzcat src/products.csv.bz2 | wc -l
+7z a demo.7z logs src
+7z l demo.7z | tail -6
+7z x demo.7z -oout7z | tail -3
+7z a -p'Zip@2026' -mhe=on secret.7z src | tail -2
+7z l secret.7z 2>&1 | tail -3
+gzip -k logs/app.log; zcat logs/app.log.gz | head -2
+zgrep ERROR logs/app.log.gz
+zgrep -c INFO logs/app.log.gz
+zcat logs/app.log | head -1

@@ -1,0 +1,19 @@
+crontab -l
+printf '# 每天 02:30 备份\n30 2 * * * /home/root/backup.sh >> /var/log/backup.log 2>&1\n*/5 * * * * /usr/bin/curl -fsS http://127.0.0.1:8080/health > /dev/null\n' | crontab -
+crontab -l
+crontab -u tom -l
+printf '0 9 * * 1-5 echo 早上好\n' | crontab -u tom -
+crontab -u tom -l
+ls -l /var/spool/cron/crontabs/
+printf '61 * * * * echo bad\n' | crontab -
+crontab -r; crontab -l
+cat /etc/crontab | grep -v "^#" | grep -v "^$"
+ls /etc/cron.d /etc/cron.daily | head
+/usr/sbin/atd; sleep 0.5; echo "date > /tmp/at-test.txt" | at now + 1 minute
+atq
+echo "echo hi" | at 23:30
+at -l
+atrm 1; atq
+echo "tar -czf /tmp/logs.tar.gz /var/log" | at 02:00 tomorrow
+at -c 3 | tail -3
+echo "x" | at 25:00

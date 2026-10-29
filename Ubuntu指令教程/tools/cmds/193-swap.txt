@@ -1,0 +1,4 @@
+cd /root; fallocate -l 64M swap2.img; chmod 600 swap2.img; mkswap swap2.img
+dd if=/dev/zero of=swap3.img bs=1M count=64 status=none; chmod 600 swap3.img; mkswap swap3.img | tail -1
+ncdu --help 2>&1 | head -3
+ncdu -o- /home/tom/demo 2>/dev/null | head -c 300; echo

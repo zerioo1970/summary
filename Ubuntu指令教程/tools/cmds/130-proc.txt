@@ -1,0 +1,39 @@
+sleep 600 & sleep 601 & python3 -c "import time; time.sleep(600)" & sleep 0.3
+pgrep sleep
+pgrep -a sleep
+pgrep -l python
+pgrep -f "time.sleep"
+pgrep -u tom -c
+pgrep -x slee; echo "退出码=$?"
+pgrep -n sleep
+pkill -f "sleep 601"; sleep 0.2; pgrep -a sleep
+pkill -e python3
+pkill nothere; echo "退出码=$?"
+jobs
+jobs -l
+kill %1; sleep 0.2; jobs
+nice -n 10 sleep 300 & sleep 0.2
+ps -o pid,ni,cmd -p $!
+renice -n 15 -p $!
+ps -o pid,ni,cmd -p $!
+renice -n 5 -p $!
+renice -n -5 -p $!
+nice
+nice -n -5 true
+kill %1 2>/dev/null; kill $(jobs -p) 2>/dev/null; sleep 0.2
+nohup bash -c 'for i in 1 2 3; do echo "第 $i 步"; sleep 0.1; done' 
+cat nohup.out
+nohup bash -c 'echo 写日志' > job.log 2>&1 &
+sleep 0.3; cat job.log
+sleep 500 & 
+disown %1
+jobs; pgrep -a "^sleep"
+pkill -x sleep
+lsof -p $$ | head -5
+python3 -c "import socket,time; s=socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1); s.bind(('0.0.0.0',8080)); s.listen(); time.sleep(5)" & sleep 0.5
+lsof -i :8080
+lsof -i -P -n | head -3
+exec 3> held.log; rm held.log; lsof +L1 2>/dev/null | head -3; exec 3>&-
+lsof +D logs
+lsof -u tom | wc -l
+lsof -c python3 | head -3

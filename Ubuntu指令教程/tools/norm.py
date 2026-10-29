@@ -10,8 +10,8 @@ PAT_ISO = re.compile(r'^([-dlcbps][rwxsStT-]{9})\+?\s+(\d+)\s+(\S+)\s+(\S+)\s+(\
 
 def main():
     rows = []
-    for line in sys.stdin.read().split('\n'):
-        if line.startswith('bash: cannot set terminal process group') or line == 'bash: no job control in this shell':
+    for line in sys.stdin.buffer.read().decode('utf-8', 'replace').split('\n'):
+        if 'tcsetattr: Inappropriate ioctl' in line or line.startswith('bash: cannot set terminal process group') or line == 'bash: no job control in this shell':
             continue
         m = PAT.match(line)
         iso = None if m else PAT_ISO.match(line)

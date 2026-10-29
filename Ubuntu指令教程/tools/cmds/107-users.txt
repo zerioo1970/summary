@@ -1,0 +1,37 @@
+useradd zhang
+grep zhang /etc/passwd
+ls -d /home/zhang
+userdel zhang
+useradd -m -s /bin/bash -c "张三,财务部" zhang
+grep zhang /etc/passwd; ls -ld /home/zhang
+useradd -m -u 1500 -G sudo li; id li
+useradd zhang
+useradd -r -s /usr/sbin/nologin -d /opt/priceapp priceapp; grep priceapp /etc/passwd
+adduser --disabled-password --comment "王五" wang 2>&1
+id wang; ls -la /home/wang | head -4
+adduser wang sudo
+adduser nothere sudo 2>&1
+groupadd dev; getent group dev
+groupadd dev
+groupadd -g 2001 ops; getent group ops
+usermod -aG dev zhang; id zhang
+usermod -G ops zhang; id zhang
+usermod -aG dev,ops zhang; id zhang
+usermod -s /usr/sbin/nologin zhang; getent passwd zhang
+usermod -L zhang; passwd -S zhang
+usermod -U zhang; passwd -S zhang
+usermod -l zhangsan zhang; id zhangsan
+usermod -d /home/zhangsan -m zhangsan; ls -d /home/zhang*
+usermod -c "张三,销售部" zhangsan; getent passwd zhangsan
+userdel li; ls -d /home/li; id li
+userdel -r zhangsan; ls -d /home/zhangsan
+userdel nothere
+deluser wang 2>&1
+deluser --remove-home --backup-to /tmp nothere 2>&1 | head -2
+adduser --disabled-password --comment "" chen >/dev/null 2>&1; deluser --remove-home chen 2>&1
+gpasswd -d tom dev 2>&1
+deluser tom dev 2>&1
+chgrp dev /home/tom/demo/readme.txt; ls -l /home/tom/demo/readme.txt
+chgrp -R dev /home/tom/demo/src; ls -l /home/tom/demo/src
+chgrp nogroup1 /home/tom/demo/readme.txt
+groupdel ops; getent group ops; echo "退出码=$?"

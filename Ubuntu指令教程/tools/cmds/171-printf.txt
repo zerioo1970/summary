@@ -1,0 +1,19 @@
+printf "Hello %s\n" tom
+printf "%s=%s\n" host db01 port 1433
+printf "%05d\n" 42
+printf "%.2f\n" 3.14159
+printf "%-8s|%8s|\n" U001 12000
+printf "%-8s %10s\n" 编码 价格; printf "%-8s %10.2f\n" U001 12000 U004 35
+printf "%x %o %e\n" 255 8 12345.678
+printf "第一行\n第二行\n"
+printf "100%%\n"
+printf "%d\n" abc
+printf '%s\n' "$(date +%F)" > today.txt; cat today.txt
+seq 5
+seq 2 5
+seq 0 10 50
+seq -w 1 10 | head -3
+seq -s, 1 5
+seq 1 0.5 3
+for i in $(seq 1 3); do echo "第 $i 次"; done
+seq -f "file%03g.log" 1 3

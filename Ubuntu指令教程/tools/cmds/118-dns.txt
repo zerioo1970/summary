@@ -1,0 +1,15 @@
+dig ubuntu.com
+dig +short ubuntu.com
+dig +short ubuntu.com AAAA
+dig +short MX gmail.com
+dig +short NS ubuntu.com
+dig @8.8.8.8 +short ubuntu.com
+dig -x 8.8.8.8 +short
+dig +short nothere.invalid; echo "退出码=$?"
+dig nothere.invalid | grep status
+nslookup ubuntu.com
+nslookup -type=mx gmail.com | tail -4
+nslookup nothere.invalid
+tracepath -n -m 5 archive.ubuntu.com
+traceroute -n -m 5 -w 1 archive.ubuntu.com
+traceroute -n -T -p 443 -m 8 -w 1 archive.ubuntu.com

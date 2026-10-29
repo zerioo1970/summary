@@ -1,0 +1,11 @@
+python3 -m http.server 18080 >/dev/null 2>&1 & sleep 1
+ss -tlnp
+ss -tlnp | grep 18080
+ss -tulnp
+ss -tan
+curl -s -o /dev/null http://127.0.0.1:18080/; ss -tan state time-wait
+ss -s
+ss -tlnp 'sport = :18080'
+netstat -tlnp
+netstat -an | head -4
+kill %1

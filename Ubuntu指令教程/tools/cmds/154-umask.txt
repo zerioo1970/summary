@@ -1,0 +1,9 @@
+umask
+umask -S
+touch f1; mkdir d1; ls -ld f1 d1
+umask 077; touch f2; mkdir d2; ls -ld f2 d2
+umask 027; touch f3; ls -l f3
+umask 022
+grep -E "^UMASK|^HOME_MODE" /etc/login.defs
+loginctl 2>&1 | head -3
+sudoedit /etc/hosts 2>&1 | head -2
