@@ -1,0 +1,5 @@
+df -h
+df -h /home
+df -hT /home
+df -i /home
+df -h --output=source,size,used,avail,pcent,target /home

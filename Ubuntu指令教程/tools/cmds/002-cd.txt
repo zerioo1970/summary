@@ -1,0 +1,24 @@
+cd logs
+pwd
+cd ..
+pwd
+cd /var/log
+pwd
+cd -
+cd ~
+pwd
+cd
+pwd
+cd ~/demo/src
+pwd
+cd ../logs
+pwd
+cd ~/demo
+cd nothere
+cd readme.txt
+mkdir "My Docs"
+cd My Docs
+cd "My Docs"
+pwd
+cd ~/demo
+cd /root

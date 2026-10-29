@@ -1,0 +1,6 @@
+man -f ls
+man -k "copy files" | head -5
+man 5 passwd | head -4
+man -f passwd
+man nothere
+ls --help | head -6

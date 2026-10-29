@@ -1,0 +1,14 @@
+ls -C
+ls -l
+ls -la
+ls -lh
+ls -lt
+ls -lhrS
+ls -F
+ls -ld logs
+ls -l logs
+ls -R
+ls -l --time-style=long-iso readme.txt
+ls -lt | head -3
+ls nothere
+ll

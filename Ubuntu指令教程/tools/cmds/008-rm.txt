@@ -1,0 +1,16 @@
+rm big.iso
+rm src
+rm -r src
+rm -v readme.txt
+rm -i run.sh </dev/null
+rm nothere
+rm -f nothere
+mkdir -p x/y; touch x/y/z.txt
+rm -rv x
+mkdir empty
+rm -d empty
+rm -I run.sh link.txt .env logs/app.log </dev/null
+rm -rf /
+touch -- -bad.txt
+rm -bad.txt
+rm -- -bad.txt

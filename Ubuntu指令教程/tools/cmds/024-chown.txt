@@ -1,0 +1,14 @@
+cd /home/tom/demo
+ls -l readme.txt
+chown root readme.txt
+ls -l readme.txt
+chown tom:www-data readme.txt
+ls -l readme.txt
+chown :tom readme.txt
+ls -l readme.txt
+chown -R www-data:www-data src
+ls -l src
+chown -v tom:tom readme.txt
+chown nobodyx readme.txt
+chown -R tom: src
+ls -ld src

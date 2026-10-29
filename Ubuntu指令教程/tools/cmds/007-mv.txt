@@ -1,0 +1,12 @@
+mv readme.txt readme.md
+mv -v readme.md src/
+mv src/readme.md .
+mkdir bak
+mv -v big.iso run.sh bak/
+ls -C bak
+cp readme.md a.md
+mv -i readme.md a.md </dev/null
+mv -n readme.md a.md
+mv logs nothere/
+ls -C
+mv nofile x

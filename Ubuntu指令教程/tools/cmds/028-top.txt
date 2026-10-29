@@ -1,0 +1,6 @@
+python3 -c "while True: pass" &
+sleep 2
+top -b -n 1 | head -12
+top -b -n 1 -o %MEM | sed -n "7,9p"
+top -b -n 1 -u tom | sed -n "7,12p"
+kill %1

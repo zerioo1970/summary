@@ -1,0 +1,15 @@
+touch new.txt
+ls -l new.txt readme.txt
+touch readme.txt
+ls -l readme.txt
+touch -d "2026-01-01 08:00" readme.txt
+ls -l readme.txt
+touch -t 202605011230 readme.txt
+ls -l --time-style=long-iso readme.txt
+touch -c nofile
+ls nofile
+touch file{1..3}.log
+ls -C
+touch -r big.iso new.txt
+ls -l big.iso new.txt
+touch /etc/x
