@@ -1,0 +1,10 @@
+lsblk
+lsblk -f
+lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS
+lsblk -d
+lscpu | head -20
+lscpu | grep -E "^(Model name|CPU\(s\)|Thread|Core|Socket)"
+lspci | head -5
+lsusb
+nproc
+nproc --all

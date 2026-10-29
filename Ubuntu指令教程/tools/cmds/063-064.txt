@@ -1,0 +1,23 @@
+apt-get update -q | tail -3
+apt-get install -y -q cowsay | tail -4
+apt-get install -y -qq sl
+apt-get install -y --no-install-recommends -q fortune-mod 2>&1 | grep -E "^(The following|Recommended|  )" | head -8
+apt-get remove -y -qq sl; echo rc=$?
+apt-get purge -y -q cowsay | tail -2
+apt-get autoremove -y -q | tail -2
+apt-get clean; ls /var/cache/apt/archives
+apt-get install -s htop | tail -2
+apt-get download tree; ls *.deb
+dpkg -l | head -7
+dpkg -l tree htop
+dpkg -l "*coreutils*"
+dpkg -s tree | head -9
+dpkg -L tree | head -6
+dpkg -S /usr/bin/tree
+dpkg -S /usr/bin/ls
+dpkg -c tree_*.deb
+dpkg -i tree_*.deb
+dpkg -r tree; dpkg -l tree | tail -1
+dpkg -i tree_*.deb >/dev/null; dpkg -l tree | tail -1
+dpkg -i nothere.deb
+dpkg -l nothere-pkg

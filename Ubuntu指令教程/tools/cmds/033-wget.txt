@@ -1,0 +1,9 @@
+wget --version | head -1
+wget -q https://cdimage.ubuntu.com/ubuntu-base/releases/26.04.1/release/SHA256SUMS
+ls -l SHA256SUMS
+wget -nv -O sums.txt https://cdimage.ubuntu.com/ubuntu-base/releases/26.04.1/release/SHA256SUMS
+wget https://cdimage.ubuntu.com/ubuntu-base/releases/26.04.1/release/SHA256SUMS 2>&1 | tail -4
+ls -C
+wget -nv -P downloads https://cdimage.ubuntu.com/ubuntu-base/releases/26.04.1/release/SHA256SUMS
+wget -c -nv https://cdimage.ubuntu.com/ubuntu-base/releases/26.04.1/release/SHA256SUMS
+wget -nv https://cdimage.ubuntu.com/nothere.txt

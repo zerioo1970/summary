@@ -14,7 +14,7 @@ else
   INNER="bash /root/setup-demo.sh >/dev/null; cd /home/tom/demo; exec runuser -u tom -- env HOME=/home/tom USER=tom LOGNAME=tom bash -ic $(printf '%q' "cd ~/demo; $LOOP")"
 fi
 bwrap --clearenv --unshare-pid --die-with-parent --unshare-uts --hostname ubuntu \
-  --bind "$R" / --dev /dev --proc /proc --tmpfs /run --tmpfs /home --tmpfs /tmp \
+  --bind "$R" / --dev /dev --proc /proc --ro-bind /sys /sys --tmpfs /run --tmpfs /home --tmpfs /tmp \
   --ro-bind /etc/resolv.conf /etc/resolv.conf \
   --setenv HOME /root --setenv TERM xterm --setenv LANG C.UTF-8 --setenv COLUMNS 80 \
   --setenv PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \

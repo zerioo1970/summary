@@ -1,0 +1,45 @@
+lsblk
+lsblk -f
+mount | head -5
+mount | grep " /home "
+findmnt /home
+id
+id root
+id -u; id -g; id -Gn
+groups
+groups root
+who
+w
+env | head -8
+env | grep -E "^(HOME|USER|SHELL|LANG|PATH)="
+printenv HOME
+env LANG=C date
+APP_ENV=test; bash -c 'echo "子进程看到: [$APP_ENV]"'
+export APP_ENV=test; bash -c 'echo "子进程看到: [$APP_ENV]"'
+export -p | head -3
+export PATH="$HOME/bin:$PATH"; echo $PATH
+printf 'APP_PORT=8080\nexport APP_NAME=price\n' > app.env
+bash app.env; echo "[$APP_PORT]"
+source app.env; echo "[$APP_PORT] [$APP_NAME]"
+. app.env; echo ok
+printf 'cd /tmp\n' > go.sh; bash go.sh; pwd; source go.sh; pwd
+cd ~/demo
+printf 'host=db01\nport=1433\nuser=sa\n' > a.conf; printf 'host=db02\nport=1433\nuser=app\ntimeout=30\n' > b.conf
+diff a.conf b.conf
+diff -u a.conf b.conf
+diff -q a.conf b.conf
+diff a.conf a.conf; echo "退出码=$?"
+diff -y -W 40 a.conf b.conf
+mkdir d1 d2; cp a.conf d1/; cp b.conf d2/a.conf; touch d2/new.txt; diff -r d1 d2
+diff -q -r d1 d2
+cut -d, -f2 src/products.csv
+cut -d, -f1,4 src/products.csv
+cut -d, -f2- src/products.csv | head -2
+cut -c1-10 logs/app.log | head -2
+cut -d: -f1,7 /etc/passwd | head -3
+cut -d " " -f3 logs/app.log | head -3
+grep ERROR logs/app.log | tee errors.txt
+cat errors.txt
+grep WARN logs/app.log | tee -a errors.txt; wc -l errors.txt
+echo "192.168.1.10 db01" | tee -a hosts.txt > /dev/null; cat hosts.txt
+ls | tee list.txt | wc -l

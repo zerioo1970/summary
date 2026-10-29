@@ -1,0 +1,44 @@
+more --version
+hostname
+hostname -I
+hostname -f
+cat /etc/hostname
+uptime
+uptime -p
+uptime -s
+cat /proc/loadavg
+nproc
+lsb_release -a
+lsb_release -cs
+lsb_release -rs
+cat /etc/os-release
+tree
+tree -L 1
+tree -a -L 1
+tree -d
+tree -h
+tree -P "*.csv" --prune
+tree -I "logs"
+tree ~/nothere
+alias
+alias ll
+alias rm='rm -i'
+alias
+type rm
+unalias rm
+type rm
+alias gs='git status'; type gs
+\ls -C
+type ls
+type cd
+type -a ls
+type -t ls cd grep echo nothere
+type nothere
+help | head -5
+help cd | head -8
+help -d cd pwd echo
+help ls
+vim --version 2>&1 | head -2
+ls -l /usr/bin/vi /etc/alternatives/vi
+passwd --help | head -5
+su --version

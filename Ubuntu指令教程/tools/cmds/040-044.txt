@@ -1,0 +1,41 @@
+whoami
+id -un
+uname
+uname -r
+uname -m
+uname -a
+uname -srm
+date
+date "+%Y-%m-%d %H:%M:%S"
+date +%F
+date "+%Y%m%d"
+date -d "yesterday" +%F
+date -d "+7 days" +%F
+date -d "2026-10-01" +%A
+date -d "last monday" +%F
+date +%s
+date -d @1793257200
+TZ=Asia/Shanghai date
+date -u
+tar -czf backup-$(date +%Y%m%d).tar.gz logs; ls backup-*
+cal
+cal 2 2026
+cal -3
+ncal -b -m 10 2026 2>/dev/null | head -3
+cal 2026 | head -9
+which ls
+which python3 cp
+which -a ls
+which cd
+type cd
+which nothere; echo $?
+whereis ls
+whereis bash
+whereis -b nginx
+file readme.txt
+file run.sh big.iso logs link.txt
+file src/products.csv
+file /usr/bin/grep
+file logs.tar.gz 2>/dev/null; tar czf a.tgz logs; file a.tgz
+cp a.tgz a.txt; file a.txt
+file -i readme.txt

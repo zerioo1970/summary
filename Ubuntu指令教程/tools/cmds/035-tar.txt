@@ -1,0 +1,16 @@
+tar -czf logs.tar.gz logs
+ls -l logs.tar.gz
+tar -tzf logs.tar.gz
+tar -czvf src.tar.gz src readme.txt
+tar -tvzf src.tar.gz
+mkdir restore; tar -xzf src.tar.gz -C restore; ls -R restore
+tar -xzvf logs.tar.gz -C restore
+tar -cJf big.tar.xz big.iso; tar -czf big.tar.gz big.iso; ls -lh big.iso big.tar.*
+tar -xzf src.tar.gz -C restore src/products.csv
+tar -czf all.tar.gz --exclude="*.iso" .
+tar -tzf all.tar.gz
+tar -xf logs.tar.gz -C restore
+tar -czf /backup/x.tar.gz logs
+tar -czf logs2.tar.gz /home/tom/demo/logs
+tar -tzf logs2.tar.gz
+tar -xzf nothere.tar.gz

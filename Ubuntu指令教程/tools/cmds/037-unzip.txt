@@ -1,0 +1,10 @@
+zip -qr pkg.zip logs src readme.txt
+unzip -l pkg.zip
+unzip pkg.zip -d out
+unzip -o -q pkg.zip -d out
+unzip -n pkg.zip -d out
+unzip pkg.zip readme.txt -d one
+ls -R one
+unzip -t pkg.zip
+unzip pkg.zip -d out < /dev/null
+unzip nothere.zip
