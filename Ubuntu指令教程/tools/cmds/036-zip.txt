@@ -1,0 +1,12 @@
+zip readme.zip readme.txt
+zip -r logs.zip logs
+unzip -l logs.zip
+zip -r -q src.zip src
+ls -l *.zip
+zip logs
+zip -r -e secret.zip src < /dev/null
+zip -u logs.zip logs/app.log
+zip -r -9 big9.zip big.iso
+ls -l big9.zip
+zip -d logs.zip logs/app.log
+unzip -l logs.zip

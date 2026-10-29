@@ -1,0 +1,20 @@
+fastfetch --version
+fastfetch --logo none 2>/dev/null | head -14
+locate sshd_config
+locate -i README.gz | head -3
+locate -c "*.conf"
+locate -b '\hosts'
+locate app.log
+locate nothere.txt; echo "退出码=$?"
+updatedb
+htop --version
+sleep 600 & sleep 601 & sleep 0.2
+pgrep -a sleep
+killall sleep; sleep 0.3; pgrep -a sleep; echo "剩余=$?"
+killall nothere
+sleep 602 & sleep 0.2
+killall -v sleep
+killall -i sleep < /dev/null
+pkill -f "sleep 6"; echo pkill=$?
+xdg-open --version
+xdg-open readme.txt

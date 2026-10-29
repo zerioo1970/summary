@@ -1,0 +1,24 @@
+cd /root; qemu-img --version | head -1
+qemu-img create -f qcow2 vm.qcow2 20G
+ls -lh vm.qcow2
+qemu-img info vm.qcow2
+qemu-img resize vm.qcow2 +10G; qemu-img info vm.qcow2 | grep "virtual size"
+truncate -s 1G raw.img; qemu-img convert -f raw -O qcow2 raw.img raw.qcow2; ls -lh raw.img raw.qcow2
+qemu-img check vm.qcow2
+qemu-img snapshot -c before-upgrade vm.qcow2; qemu-img snapshot -l vm.qcow2
+unshare --version
+unshare --net ip -br link
+unshare --uts bash -c 'hostname sandbox-test; hostname'; hostname
+unshare --pid --fork --mount-proc ps aux
+unshare --user --map-root-user id
+sleep 300 & sleep 0.2; ls -l /proc/$!/ns | head -4
+nsenter --version
+unshare --net --fork sleep 300 & sleep 0.5; P=$(pgrep -n -x sleep); nsenter -t $P -n ip -br link; kill $P
+time debootstrap --variant=minbase resolute /srv/rootfs http://archive.ubuntu.com/ubuntu 2>&1 | tail -3
+du -sh /srv/rootfs; ls /srv/rootfs
+chroot /srv/rootfs cat /etc/os-release | head -2
+chroot /srv/rootfs bash -c 'ls /home; whoami'
+chroot /srv/rootfs nothere
+chroot /nothere /bin/bash
+rm -rf /srv/rootfs
+lxc 2>&1 | head -1; virsh --version 2>&1 | head -1; multipass version 2>&1 | head -1

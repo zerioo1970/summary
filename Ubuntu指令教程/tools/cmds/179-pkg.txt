@@ -1,0 +1,37 @@
+apt-cache policy nginx
+apt-cache policy tree | head -4
+apt-cache madison curl
+apt-cache depends tree
+apt-cache rdepends --installed libncurses6 | head -5
+apt-cache search --names-only "^redis" | head -3
+apt-cache show htop | grep -E "^(Version|Installed-Size|Depends|Homepage)"
+apt-cache showpkg nothere-pkg 2>&1 | head -2
+apt-mark hold tree
+apt-mark showhold
+apt-get install -s --only-upgrade tree | tail -2
+apt-mark unhold tree
+apt-mark showmanual | head -3
+apt-mark auto tree; apt-mark showauto | grep -x tree
+apt-mark manual tree
+add-apt-repository --help 2>&1 | head -3
+add-apt-repository -y ppa:git-core/ppa 2>&1 | tail -4
+ls /etc/apt/sources.list.d/
+cat /etc/apt/sources.list.d/*git-core*.sources 2>/dev/null | head -8
+add-apt-repository -y --remove ppa:git-core/ppa 2>&1 | tail -1; ls /etc/apt/sources.list.d/
+cat /etc/apt/sources.list.d/ubuntu.sources | grep -v "^#" | head -6
+update-alternatives --list editor
+update-alternatives --display editor | head -6
+update-alternatives --set editor /usr/bin/vim.basic; readlink -f /usr/bin/editor
+update-alternatives --query awk | head -6
+update-alternatives --config editor < /dev/null 2>&1 | head -10
+do-release-upgrade --help 2>&1 | head -8
+do-release-upgrade -c 2>&1 | tail -3
+grep -E "^Prompt" /etc/update-manager/release-upgrades
+unattended-upgrade --help 2>&1 | head -3
+unattended-upgrade --dry-run -v 2>&1 | head -12
+cat /etc/apt/apt.conf.d/20auto-upgrades 2>/dev/null
+grep -A4 "Allowed-Origins" /etc/apt/apt.conf.d/50unattended-upgrades | head -8
+flatpak --version
+flatpak remotes 2>&1
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo 2>&1 | tail -2; flatpak remotes
+flatpak search gimp 2>&1 | head -3

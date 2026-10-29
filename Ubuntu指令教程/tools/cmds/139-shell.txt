@@ -1,0 +1,43 @@
+tmux new -d -s work 'sleep 300'; tmux ls
+tmux new -d -s deploy; tmux send-keys -t deploy 'echo 部署中; date' Enter; sleep 0.5; tmux capture-pane -p -t deploy | grep -v "^$" | tail -3
+tmux kill-session -t deploy; tmux ls
+tmux attach -t nothere
+tmux kill-server; tmux ls 2>&1
+screen -dmS job sleep 300; screen -ls | head -3
+screen -S job -X quit; screen -ls
+read -p "请输入名字: " name <<< "张三"; echo; echo "你好，$name"
+read -r a b c <<< "U001 探头A 12000"; echo "编码=$a 价格=$c"
+IFS=, read -r code name cat price <<< "U003,主机X,主机,280000"; echo "$name 的价格是 $price"
+while IFS=, read -r code name cat price; do echo "$code -> $price"; done < <(tail -n +2 src/products.csv)
+read -t 1 -p "1 秒内输入: " x < /dev/tty 2>/dev/null; echo "退出码=$?"
+test -f readme.txt && echo 文件存在
+test -d logs && echo 是目录
+[ -s src/products.csv ] && echo 文件非空
+[ -x run.sh ] && echo 可执行
+[ -e nothere ] || echo 不存在
+[ 10 -gt 9 ] && echo "10 > 9"
+[ "abc" = "abc" ] && echo 字符串相等
+[ -z "" ] && echo 空字符串
+[ "$USER" == "tom" ] && echo 是tom
+x=; [ $x = "a" ]
+x=; [ "$x" = "a" ] || echo 安全的写法
+[[ "U001" == U* ]] && echo "以 U 开头"
+[ 1 -lt 2 -a 3 -lt 4 ] && echo 都成立
+[ 08 -gt 7 ] && echo ok
+echo "3.5*2" | bc
+echo "10/3" | bc
+echo "scale=2; 10/3" | bc
+echo "scale=4; 319035/5" | bc
+bc -l <<< "s(1)"
+echo "2^10" | bc
+echo "obase=2; 255" | bc
+echo "12000 * 1.13" | bc
+echo "12000 > 15000" | bc
+expr 5 + 3
+expr 10 / 3
+expr 5 \* 3
+expr 5 * 3
+expr length "hello"
+expr substr "U001-探头" 1 4
+echo $((5 + 3)) $((10 / 3)) $((10 % 3)) $((2 ** 10))
+expr 1.5 + 1

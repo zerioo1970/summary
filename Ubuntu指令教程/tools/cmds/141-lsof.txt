@@ -1,0 +1,15 @@
+python3 -m http.server 18080 >/dev/null 2>&1 & sleep 1
+lsof -i :18080
+lsof -i -P -n | grep LISTEN
+exec 5> held.log; echo data >&5; rm held.log; lsof +L1 2>/dev/null; exec 5>&-
+lsof +D logs
+lsof -u tom | wc -l
+lsof -c python3 | head -3
+ss -tlnp
+ss -tlnp | grep 18080
+ss -tan | head -5
+ss -s | head -3
+curl -s -o /dev/null http://127.0.0.1:18080/ & sleep 0.1; ss -tn state established | head -3
+netstat -tlnp 2>/dev/null | head -4
+netstat -tlnp 2>&1 | grep 18080
+kill %1

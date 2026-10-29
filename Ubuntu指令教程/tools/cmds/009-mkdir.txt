@@ -1,0 +1,12 @@
+mkdir backup
+mkdir backup
+mkdir a/b/c
+mkdir -p a/b/c
+mkdir -p a/b/c
+mkdir -pv 2026/{01,02,03}
+ls -C 2026
+mkdir -m 700 secret
+ls -ld secret
+mkdir My Docs
+ls -C
+mkdir /opt/app

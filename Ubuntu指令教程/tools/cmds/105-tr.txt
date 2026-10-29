@@ -1,0 +1,10 @@
+echo "hello world" | tr a-z A-Z
+echo "hello world" | tr '[:lower:]' '[:upper:]'
+echo "a,b,c" | tr ',' '\n'
+echo "a   b    c" | tr -s ' '
+echo "tel: 138-0013-8000" | tr -d '-'
+echo "tel: 138-0013-8000" | tr -cd '0-9'; echo
+printf 'a\r\nb\r\n' | tr -d '\r' | cat -A
+cat /etc/hostname | tr -d '\n'; echo "|"
+echo "PATH 拆行:"; echo "$PATH" | tr ':' '\n'
+tr a-z A-Z readme.txt

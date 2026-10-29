@@ -1,0 +1,34 @@
+cd /root; openssl version
+openssl rand -base64 16 | wc -c
+openssl req -x509 -newkey rsa:2048 -nodes -keyout test.key -out test.crt -days 365 -subj "/CN=price.example.com" 2>&1 | tail -1; ls -l test.*
+openssl x509 -in test.crt -noout -subject -issuer -dates
+openssl x509 -in test.crt -noout -fingerprint -sha256 | cut -c1-40
+openssl req -new -newkey rsa:2048 -nodes -keyout site.key -out site.csr -subj "/C=CN/ST=Shanghai/O=Example/CN=www.example.com" 2>&1 | tail -1; openssl req -in site.csr -noout -subject
+echo | openssl s_client -connect ubuntu.com:443 -servername ubuntu.com 2>/dev/null | openssl x509 -noout -subject -issuer -enddate
+openssl s_client -connect ubuntu.com:443 -servername ubuntu.com < /dev/null 2>/dev/null | grep -E "^(Protocol|    Protocol|    Cipher)" | head -2
+openssl dgst -sha256 /etc/hostname
+echo "工资表内容" > salary.txt; openssl enc -aes-256-cbc -pbkdf2 -salt -in salary.txt -out salary.enc -pass pass:'Enc@2026'; file salary.enc; openssl enc -d -aes-256-cbc -pbkdf2 -in salary.enc -pass pass:'Enc@2026'
+openssl enc -d -aes-256-cbc -pbkdf2 -in salary.enc -pass pass:wrong 2>&1 | head -1
+openssl x509 -in nothere.crt -noout 2>&1 | head -1
+gpg --version | head -1
+gpg --batch --passphrase '' --quick-gen-key "Tom <tom@example.com>" ed25519 sign,cert 2>&1 | tail -2
+gpg --list-keys 2>&1 | sed -E 's/[0-9A-F]{40}/（指纹）/' | head -6
+gpg --batch --yes --passphrase 'Gpg@2026' -c salary.txt; ls salary.txt.gpg; gpg --batch --passphrase 'Gpg@2026' -d salary.txt.gpg 2>/dev/null
+gpg --batch --yes --detach-sign salary.txt 2>&1; ls salary.txt.sig; gpg --verify salary.txt.sig salary.txt 2>&1 | sed -E 's/[0-9A-F]{40}/（指纹）/' | head -4
+echo tampered >> salary.txt; gpg --verify salary.txt.sig salary.txt 2>&1 | grep -i bad
+gpg --armor --export tom@example.com | head -2
+certbot --version
+certbot certificates 2>&1 | tail -3
+certbot --help 2>&1 | grep -E "^ +(run|certonly|renew|certificates|delete)" | head -6
+aa-status 2>&1 | head -3
+aa-complain --help 2>&1 | head -2
+ls /etc/apparmor.d/ | head -8
+auditctl -l 2>&1 | head -2
+auditctl -v 2>&1
+printf 'type=USER_LOGIN msg=audit(1793263000.123:101): pid=1234 uid=0 auid=1000 ses=3 msg='"'"'op=login acct="tom" exe="/usr/sbin/sshd" hostname=? addr=192.168.1.50 terminal=sshd res=success'"'"'\ntype=USER_LOGIN msg=audit(1793263100.456:102): pid=1240 uid=0 auid=4294967295 ses=4294967295 msg='"'"'op=login acct="root" exe="/usr/sbin/sshd" hostname=? addr=203.0.113.9 terminal=sshd res=failed'"'"'\n' > /tmp/audit.log; ausearch -if /tmp/audit.log -m USER_LOGIN --success no 2>&1
+ausearch -if /tmp/audit.log -m USER_LOGIN -i 2>&1 | head -4
+fail2ban-client --version 2>&1 | head -1
+fail2ban-client -d 2>&1 | grep -E "'sshd'.*(maxretry|bantime|findtime)" | head -3
+cat /etc/fail2ban/jail.d/defaults-debian.conf
+grep -E "^(bantime|findtime|maxretry) " /etc/fail2ban/jail.conf | head -3
+fail2ban-client status 2>&1 | head -2

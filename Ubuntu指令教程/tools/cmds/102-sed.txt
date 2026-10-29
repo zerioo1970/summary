@@ -1,0 +1,18 @@
+sed 's/INFO/信息/' logs/app.log | head -3
+sed 's/A1002/A2002/g' logs/app.log | grep A2002
+sed -n '3,5p' logs/app.log
+sed -n '/ERROR/p' logs/app.log
+sed '/INFO/d' logs/app.log
+sed '1d' src/products.csv
+cp src/products.csv p.csv; sed -i 's/探头A/探头A型/' p.csv; cat p.csv
+sed -i.bak 's/,35$/,38/' p.csv; ls p.csv*; tail -2 p.csv
+sed -e 's/^/> /' -e '2q' logs/app.log
+sed '2i # 插入的一行' src/products.csv | head -4
+sed '$a U006,新品,耗材,99' src/products.csv | tail -2
+printf 'port=8080\nhost=db01\n' > app.conf; sed -i 's/^port=.*/port=9090/' app.conf; cat app.conf
+sed 's#/var/log#/data/log#' <<< "path=/var/log/app"
+sed -E 's/([0-9]{2}):([0-9]{2}):([0-9]{2})/\1时\2分/' logs/app.log | head -2
+sed -i 's/\r$//' win.txt 2>&1
+printf 'a\r\nb\r\n' > win.txt; sed -i 's/\r$//' win.txt; cat -A win.txt
+sed -n '$=' logs/app.log
+sed 's/价格/price/' nothere

@@ -1,0 +1,18 @@
+mkdir -p /run/sshd; ssh-keygen -A >/dev/null; /usr/sbin/sshd -p 2222 -o PasswordAuthentication=no; echo sshd-started
+runuser -u tom -- bash -c 'ssh-keygen -q -t ed25519 -N "" -f ~/.ssh/id_ed25519 <<< y >/dev/null 2>&1; cat ~/.ssh/id_ed25519.pub > ~/.ssh/authorized_keys; chmod 600 ~/.ssh/authorized_keys; ls -l ~/.ssh'
+runuser -u tom -- ssh -V
+runuser -u tom -- bash -c 'cd ~/demo; echo yes | ssh -p 2222 tom@127.0.0.1 hostname' 2>&1
+runuser -u tom -- ssh -p 2222 -o StrictHostKeyChecking=accept-new tom@127.0.0.1 "hostname; whoami; uptime -p"
+runuser -u tom -- ssh -p 2222 tom@127.0.0.1 "df -h /home | tail -1"
+runuser -u tom -- ssh -p 2222 -o ConnectTimeout=3 tom@10.255.255.1 2>&1
+runuser -u tom -- ssh -p 2223 tom@127.0.0.1 2>&1
+runuser -u tom -- ssh -p 2222 -o BatchMode=yes nobody@127.0.0.1 2>&1
+runuser -u tom -- bash -c 'cd ~/demo && scp -P 2222 readme.txt tom@127.0.0.1:/tmp/ && ssh -p 2222 tom@127.0.0.1 ls -l /tmp/readme.txt'
+runuser -u tom -- bash -c 'cd ~/demo && scp -P 2222 -r logs tom@127.0.0.1:/tmp/ && ssh -p 2222 tom@127.0.0.1 ls -R /tmp/logs'
+runuser -u tom -- bash -c 'cd ~/demo && mkdir -p dl && scp -P 2222 tom@127.0.0.1:/etc/hostname dl/ && ls dl'
+runuser -u tom -- bash -c 'cd ~/demo && scp -P 2222 nothere tom@127.0.0.1:/tmp/' 2>&1
+runuser -u tom -- bash -c 'cd ~/demo && scp -P 2222 readme.txt tom@127.0.0.1:/root/' 2>&1
+runuser -u tom -- bash -c 'cat ~/.ssh/known_hosts | cut -c1-60'
+printf 'Host db01\n    HostName 127.0.0.1\n    Port 2222\n    User tom\n' > /home/tom/.ssh/config; chown tom:tom /home/tom/.ssh/config
+runuser -u tom -- ssh db01 hostname
+runuser -u tom -- scp /home/tom/demo/readme.txt db01:/tmp/r2.txt && echo copied

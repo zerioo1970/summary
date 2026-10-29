@@ -1,0 +1,42 @@
+wc logs/app.log
+wc -l logs/app.log
+wc -l logs/app.log src/products.csv
+wc -c readme.txt
+wc -m src/products.csv; wc -c src/products.csv
+grep -c ERROR logs/app.log; grep ERROR logs/app.log | wc -l
+ls | wc -l
+wc -l < logs/app.log
+printf "300\n25\n1000\n25\n" > n.txt
+sort n.txt
+sort -n n.txt
+sort -nr n.txt
+sort -u n.txt
+sort -t, -k4 -n src/products.csv
+tail -n +2 src/products.csv | sort -t, -k4 -nr
+tail -n +2 src/products.csv | sort -t, -k3,3 -k4,4nr
+du -sh * | sort -h
+sort -c n.txt
+sort n.txt -o n.txt; cat n.txt
+uniq n.txt
+printf "b\na\nb\n" | uniq
+printf "b\na\nb\n" | sort | uniq
+cut -d, -f2 src/products.csv | tail -n +2 | sort | uniq -c
+cut -d, -f2 src/products.csv | tail -n +2 | sort | uniq -c | sort -nr
+cut -d, -f2 src/products.csv | tail -n +2 | sort | uniq -d
+cut -d, -f2 src/products.csv | tail -n +2 | sort | uniq -u
+awk '{print $3}' logs/app.log | sort | uniq -c
+mkdir empty; rmdir empty
+rmdir logs
+mkdir -p a/b/c; rmdir -p a/b/c; ls -C
+rmdir -v nothere
+ln -s readme.txt r.lnk; ls -l r.lnk
+ln -s /var/log syslogs; ls -l syslogs
+ls syslogs | head -3
+ln readme.txt hard.txt; ls -li readme.txt hard.txt
+echo more >> hard.txt; cat readme.txt
+rm readme.txt; cat hard.txt; cat r.lnk
+ls -l r.lnk
+ln -s logs/app.log logs/app2.log; cat logs/app2.log
+ln -sf src current; ls -l current
+mkdir v2; ln -sfn v2 current; ls -l current
+ln -s logs/app.log ./logs/; ls -l logs

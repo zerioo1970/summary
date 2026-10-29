@@ -1,0 +1,15 @@
+sleep 600 &
+jobs
+kill %1
+sleep 0.2; jobs
+sleep 601 &
+pgrep -a sleep
+kill $(pgrep -x sleep)
+sleep 0.2
+bash -c 'trap "" TERM; sleep 602' &
+sleep 0.3; pgrep -af "sleep 602"
+kill $!; sleep 0.5; ps -p $! -o pid,stat,cmd
+kill -9 $!; sleep 0.3; ps -p $! -o pid,cmd
+kill 99999
+kill 1
+kill -l 9 15

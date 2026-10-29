@@ -1,0 +1,7 @@
+mkdir -p /run/sshd; ssh-keygen -A >/dev/null; /usr/sbin/sshd -p 22; (python3 -m http.server 8080 >/dev/null 2>&1 &) ; sleep 1; echo started
+nmap --version | head -1
+timeout 60 nmap 127.0.0.1
+timeout 60 nmap -p 22,80,443,8080 127.0.0.1
+timeout 90 nmap -sV -p 22,8080 127.0.0.1 2>&1 | grep -E "PORT|open"
+timeout 30 nmap -sn 127.0.0.1 2>&1 | grep -E "report|Host is|done"
+pkill -f http.server; pkill sshd

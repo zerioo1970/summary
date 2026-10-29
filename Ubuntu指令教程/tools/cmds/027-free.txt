@@ -1,0 +1,4 @@
+free
+free -h
+free -m
+free -h -s 2 -c 2

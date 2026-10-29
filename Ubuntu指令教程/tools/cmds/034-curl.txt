@@ -1,0 +1,13 @@
+curl --version | head -1
+curl https://example.com | head -5
+curl -s https://example.com | grep -o "<title>.*</title>"
+curl -I https://example.com
+curl -sS -o page.html https://example.com; ls -l page.html
+curl -sSLO https://cdimage.ubuntu.com/ubuntu-base/releases/26.04.1/release/SHA256SUMS; ls -l SHA256SUMS
+curl -s -o /dev/null -w "%{http_code} %{time_total}s\n" https://example.com
+curl -s https://httpbin.org/get?item=U001
+curl -s -X POST -H "Content-Type: application/json" -d '{"code":"U001","price":12000}' https://httpbin.org/post | head -20
+curl -sS https://nothere.invalid
+curl -sS -m 3 http://10.255.255.1
+curl -s -o /dev/null -w "%{http_code}\n" https://cdimage.ubuntu.com/nothere.txt
+curl -fsS https://cdimage.ubuntu.com/nothere.txt; echo "退出码=$?"

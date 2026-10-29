@@ -1,0 +1,12 @@
+sleep 600 &
+python3 -c "import time; x=bytearray(50_000_000); time.sleep(600)" &
+sleep 0.5
+ps
+ps u -u tom
+ps -f -u tom
+ps -u tom -o pid,ppid,%cpu,%mem,etime,cmd --sort=-%mem
+ps -p 1 -o pid,user,cmd
+ps aux | grep "[s]leep"
+ps aux | grep sleep
+pgrep -a sleep
+kill %1 %2

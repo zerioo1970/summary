@@ -1,0 +1,7 @@
+pwd
+cd link.txt 2>/dev/null; ln -s logs mylogs
+cd mylogs
+pwd
+pwd -P
+pwd -L
+echo $PWD

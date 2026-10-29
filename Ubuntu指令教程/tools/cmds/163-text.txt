@@ -1,0 +1,22 @@
+column -t -s, src/products.csv
+mount | head -3 | column -t
+printf 'name,age\n张三,30\n李四,4\n' | column -t -s, -o ' | '
+cut -d, -f1 src/products.csv > codes.txt; cut -d, -f2 src/products.csv > names.txt; paste codes.txt names.txt
+paste -d, codes.txt names.txt | head -3
+paste -s -d, codes.txt
+printf 'U001,500\nU002,0\nU004,1200\n' > stock.csv; tail -n +2 src/products.csv | sort -t, -k1,1 > p.sorted; sort -t, -k1,1 stock.csv > s.sorted; join -t, p.sorted s.sorted
+join -t, -a1 -e 无 -o 0,1.2,2.2 p.sorted s.sorted
+printf 'U001\nU003\n' > x.txt; join -t, x.txt s.sorted
+printf 'alice\nbob\ncarol\n' > old.txt; printf 'bob\ncarol\ndave\n' > new.txt; comm old.txt new.txt
+comm -12 old.txt new.txt
+comm -13 old.txt new.txt
+comm -23 old.txt new.txt
+printf 'b\na\n' > u1.txt; comm u1.txt new.txt
+nl logs/app.log | head -3
+printf 'a\n\nb\n' | nl
+printf 'a\n\nb\n' | nl -ba
+nl -w3 -s'. ' src/products.csv | head -3
+echo "hello 价格" | rev
+echo "/var/log/nginx/access.log" | rev | cut -d/ -f1 | rev
+tac logs/app.log | head -3
+tac src/products.csv | head -2

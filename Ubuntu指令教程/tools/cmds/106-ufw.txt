@@ -1,0 +1,19 @@
+ufw status
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow OpenSSH
+ufw app list
+ufw allow 80/tcp
+ufw allow from 192.168.1.0/24 to any port 1433 proto tcp
+ufw deny 3306
+ufw enable
+ufw status
+ufw status numbered
+ufw status verbose | head -5
+ufw delete 4
+ufw delete allow 80/tcp
+ufw status numbered
+ufw limit OpenSSH
+ufw status | grep -i limit
+ufw disable
+ufw --force reset | head -2

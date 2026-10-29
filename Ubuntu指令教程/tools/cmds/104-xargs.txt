@@ -1,0 +1,10 @@
+touch a.tmp b.tmp "c d.tmp"; ls *.tmp
+find . -name "*.tmp" | xargs rm
+ls *.tmp
+find . -name "*.tmp" -print0 | xargs -0 rm -v
+printf 'U001\nU002\nU003\n' | xargs echo 处理
+printf 'U001\nU002\nU003\n' | xargs -n 1 echo 处理
+printf 'U001\nU002\n' | xargs -I{} echo "curl https://api.example.com/item/{}"
+printf 'logs\nsrc\n' | xargs -t du -sh
+seq 1 6 | xargs -P 3 -I{} sh -c 'sleep 0.2; echo 完成 {}'
+echo | xargs -r echo 有输入; echo "退出码=$?"

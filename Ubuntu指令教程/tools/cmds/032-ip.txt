@@ -1,0 +1,8 @@
+ip a
+ip -br a
+ip route
+ip -4 a show lo
+ip link
+ip -s link show lo
+ip neigh
+ip r get 8.8.8.8

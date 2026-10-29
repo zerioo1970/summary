@@ -1,0 +1,7 @@
+debootstrap --variant=minbase resolute /srv/rootfs http://archive.ubuntu.com/ubuntu > /dev/null 2>&1; echo rc=$?
+chroot /srv/rootfs ls /
+mount -t proc proc /srv/rootfs/proc; mount --rbind /dev /srv/rootfs/dev; mount --rbind /sys /srv/rootfs/sys; echo mounted
+chroot /srv/rootfs ls /
+chroot /srv/rootfs bash -c 'head -2 /etc/os-release; whoami; ls /home | wc -l'
+chroot /srv/rootfs dpkg -l | wc -l
+umount -R /srv/rootfs/dev /srv/rootfs/sys /srv/rootfs/proc; echo unmounted

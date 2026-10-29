@@ -1,0 +1,32 @@
+systemd-cgls 2>&1 | head -6
+systemd-cgtop -b -n 1 2>&1 | head -5
+systemd-run --version 2>&1 | head -1; systemd-run --scope -p MemoryMax=500M sleep 1 2>&1 | head -2
+cat /proc/self/cgroup
+logrotate --version 2>&1 | head -1
+cat /etc/logrotate.conf | grep -v "^#" | grep -v "^$"
+cat /etc/logrotate.d/apt
+mkdir -p /var/log/priceapp; for i in 1 2 3; do echo "line $i" >> /var/log/priceapp/app.log; done; printf '/var/log/priceapp/*.log {\n    daily\n    rotate 14\n    compress\n    delaycompress\n    missingok\n    notifempty\n    copytruncate\n}\n' > /etc/logrotate.d/priceapp; cat /etc/logrotate.d/priceapp
+logrotate -d /etc/logrotate.d/priceapp 2>&1 | head -12
+logrotate -f /etc/logrotate.d/priceapp; ls -l /var/log/priceapp/
+logrotate -f /etc/logrotate.d/priceapp; ls /var/log/priceapp/
+rm -rf /var/log/priceapp /etc/logrotate.d/priceapp
+logger "备份完成" 2>&1; echo "退出码=$?"
+logger -t backup -p user.err "备份失败：磁盘已满" 2>&1
+logger --help 2>&1 | head -3
+coredumpctl --version | head -1; coredumpctl list 2>&1 | head -2
+busctl 2>&1 | head -2
+perf 2>&1 | head -3
+sar -V 2>&1 | head -1
+sar -u 1 3
+sar -r 1 2
+sar -n DEV 1 1 2>&1 | grep -E "IFACE|lo|eth0" | head -3
+sar -q 1 1 | tail -2
+grep -E "^ENABLED" /etc/default/sysstat
+ls /var/log/sysstat/ 2>&1
+python3 -c "while True: pass" & sleep 1; pidstat -p $! 1 2
+pidstat -u 1 1 | head -8
+pidstat -r -p $! 1 1 | tail -2
+pidstat -d 1 1 | head -4
+kill %1
+bpftrace --version 2>&1; bpftrace -e 'BEGIN { printf("hello\n"); exit(); }' 2>&1 | head -3
+bpftool version 2>&1 | head -2

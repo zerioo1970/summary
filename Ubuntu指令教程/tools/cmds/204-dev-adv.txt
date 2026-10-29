@@ -1,0 +1,26 @@
+cd /home/tom/demo; strace -V | head -1
+strace -e trace=openat cat readme.txt 2>&1 | tail -4
+strace -c ls > /dev/null 2> /tmp/st.txt; head -8 /tmp/st.txt
+strace -f -e trace=execve bash -c 'ls >/dev/null; date >/dev/null' 2>&1 | grep execve
+strace -e trace=connect curl -s -m 2 http://127.0.0.1:9 2>&1 | grep connect
+sleep 300 & sleep 0.2; timeout 1 strace -p $! 2>&1 | head -3; kill %1
+strace -o /tmp/trace.log -tt -T cat readme.txt >/dev/null; grep -E "read\(|openat.*readme" /tmp/trace.log | head -3
+ltrace -V 2>&1 | head -1; printf '#include <stdio.h>\n#include <string.h>\nint main(){char s[32]; strcpy(s,"price"); printf("len=%%zu\\n", strlen(s)); return 0;}\n' > /tmp/t.c; gcc -o /tmp/t /tmp/t.c 2>&1 | head -1; ls /tmp/t
+which gcc cc python3
+ltrace python3 -c "pass" 2>&1 | head -3
+gdb --version | head -1
+printf 'import os, time\nprint("PID", os.getpid())\ntime.sleep(300)\n' > /tmp/s.py; python3 /tmp/s.py > /tmp/s.out & sleep 0.5; gdb -p $! -batch -ex "info threads" 2>&1 | grep -E "^\*|Thread|process" | head -3; kill %1
+gdb -batch -ex "info functions main" /usr/bin/tree 2>&1 | head -3
+podman --version
+podman info 2>&1 | grep -E "^ +(rootless|graphDriverName|ociRuntime)" | head -3
+docker compose version 2>&1
+mkdir -p /tmp/app && cd /tmp/app && printf 'services:\n  web:\n    image: nginx:1.27\n    ports:\n      - "8080:80"\n    volumes:\n      - ./html:/usr/share/nginx/html:ro\n    restart: unless-stopped\n  db:\n    image: mysql:8.4\n    environment:\n      MYSQL_ROOT_PASSWORD: ${DB_PASS}\n    volumes:\n      - dbdata:/var/lib/mysql\nvolumes:\n  dbdata:\n' > compose.yaml; echo "DB_PASS=Db@2026" > .env; docker compose config 2>&1 | head -30
+cd /tmp/app; docker compose config --services
+cd /tmp/app; printf 'services:\n  web:\n    image: nginx\n   ports: ["80:80"]\n' > bad.yaml; docker compose -f bad.yaml config 2>&1 | head -2
+cd /tmp/app; docker compose ps 2>&1 | head -2
+ansible --version | head -2
+ansible localhost -m ping 2>&1
+ansible localhost -m command -a "uptime -p" 2>&1
+printf -- '- hosts: localhost\n  gather_facts: false\n  tasks:\n    - name: 建目录\n      ansible.builtin.file:\n        path: /tmp/ansible-demo\n        state: directory\n        mode: "0755"\n    - name: 写配置\n      ansible.builtin.copy:\n        dest: /tmp/ansible-demo/app.conf\n        content: "port=8080\\n"\n' > /tmp/site.yml; ansible-playbook /tmp/site.yml 2>&1 | tail -8
+ansible-playbook /tmp/site.yml 2>&1 | tail -3
+kubectl version --client 2>&1 | head -1

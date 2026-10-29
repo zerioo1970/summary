@@ -1,0 +1,18 @@
+cp readme.txt readme.bak
+cp -v readme.txt src/
+cp logs logs2
+cp -r logs logs2
+ls -C logs2
+cp big.iso big2.iso
+cp -p big.iso big3.iso
+ls -l big.iso big2.iso big3.iso
+cp -a logs logs3
+cp -i readme.txt readme.bak </dev/null
+cp -n readme.txt readme.bak
+cp --update=none readme.txt readme.bak
+cp readme.txt run.sh src/
+cp *.csv nothere/
+cp -r logs/ logs4
+ls -C logs4
+cp -r logs/ logs4
+ls -C logs4

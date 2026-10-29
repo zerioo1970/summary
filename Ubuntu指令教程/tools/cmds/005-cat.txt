@@ -1,0 +1,13 @@
+cat readme.txt
+cat -n logs/app.log
+cat readme.txt src/products.csv
+cat readme.txt src/products.csv > all.txt
+cat >> readme.txt <<'END'
+world
+END
+cat readme.txt
+printf "a\r\nb\r\n" > win.txt
+cat -A win.txt
+cat -A run.sh
+cat nothere
+cat logs

@@ -1,0 +1,7 @@
+DEBIAN_FRONTEND=noninteractive apt-get install -y -qq sshpass >/dev/null 2>&1; mkdir -p /run/sshd; ssh-keygen -A >/dev/null; /usr/sbin/sshd -p 2222 -o PasswordAuthentication=yes; useradd -m -s /bin/bash ops; echo 'ops:Ops@2026' | chpasswd; echo ok
+runuser -u tom -- bash -c 'ssh-keygen -q -t ed25519 -N "" -f ~/.ssh/id_ed25519; sshpass -p Ops@2026 ssh-copy-id -p 2222 -o StrictHostKeyChecking=accept-new ops@127.0.0.1 2>&1'
+runuser -u tom -- ssh -p 2222 ops@127.0.0.1 "whoami; cat ~/.ssh/authorized_keys | cut -c1-40; ls -ld ~/.ssh ~/.ssh/authorized_keys"
+runuser -u tom -- bash -c 'sshpass -p Ops@2026 ssh-copy-id -p 2222 ops@127.0.0.1 2>&1 | tail -3'
+runuser -u tom -- bash -c 'cd ~/demo; printf "pwd\nls\nput readme.txt\nmkdir upload\ncd upload\nput -r logs\nls\nget /etc/hostname\nbye\n" | sftp -P 2222 -b - ops@127.0.0.1 2>&1; ls hostname'
+runuser -u tom -- bash -c 'sftp -P 2222 ops@127.0.0.1:/etc/os-release /tmp/ 2>&1; head -1 /tmp/os-release'
+runuser -u tom -- bash -c 'ssh-keygen -q -t ed25519 -N "Key@2026" -f ~/.ssh/id_pw; eval "$(ssh-agent -s)"; echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" | sed "s/agent\.[0-9]*/agent.NNN/;s/ssh-[A-Za-z0-9]*/ssh-XXXX/"; ssh-add -l; SSH_ASKPASS_REQUIRE=force SSH_ASKPASS=/bin/false ssh-add ~/.ssh/id_ed25519 2>&1; ssh-add -l | sed -E "s/SHA256:[A-Za-z0-9+\/]+/SHA256:（指纹）/"; ssh-add -D; ssh-agent -k'

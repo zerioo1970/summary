@@ -1,0 +1,22 @@
+adduser --verbose --disabled-password --comment "王五" wang 2>&1
+adduser --verbose wang sudo 2>&1
+deluser --verbose wang 2>&1
+grep -vE "^#|^$" /etc/adduser.conf | head
+chage -l tom
+chage -M 90 -W 7 tom; chage -l tom | sed -n 2,6p
+chage -d 0 tom; chage -l tom | head -2
+chage -E 2026-12-31 tom; chage -l tom | grep "Account expires"
+chage -E -1 -M 99999 tom; passwd tom <<< $'Tom@2026\nTom@2026' >/dev/null 2>&1; chage -l tom | head -3
+getent passwd tom
+getent passwd root tom | cut -d: -f1,6,7
+getent group sudo
+getent hosts localhost
+getent hosts archive.ubuntu.com
+getent passwd nothere; echo "退出码=$?"
+getent shadow tom | cut -d: -f1-3
+visudo -c
+printf 'tom ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart nginx\n' > /etc/sudoers.d/tom-nginx; chmod 440 /etc/sudoers.d/tom-nginx; visudo -c
+printf 'tom ALL=(ALL) NOPASSWD /usr/bin/systemctl\n' > /tmp/bad; visudo -c -f /tmp/bad
+ls -l /etc/sudoers /etc/sudoers.d/
+EDITOR=cat visudo 2>&1 | head -3
+rm /etc/sudoers.d/tom-nginx
