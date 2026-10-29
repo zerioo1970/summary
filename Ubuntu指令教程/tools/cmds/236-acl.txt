@@ -1,0 +1,14 @@
+id www-data | cut -c1-40; useradd -m zhao; cd /home/tom/demo
+getfacl readme.txt
+setfacl -m u:zhao:rw readme.txt; getfacl readme.txt
+ls -l readme.txt
+setfacl -m g:www-data:rx src; getfacl -c src
+setfacl -d -m g:www-data:rx src; touch src/new.csv; getfacl -c src/new.csv
+setfacl -x u:zhao readme.txt; getfacl -c readme.txt
+setfacl -b src; getfacl -c src
+setfacl -R -m u:zhao:rX logs; getfacl -c logs/app.log
+setfacl -m u:nobodyx:r readme.txt
+chmod 600 readme.txt; setfacl -m u:zhao:r readme.txt; getfacl -c readme.txt; runuser -u zhao -- cat readme.txt
+chmod 600 readme.txt; getfacl -c readme.txt
+cp readme.txt r2.txt; getfacl -c r2.txt | head -3; cp -a readme.txt r3.txt; getfacl -c r3.txt | head -3
+lsattr readme.txt 2>&1; chattr +i readme.txt 2>&1

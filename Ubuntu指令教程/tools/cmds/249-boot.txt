@@ -1,0 +1,20 @@
+ls -l /usr/sbin/update-initramfs 2>&1; dpkg -S /usr/sbin/update-initramfs 2>&1
+update-initramfs 2>&1 | head -6
+dpkg -l | grep -E "^ii +(dracut|initramfs-tools) " | cut -c1-60
+apt-cache policy initramfs-tools dracut | grep -E "^[a-z]|Installed"
+ls /etc/dracut.conf.d/ 2>&1; ls /usr/lib/dracut/dracut.conf.d/ 2>&1 | head
+which update-grub grub-install grub-mkconfig 2>&1
+dpkg -S /usr/sbin/update-grub 2>&1 | head -1
+cat /usr/sbin/update-grub 2>/dev/null | tail -3
+cat /etc/default/grub 2>/dev/null | grep -v "^#" | grep -v "^$"
+apt-cache show grub2-common | grep -E "^(Version|Description)" | head -2
+dkms --version; dkms status
+mokutil --version 2>&1; mokutil --sb-state 2>&1
+efibootmgr --version 2>&1; efibootmgr 2>&1 | head -2
+cloud-init --version 2>&1
+printf '#cloud-config\nhostname: web01\ntimezone: Asia/Shanghai\npackages:\n  - nginx\nusers:\n  - name: deploy\n    groups: sudo\n    shell: /bin/bash\n    ssh_authorized_keys:\n      - ssh-ed25519 AAAA... deploy@example\nruncmd:\n  - systemctl enable --now nginx\n' > /tmp/user-data.yaml; cloud-init schema -c /tmp/user-data.yaml 2>&1
+printf '#cloud-config\nhostname: web01\npackage: [nginx]\n' > /tmp/bad.yaml; cloud-init schema -c /tmp/bad.yaml 2>&1 | head -4
+cloud-init status 2>&1 | head -2
+ls /var/log/cloud-init*.log 2>&1 | head -2
+kdump-config show 2>&1 | head -6
+grep -E "^USE_KDUMP|^#USE_KDUMP" /etc/default/kdump-tools

@@ -1,0 +1,36 @@
+ethtool lo
+ethtool -i lo 2>&1
+ethtool -S lo 2>&1 | head -2
+ip link add br0 type bridge; ip link add veth0 type veth peer name veth1; ip link set veth0 master br0; ip link set br0 up; ip link set veth0 up
+bridge link
+bridge -d link show dev veth0 | head -2
+bridge fdb show br br0 | head -3
+ip -br link
+tc qdisc show dev veth0
+tc qdisc add dev veth0 root netem delay 100ms; tc qdisc show dev veth0
+tc qdisc change dev veth0 root tbf rate 1mbit burst 32kbit latency 400ms 2>&1; tc qdisc show dev veth0
+tc qdisc del dev veth0 root; tc qdisc show dev veth0
+tc qdisc add dev lo root netem delay 50ms; ping -c 2 -q 127.0.0.1 | tail -1; tc qdisc del dev lo root
+wg --version
+umask 077; wg genkey > /tmp/server.key; wg pubkey < /tmp/server.key > /tmp/server.pub; ls -l /tmp/server.*; wc -c < /tmp/server.pub
+ip link add wg0 type wireguard 2>&1 && wg set wg0 listen-port 51820 private-key /tmp/server.key && wg show wg0 | sed -E 's/(public key: ).*/\1（公钥）/'
+ipset create blacklist hash:ip 2>&1
+ipset add blacklist 203.0.113.9; ipset add blacklist 198.51.100.7; ipset list blacklist
+ipset test blacklist 203.0.113.9
+iptables -I INPUT -m set --match-set blacklist src -j DROP; iptables -S INPUT
+ipset destroy blacklist 2>&1
+iptables -F; ipset destroy blacklist
+conntrack -L 2>&1 | head -3
+python3 -m http.server 18080 >/dev/null 2>&1 & sleep 1; curl -s -o /dev/null http://127.0.0.1:18080/; conntrack -L 2>&1 | head -3
+conntrack -C 2>&1
+cat /proc/sys/net/netfilter/nf_conntrack_max 2>&1
+timeout 3 socat TCP-LISTEN:19090,fork,reuseaddr TCP:127.0.0.1:18080 & sleep 0.5; curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:19090/
+nc -zv 127.0.0.1 18080 2>&1
+nc -zv 127.0.0.1 18081 2>&1
+nc -zv -w 2 127.0.0.1 18075-18085 2>&1 | grep -v refused
+(echo "hello from nc" | nc -l -q 1 127.0.0.1 19091 > /tmp/nc.out) & sleep 0.3; echo "订单 A1002" | nc -q 1 127.0.0.1 19091; sleep 0.3; cat /tmp/nc.out
+printf 'GET / HTTP/1.0\r\n\r\n' | nc -q 2 127.0.0.1 18080 | head -1
+iperf3 -s -D -p 5201; sleep 0.5; iperf3 -c 127.0.0.1 -p 5201 -t 2 | tail -5
+iperf3 -c 127.0.0.1 -p 5201 -t 1 -R | tail -3
+iperf3 -c 127.0.0.1 -p 5201 -u -b 100M -t 1 | tail -4
+pkill iperf3; kill %1 2>/dev/null

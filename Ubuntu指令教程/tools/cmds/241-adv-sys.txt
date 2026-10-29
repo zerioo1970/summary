@@ -1,0 +1,37 @@
+ulimit -a | head -18
+ulimit -n
+ulimit -Hn
+ulimit -n 4096; ulimit -n
+ulimit -n 2000000
+ulimit -c
+cat /etc/security/limits.conf | grep -v "^#" | grep -v "^$" | head -3
+sleep 300 & sleep 0.2; taskset -p $!
+taskset -pc 0,1 $!
+taskset -c 0 nproc
+taskset -c 99 true
+ionice -p $!
+ionice -c 3 -p $!; ionice -p $!
+ionice -c 2 -n 7 tar -czf /tmp/x.tgz /usr/share/doc 2>/dev/null; echo done
+chrt -p $!
+chrt -m | head -4
+chrt -f -p 10 $!
+kill %1
+sysctl net.ipv4.ip_forward vm.swappiness
+sysctl -a 2>/dev/null | wc -l
+sysctl -a 2>/dev/null | grep -E "^fs.file-max|^net.core.somaxconn"
+cat /proc/sys/vm/swappiness
+ls /etc/sysctl.d/ /usr/lib/sysctl.d/ | head -12
+numactl --hardware
+numactl --show | head -4
+numactl --cpunodebind=0 --membind=0 true; echo ok
+dmidecode -t system 2>&1 | head -12
+dmidecode -s system-product-name 2>&1
+lshw -short 2>/dev/null | head -12
+lshw -C network -short 2>/dev/null
+sensors 2>&1 | head -3
+udevadm --version
+udevadm info /sys/class/net/lo 2>&1 | head -8
+udevadm info --query=property --name=/dev/null 2>&1 | head -5
+cpupower --help 2>&1 | head -2
+sos --version 2>&1 | head -1; sos report --help 2>&1 | head -3
+apport-cli --help 2>&1 | head -5

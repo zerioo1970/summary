@@ -21,13 +21,16 @@ CATEGORIES = [
     ("06", "软件包管理", "apt、dpkg、snap、flatpak，软件源和系统升级"),
     ("07", "磁盘管理", "看空间、分区、格式化、挂载、交换区"),
     ("08", "进程管理", "查看、结束、调度进程，前后台作业"),
-    ("09", "系统服务和开关机", "systemctl 管服务，看日志，开机分析，重启和关机"),
+    ("09", "系统服务和开关机", "systemctl 管服务，日志和日志轮转，cgroup，重启和关机"),
     ("10", "网络和远程连接", "IP、DNS、端口、防火墙、下载、ssh 远程和同步"),
     ("11", "系统信息和硬件", "版本、内核、时间时区、CPU、内存、硬件和内核模块"),
     ("12", "Shell使用", "历史、别名、环境变量、帮助、脚本基础、终端复用"),
-    ("13", "性能监控", "CPU、内存、磁盘 IO 的统计和监控"),
+    ("13", "性能监控", "CPU、内存、磁盘 IO 的统计、历史数据和性能剖析"),
     ("14", "定时任务", "周期执行和一次性执行"),
-    ("15", "开发和容器", "版本控制和容器"),
+    ("15", "开发和容器", "版本控制、容器编排、调试工具和自动化运维"),
+    ("16", "虚拟化和隔离", "虚拟机、系统容器、命名空间和 chroot"),
+    ("17", "安全", "证书和加密、强制访问控制、审计、防暴力破解、端口扫描"),
+    ("18", "启动和内核", "引导程序、initramfs、安全启动、第三方内核模块、云初始化、崩溃转储"),
 ]
 CAT_NAME = {c[0]: c[1] for c in CATEGORIES}
 
@@ -243,106 +246,106 @@ iotop|按进程看 IO|13
 iftop|按连接看带宽|10
 ssh-agent|SSH 密钥代理|10
 at|一次性定时任务|14
-iptables|传统防火墙规则
-nft|nftables 防火墙
-tcpdump|抓包
-strace|跟踪系统调用
-ltrace|跟踪库函数调用
-gdb|调试器
-perf|性能剖析
-lvcreate|创建 LVM 逻辑卷
-pvcreate|创建 LVM 物理卷
-vgcreate|创建 LVM 卷组
-lvextend|扩容逻辑卷
-resize2fs|调整 ext4 大小
-xfs_growfs|扩容 XFS
-mdadm|软 RAID
-cryptsetup|LUKS 磁盘加密
-zfs|ZFS 数据集管理
-zpool|ZFS 存储池
-btrfs|Btrfs 管理
-lxc|LXD 容器和虚拟机
-virsh|KVM 虚拟机管理
-qemu-img|虚拟磁盘镜像
-multipass|快速起 Ubuntu 虚拟机
-kubectl|Kubernetes 管理
-microk8s|轻量 Kubernetes
-podman|无守护进程容器
-docker compose|多容器编排
-openssl|证书和加密工具
-gpg|加密和签名
-certbot|Let's Encrypt 证书
-aa-status|AppArmor 状态
-aa-complain|AppArmor 告警模式
-auditctl|审计规则
-ausearch|搜索审计日志
-fail2ban-client|防暴力破解
-nmap|端口扫描（仅限自有或授权主机）
-setfacl|设置 ACL 权限
-getfacl|查看 ACL
-chattr|文件特殊属性
-lsattr|查看特殊属性
-sysctl|内核参数
-ulimit|资源限制
-systemd-cgls|cgroup 树
-systemd-run|临时单元运行命令
-systemd-cgtop|按 cgroup 看资源
-nsenter|进入命名空间
-unshare|创建新命名空间
-chroot|切换根目录
-debootstrap|构建最小 Ubuntu 根系统
-update-initramfs|重建 initramfs
-update-grub|更新 GRUB 配置
-grub-install|安装引导器
-dkms|第三方内核模块管理
-mokutil|安全启动密钥
-efibootmgr|UEFI 启动项
-smartctl|硬盘健康
-hdparm|磁盘参数和测速
-nvme|NVMe 管理
-sar|历史性能数据
-pidstat|按进程统计性能
-bpftrace|eBPF 动态追踪
-ethtool|网卡参数
-bridge|网桥管理
-tc|流量控制和限速
-wg|WireGuard VPN
-ipset|IP 集合
-conntrack|连接跟踪表
-socat|多功能端口转发
-nc|netcat 网络调试
-mtr|ping 加 traceroute
-iperf3|带宽测试
-dpkg-reconfigure|重新配置软件包
-dpkg-deb|构建和解包 .deb
-dpkg-query|查询已装软件包
-debconf-set-selections|预置安装应答
-cloud-init|云主机初始化
-pro|Ubuntu Pro 订阅和 ESM
-ubuntu-drivers|驱动自动安装
-needrestart|检查需重启的服务
-logrotate|日志轮转
-logger|写入系统日志
-coredumpctl|崩溃转储
-busctl|D-Bus 调试
-udevadm|设备规则和事件
-dmidecode|BIOS 和硬件信息
-lshw|硬件清单
-sensors|温度和风扇
-cpupower|CPU 频率策略
-numactl|NUMA 绑定
-taskset|CPU 亲和性
-ionice|IO 优先级
-chrt|实时调度策略
-losetup|回环设备
-wipefs|清除分区签名
-sgdisk|GPT 分区脚本化
-ansible|批量自动化运维
-sos|收集诊断报告
-apport-cli|崩溃报告
-snapcraft|构建 Snap 包
-kdump-config|内核崩溃转储配置
-bpftool|eBPF 程序管理
+iptables|传统防火墙规则|10
+nft|nftables 防火墙|10
+tcpdump|抓包|10
+strace|跟踪系统调用|15
+ltrace|跟踪库函数调用|15
+gdb|调试器|15
+perf|性能剖析|13
+lvcreate|创建 LVM 逻辑卷|07
+pvcreate|创建 LVM 物理卷|07
+vgcreate|创建 LVM 卷组|07
+lvextend|扩容逻辑卷|07
+resize2fs|调整 ext4 大小|07
+xfs_growfs|扩容 XFS|07
+mdadm|软 RAID|07
+cryptsetup|LUKS 磁盘加密|07
+zfs|ZFS 数据集管理|07
+zpool|ZFS 存储池|07
+btrfs|Btrfs 管理|07
+lxc|LXD 容器和虚拟机|16
+virsh|KVM 虚拟机管理|16
+qemu-img|虚拟磁盘镜像|16
+multipass|快速起 Ubuntu 虚拟机|16
+kubectl|Kubernetes 管理|15
+microk8s|轻量 Kubernetes|15
+podman|无守护进程容器|15
+docker compose|多容器编排|15
+openssl|证书和加密工具|17
+gpg|加密和签名|17
+certbot|Let's Encrypt 证书|17
+aa-status|AppArmor 状态|17
+aa-complain|AppArmor 告警模式|17
+auditctl|审计规则|17
+ausearch|搜索审计日志|17
+fail2ban-client|防暴力破解|17
+nmap|端口扫描（仅限自有或授权主机）|17
+setfacl|设置 ACL 权限|05
+getfacl|查看 ACL|05
+chattr|文件特殊属性|05
+lsattr|查看特殊属性|05
+sysctl|内核参数|11
+ulimit|资源限制|08
+systemd-cgls|cgroup 树|09
+systemd-run|临时单元运行命令|09
+systemd-cgtop|按 cgroup 看资源|09
+nsenter|进入命名空间|16
+unshare|创建新命名空间|16
+chroot|切换根目录|16
+debootstrap|构建最小 Ubuntu 根系统|16
+update-initramfs|重建 initramfs|18
+update-grub|更新 GRUB 配置|18
+grub-install|安装引导器|18
+dkms|第三方内核模块管理|18
+mokutil|安全启动密钥|18
+efibootmgr|UEFI 启动项|18
+smartctl|硬盘健康|07
+hdparm|磁盘参数和测速|07
+nvme|NVMe 管理|07
+sar|历史性能数据|13
+pidstat|按进程统计性能|13
+bpftrace|eBPF 动态追踪|13
+ethtool|网卡参数|10
+bridge|网桥管理|10
+tc|流量控制和限速|10
+wg|WireGuard VPN|10
+ipset|IP 集合|10
+conntrack|连接跟踪表|10
+socat|多功能端口转发|10
+nc|netcat 网络调试|10
+mtr|ping 加 traceroute|10
+iperf3|带宽测试|10
+dpkg-reconfigure|重新配置软件包|06
+dpkg-deb|构建和解包 .deb|06
+dpkg-query|查询已装软件包|06
+debconf-set-selections|预置安装应答|06
+cloud-init|云主机初始化|18
+pro|Ubuntu Pro 订阅和 ESM|06
+ubuntu-drivers|驱动自动安装|06
+needrestart|检查需重启的服务|06
+logrotate|日志轮转|09
+logger|写入系统日志|09
+coredumpctl|崩溃转储|09
+busctl|D-Bus 调试|09
+udevadm|设备规则和事件|11
+dmidecode|BIOS 和硬件信息|11
+lshw|硬件清单|11
+sensors|温度和风扇|11
+cpupower|CPU 频率策略|11
+numactl|NUMA 绑定|11
+taskset|CPU 亲和性|08
+ionice|IO 优先级|08
+chrt|实时调度策略|08
+losetup|回环设备|07
+wipefs|清除分区签名|07
+sgdisk|GPT 分区脚本化|07
+ansible|批量自动化运维|15
+sos|收集诊断报告|11
+apport-cli|崩溃报告|11
+snapcraft|构建 Snap 包|06
+kdump-config|内核崩溃转储配置|18
+bpftool|eBPF 程序管理|13
 """.strip().split("\n")
 
 assert len(COMMANDS) == 300, len(COMMANDS)

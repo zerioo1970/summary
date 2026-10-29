@@ -61,7 +61,7 @@ U004,凝胶,耗材,35
 U005,探头A,探头,12000
 ```
 
-中级的部分示例需要其他条件，页面里会注明：分区、格式化类的示例用镜像文件（如 `disk.img`）代替真实磁盘，在 `/root` 下以 root 身份执行；端口、防火墙类的示例在只有回环网卡的独立网络里执行；ssh 相关的示例在本机 2222 端口运行一个 sshd。
+中级、高级的部分示例需要其他条件，页面里会注明：分区、格式化类的示例用镜像文件（如 `disk.img`）代替真实磁盘，在 `/root` 下以 root 身份执行；端口、防火墙类的示例在只有回环网卡的独立网络里执行；ssh 相关的示例在本机 2222 端口运行一个 sshd。
 
 建立演示环境的脚本是 [`tools/setup-demo.sh`](tools/setup-demo.sh)，在自己的 Ubuntu 上可以用它建一份一样的目录来练习（脚本会创建用户 tom，请在测试机上执行）。
 
@@ -84,6 +84,8 @@ U005,探头A,探头,12000
 | `awk` 默认是 mawk，不是 gawk | gawk 特有的函数不能用 | [awk](docs/03-文本处理.md#cmd-awk) |
 | `visudo` 也由 sudo-rs 提供 | sudoers.d 里含 `.` 的文件名会被跳过 | [visudo](docs/05-用户和权限.md#cmd-visudo) |
 | 7-Zip 改用官方的 `7zip` 包 | 命令是 `7z`，不再是 p7zip 的 `7za` | [7z](docs/04-压缩和打包.md#cmd-7z) |
+| initramfs 默认由 dracut 生成 | `update-initramfs` 仍可用，但配置改在 `/etc/dracut.conf.d/` | [update-initramfs](docs/18-启动和内核.md#cmd-update-initramfs) |
+| `iptables` 实际是 iptables-nft | 规则存放在 nftables 里，`nft list ruleset` 也能看到 | [iptables](docs/10-网络和远程连接.md#cmd-iptables) |
 
 ## 进度
 
@@ -91,9 +93,9 @@ U005,探头A,探头,12000
 |---|---|
 | **初级指令 001–100** | ✅ |
 | **中级指令 101–200** | ✅ |
-| 高级指令 201–300 | 📝 |
+| **高级指令 201–300** | ✅ |
 
-## 分类目录（15 类）
+## 分类目录（18 类）
 
 <!-- 分类目录开始 -->
 
@@ -103,23 +105,26 @@ U005,探头A,探头,12000
 | [02 文件查看和编辑](docs/02-文件查看和编辑.md)<br/>查看文件内容，在终端里编辑文件 | [cat](docs/02-文件查看和编辑.md#cmd-cat)、[nano](docs/02-文件查看和编辑.md#cmd-nano)、[less](docs/02-文件查看和编辑.md#cmd-less)、[head](docs/02-文件查看和编辑.md#cmd-head)、[tail](docs/02-文件查看和编辑.md#cmd-tail)、[more](docs/02-文件查看和编辑.md#cmd-more)、[vim](docs/02-文件查看和编辑.md#cmd-vim) | — | — |
 | [03 文本处理](docs/03-文本处理.md)<br/>搜索、替换、统计、排序、截取、拼接文本 | [echo](docs/03-文本处理.md#cmd-echo)、[grep](docs/03-文本处理.md#cmd-grep)、[wc](docs/03-文本处理.md#cmd-wc)、[sort](docs/03-文本处理.md#cmd-sort)、[uniq](docs/03-文本处理.md#cmd-uniq)、[diff](docs/03-文本处理.md#cmd-diff)、[cut](docs/03-文本处理.md#cmd-cut)、[tee](docs/03-文本处理.md#cmd-tee) | [sed](docs/03-文本处理.md#cmd-sed)、[awk](docs/03-文本处理.md#cmd-awk)、[xargs](docs/03-文本处理.md#cmd-xargs)、[tr](docs/03-文本处理.md#cmd-tr)、[base64](docs/03-文本处理.md#cmd-base64)、[column](docs/03-文本处理.md#cmd-column)、[paste](docs/03-文本处理.md#cmd-paste)、[join](docs/03-文本处理.md#cmd-join)、[comm](docs/03-文本处理.md#cmd-comm)、[nl](docs/03-文本处理.md#cmd-nl)、[rev](docs/03-文本处理.md#cmd-rev)、[tac](docs/03-文本处理.md#cmd-tac)、[printf](docs/03-文本处理.md#cmd-printf)、[seq](docs/03-文本处理.md#cmd-seq) | — |
 | [04 压缩和打包](docs/04-压缩和打包.md)<br/>tar、zip、gzip、xz、bzip2、7z 的打包和解包 | [tar](docs/04-压缩和打包.md#cmd-tar)、[zip](docs/04-压缩和打包.md#cmd-zip)、[unzip](docs/04-压缩和打包.md#cmd-unzip)、[gzip](docs/04-压缩和打包.md#cmd-gzip)、[gunzip](docs/04-压缩和打包.md#cmd-gunzip) | [xz](docs/04-压缩和打包.md#cmd-xz)、[bzip2](docs/04-压缩和打包.md#cmd-bzip2)、[7z](docs/04-压缩和打包.md#cmd-7z)、[zcat](docs/04-压缩和打包.md#cmd-zcat)、[zgrep](docs/04-压缩和打包.md#cmd-zgrep) | — |
-| [05 用户和权限](docs/05-用户和权限.md)<br/>建删用户和组、提权、改密码、改权限、查登录记录 | [sudo](docs/05-用户和权限.md#cmd-sudo)、[chmod](docs/05-用户和权限.md#cmd-chmod)、[chown](docs/05-用户和权限.md#cmd-chown)、[whoami](docs/05-用户和权限.md#cmd-whoami)、[passwd](docs/05-用户和权限.md#cmd-passwd)、[su](docs/05-用户和权限.md#cmd-su)、[id](docs/05-用户和权限.md#cmd-id)、[groups](docs/05-用户和权限.md#cmd-groups)、[who](docs/05-用户和权限.md#cmd-who)、[w](docs/05-用户和权限.md#cmd-w)、[last](docs/05-用户和权限.md#cmd-last) | [useradd](docs/05-用户和权限.md#cmd-useradd)、[adduser](docs/05-用户和权限.md#cmd-adduser)、[usermod](docs/05-用户和权限.md#cmd-usermod)、[userdel](docs/05-用户和权限.md#cmd-userdel)、[deluser](docs/05-用户和权限.md#cmd-deluser)、[groupadd](docs/05-用户和权限.md#cmd-groupadd)、[visudo](docs/05-用户和权限.md#cmd-visudo)、[chgrp](docs/05-用户和权限.md#cmd-chgrp)、[umask](docs/05-用户和权限.md#cmd-umask)、[loginctl](docs/05-用户和权限.md#cmd-loginctl)、[chage](docs/05-用户和权限.md#cmd-chage)、[getent](docs/05-用户和权限.md#cmd-getent)、[sudoedit](docs/05-用户和权限.md#cmd-sudoedit) | — |
-| [06 软件包管理](docs/06-软件包管理.md)<br/>apt、dpkg、snap、flatpak，软件源和系统升级 | [apt](docs/06-软件包管理.md#cmd-apt)、[apt-get](docs/06-软件包管理.md#cmd-apt-get)、[dpkg](docs/06-软件包管理.md#cmd-dpkg)、[snap](docs/06-软件包管理.md#cmd-snap) | [apt-cache](docs/06-软件包管理.md#cmd-apt-cache)、[apt-mark](docs/06-软件包管理.md#cmd-apt-mark)、[add-apt-repository](docs/06-软件包管理.md#cmd-add-apt-repository)、[update-alternatives](docs/06-软件包管理.md#cmd-update-alternatives)、[do-release-upgrade](docs/06-软件包管理.md#cmd-do-release-upgrade)、[unattended-upgrade](docs/06-软件包管理.md#cmd-unattended-upgrade)、[flatpak](docs/06-软件包管理.md#cmd-flatpak) | — |
-| [07 磁盘管理](docs/07-磁盘管理.md)<br/>看空间、分区、格式化、挂载、交换区 | [df](docs/07-磁盘管理.md#cmd-df)、[du](docs/07-磁盘管理.md#cmd-du)、[lsblk](docs/07-磁盘管理.md#cmd-lsblk)、[mount](docs/07-磁盘管理.md#cmd-mount)、[umount](docs/07-磁盘管理.md#cmd-umount) | [fdisk](docs/07-磁盘管理.md#cmd-fdisk)、[parted](docs/07-磁盘管理.md#cmd-parted)、[mkfs](docs/07-磁盘管理.md#cmd-mkfs)、[blkid](docs/07-磁盘管理.md#cmd-blkid)、[fsck](docs/07-磁盘管理.md#cmd-fsck)、[swapon](docs/07-磁盘管理.md#cmd-swapon)、[mkswap](docs/07-磁盘管理.md#cmd-mkswap)、[findmnt](docs/07-磁盘管理.md#cmd-findmnt)、[ncdu](docs/07-磁盘管理.md#cmd-ncdu) | — |
-| [08 进程管理](docs/08-进程管理.md)<br/>查看、结束、调度进程，前后台作业 | [top](docs/08-进程管理.md#cmd-top)、[ps](docs/08-进程管理.md#cmd-ps)、[kill](docs/08-进程管理.md#cmd-kill)、[htop](docs/08-进程管理.md#cmd-htop)、[sleep](docs/08-进程管理.md#cmd-sleep)、[watch](docs/08-进程管理.md#cmd-watch)、[time](docs/08-进程管理.md#cmd-time)、[killall](docs/08-进程管理.md#cmd-killall) | [pgrep](docs/08-进程管理.md#cmd-pgrep)、[pkill](docs/08-进程管理.md#cmd-pkill)、[nice](docs/08-进程管理.md#cmd-nice)、[renice](docs/08-进程管理.md#cmd-renice)、[nohup](docs/08-进程管理.md#cmd-nohup)、[bg](docs/08-进程管理.md#cmd-bg)、[fg](docs/08-进程管理.md#cmd-fg)、[jobs](docs/08-进程管理.md#cmd-jobs)、[disown](docs/08-进程管理.md#cmd-disown)、[lsof](docs/08-进程管理.md#cmd-lsof) | — |
-| [09 系统服务和开关机](docs/09-系统服务和开关机.md)<br/>systemctl 管服务，看日志，开机分析，重启和关机 | [reboot](docs/09-系统服务和开关机.md#cmd-reboot)、[shutdown](docs/09-系统服务和开关机.md#cmd-shutdown)、[systemctl](docs/09-系统服务和开关机.md#cmd-systemctl) | [journalctl](docs/09-系统服务和开关机.md#cmd-journalctl)、[systemd-analyze](docs/09-系统服务和开关机.md#cmd-systemd-analyze) | — |
-| [10 网络和远程连接](docs/10-网络和远程连接.md)<br/>IP、DNS、端口、防火墙、下载、ssh 远程和同步 | [ping](docs/10-网络和远程连接.md#cmd-ping)、[ip](docs/10-网络和远程连接.md#cmd-ip)、[wget](docs/10-网络和远程连接.md#cmd-wget)、[curl](docs/10-网络和远程连接.md#cmd-curl)、[hostname](docs/10-网络和远程连接.md#cmd-hostname)、[ssh](docs/10-网络和远程连接.md#cmd-ssh)、[scp](docs/10-网络和远程连接.md#cmd-scp) | [ufw](docs/10-网络和远程连接.md#cmd-ufw)、[rsync](docs/10-网络和远程连接.md#cmd-rsync)、[ss](docs/10-网络和远程连接.md#cmd-ss)、[netstat](docs/10-网络和远程连接.md#cmd-netstat)、[dig](docs/10-网络和远程连接.md#cmd-dig)、[nslookup](docs/10-网络和远程连接.md#cmd-nslookup)、[traceroute](docs/10-网络和远程连接.md#cmd-traceroute)、[tracepath](docs/10-网络和远程连接.md#cmd-tracepath)、[nmcli](docs/10-网络和远程连接.md#cmd-nmcli)、[netplan](docs/10-网络和远程连接.md#cmd-netplan)、[resolvectl](docs/10-网络和远程连接.md#cmd-resolvectl)、[ssh-keygen](docs/10-网络和远程连接.md#cmd-ssh-keygen)、[ssh-copy-id](docs/10-网络和远程连接.md#cmd-ssh-copy-id)、[sftp](docs/10-网络和远程连接.md#cmd-sftp)、[iftop](docs/10-网络和远程连接.md#cmd-iftop)、[ssh-agent](docs/10-网络和远程连接.md#cmd-ssh-agent) | — |
-| [11 系统信息和硬件](docs/11-系统信息和硬件.md)<br/>版本、内核、时间时区、CPU、内存、硬件和内核模块 | [free](docs/11-系统信息和硬件.md#cmd-free)、[uname](docs/11-系统信息和硬件.md#cmd-uname)、[date](docs/11-系统信息和硬件.md#cmd-date)、[cal](docs/11-系统信息和硬件.md#cmd-cal)、[uptime](docs/11-系统信息和硬件.md#cmd-uptime)、[lsb_release](docs/11-系统信息和硬件.md#cmd-lsb_release)、[fastfetch](docs/11-系统信息和硬件.md#cmd-fastfetch)、[lscpu](docs/11-系统信息和硬件.md#cmd-lscpu)、[lsusb](docs/11-系统信息和硬件.md#cmd-lsusb)、[lspci](docs/11-系统信息和硬件.md#cmd-lspci)、[nproc](docs/11-系统信息和硬件.md#cmd-nproc) | [hostnamectl](docs/11-系统信息和硬件.md#cmd-hostnamectl)、[timedatectl](docs/11-系统信息和硬件.md#cmd-timedatectl)、[localectl](docs/11-系统信息和硬件.md#cmd-localectl)、[dmesg](docs/11-系统信息和硬件.md#cmd-dmesg)、[lsmod](docs/11-系统信息和硬件.md#cmd-lsmod)、[modprobe](docs/11-系统信息和硬件.md#cmd-modprobe) | — |
+| [05 用户和权限](docs/05-用户和权限.md)<br/>建删用户和组、提权、改密码、改权限、查登录记录 | [sudo](docs/05-用户和权限.md#cmd-sudo)、[chmod](docs/05-用户和权限.md#cmd-chmod)、[chown](docs/05-用户和权限.md#cmd-chown)、[whoami](docs/05-用户和权限.md#cmd-whoami)、[passwd](docs/05-用户和权限.md#cmd-passwd)、[su](docs/05-用户和权限.md#cmd-su)、[id](docs/05-用户和权限.md#cmd-id)、[groups](docs/05-用户和权限.md#cmd-groups)、[who](docs/05-用户和权限.md#cmd-who)、[w](docs/05-用户和权限.md#cmd-w)、[last](docs/05-用户和权限.md#cmd-last) | [useradd](docs/05-用户和权限.md#cmd-useradd)、[adduser](docs/05-用户和权限.md#cmd-adduser)、[usermod](docs/05-用户和权限.md#cmd-usermod)、[userdel](docs/05-用户和权限.md#cmd-userdel)、[deluser](docs/05-用户和权限.md#cmd-deluser)、[groupadd](docs/05-用户和权限.md#cmd-groupadd)、[visudo](docs/05-用户和权限.md#cmd-visudo)、[chgrp](docs/05-用户和权限.md#cmd-chgrp)、[umask](docs/05-用户和权限.md#cmd-umask)、[loginctl](docs/05-用户和权限.md#cmd-loginctl)、[chage](docs/05-用户和权限.md#cmd-chage)、[getent](docs/05-用户和权限.md#cmd-getent)、[sudoedit](docs/05-用户和权限.md#cmd-sudoedit) | [setfacl](docs/05-用户和权限.md#cmd-setfacl)、[getfacl](docs/05-用户和权限.md#cmd-getfacl)、[chattr](docs/05-用户和权限.md#cmd-chattr)、[lsattr](docs/05-用户和权限.md#cmd-lsattr) |
+| [06 软件包管理](docs/06-软件包管理.md)<br/>apt、dpkg、snap、flatpak，软件源和系统升级 | [apt](docs/06-软件包管理.md#cmd-apt)、[apt-get](docs/06-软件包管理.md#cmd-apt-get)、[dpkg](docs/06-软件包管理.md#cmd-dpkg)、[snap](docs/06-软件包管理.md#cmd-snap) | [apt-cache](docs/06-软件包管理.md#cmd-apt-cache)、[apt-mark](docs/06-软件包管理.md#cmd-apt-mark)、[add-apt-repository](docs/06-软件包管理.md#cmd-add-apt-repository)、[update-alternatives](docs/06-软件包管理.md#cmd-update-alternatives)、[do-release-upgrade](docs/06-软件包管理.md#cmd-do-release-upgrade)、[unattended-upgrade](docs/06-软件包管理.md#cmd-unattended-upgrade)、[flatpak](docs/06-软件包管理.md#cmd-flatpak) | [dpkg-reconfigure](docs/06-软件包管理.md#cmd-dpkg-reconfigure)、[dpkg-deb](docs/06-软件包管理.md#cmd-dpkg-deb)、[dpkg-query](docs/06-软件包管理.md#cmd-dpkg-query)、[debconf-set-selections](docs/06-软件包管理.md#cmd-debconf-set-selections)、[pro](docs/06-软件包管理.md#cmd-pro)、[ubuntu-drivers](docs/06-软件包管理.md#cmd-ubuntu-drivers)、[needrestart](docs/06-软件包管理.md#cmd-needrestart)、[snapcraft](docs/06-软件包管理.md#cmd-snapcraft) |
+| [07 磁盘管理](docs/07-磁盘管理.md)<br/>看空间、分区、格式化、挂载、交换区 | [df](docs/07-磁盘管理.md#cmd-df)、[du](docs/07-磁盘管理.md#cmd-du)、[lsblk](docs/07-磁盘管理.md#cmd-lsblk)、[mount](docs/07-磁盘管理.md#cmd-mount)、[umount](docs/07-磁盘管理.md#cmd-umount) | [fdisk](docs/07-磁盘管理.md#cmd-fdisk)、[parted](docs/07-磁盘管理.md#cmd-parted)、[mkfs](docs/07-磁盘管理.md#cmd-mkfs)、[blkid](docs/07-磁盘管理.md#cmd-blkid)、[fsck](docs/07-磁盘管理.md#cmd-fsck)、[swapon](docs/07-磁盘管理.md#cmd-swapon)、[mkswap](docs/07-磁盘管理.md#cmd-mkswap)、[findmnt](docs/07-磁盘管理.md#cmd-findmnt)、[ncdu](docs/07-磁盘管理.md#cmd-ncdu) | [lvcreate](docs/07-磁盘管理.md#cmd-lvcreate)、[pvcreate](docs/07-磁盘管理.md#cmd-pvcreate)、[vgcreate](docs/07-磁盘管理.md#cmd-vgcreate)、[lvextend](docs/07-磁盘管理.md#cmd-lvextend)、[resize2fs](docs/07-磁盘管理.md#cmd-resize2fs)、[xfs_growfs](docs/07-磁盘管理.md#cmd-xfs_growfs)、[mdadm](docs/07-磁盘管理.md#cmd-mdadm)、[cryptsetup](docs/07-磁盘管理.md#cmd-cryptsetup)、[zfs](docs/07-磁盘管理.md#cmd-zfs)、[zpool](docs/07-磁盘管理.md#cmd-zpool)、[btrfs](docs/07-磁盘管理.md#cmd-btrfs)、[smartctl](docs/07-磁盘管理.md#cmd-smartctl)、[hdparm](docs/07-磁盘管理.md#cmd-hdparm)、[nvme](docs/07-磁盘管理.md#cmd-nvme)、[losetup](docs/07-磁盘管理.md#cmd-losetup)、[wipefs](docs/07-磁盘管理.md#cmd-wipefs)、[sgdisk](docs/07-磁盘管理.md#cmd-sgdisk) |
+| [08 进程管理](docs/08-进程管理.md)<br/>查看、结束、调度进程，前后台作业 | [top](docs/08-进程管理.md#cmd-top)、[ps](docs/08-进程管理.md#cmd-ps)、[kill](docs/08-进程管理.md#cmd-kill)、[htop](docs/08-进程管理.md#cmd-htop)、[sleep](docs/08-进程管理.md#cmd-sleep)、[watch](docs/08-进程管理.md#cmd-watch)、[time](docs/08-进程管理.md#cmd-time)、[killall](docs/08-进程管理.md#cmd-killall) | [pgrep](docs/08-进程管理.md#cmd-pgrep)、[pkill](docs/08-进程管理.md#cmd-pkill)、[nice](docs/08-进程管理.md#cmd-nice)、[renice](docs/08-进程管理.md#cmd-renice)、[nohup](docs/08-进程管理.md#cmd-nohup)、[bg](docs/08-进程管理.md#cmd-bg)、[fg](docs/08-进程管理.md#cmd-fg)、[jobs](docs/08-进程管理.md#cmd-jobs)、[disown](docs/08-进程管理.md#cmd-disown)、[lsof](docs/08-进程管理.md#cmd-lsof) | [ulimit](docs/08-进程管理.md#cmd-ulimit)、[taskset](docs/08-进程管理.md#cmd-taskset)、[ionice](docs/08-进程管理.md#cmd-ionice)、[chrt](docs/08-进程管理.md#cmd-chrt) |
+| [09 系统服务和开关机](docs/09-系统服务和开关机.md)<br/>systemctl 管服务，日志和日志轮转，cgroup，重启和关机 | [reboot](docs/09-系统服务和开关机.md#cmd-reboot)、[shutdown](docs/09-系统服务和开关机.md#cmd-shutdown)、[systemctl](docs/09-系统服务和开关机.md#cmd-systemctl) | [journalctl](docs/09-系统服务和开关机.md#cmd-journalctl)、[systemd-analyze](docs/09-系统服务和开关机.md#cmd-systemd-analyze) | [systemd-cgls](docs/09-系统服务和开关机.md#cmd-systemd-cgls)、[systemd-run](docs/09-系统服务和开关机.md#cmd-systemd-run)、[systemd-cgtop](docs/09-系统服务和开关机.md#cmd-systemd-cgtop)、[logrotate](docs/09-系统服务和开关机.md#cmd-logrotate)、[logger](docs/09-系统服务和开关机.md#cmd-logger)、[coredumpctl](docs/09-系统服务和开关机.md#cmd-coredumpctl)、[busctl](docs/09-系统服务和开关机.md#cmd-busctl) |
+| [10 网络和远程连接](docs/10-网络和远程连接.md)<br/>IP、DNS、端口、防火墙、下载、ssh 远程和同步 | [ping](docs/10-网络和远程连接.md#cmd-ping)、[ip](docs/10-网络和远程连接.md#cmd-ip)、[wget](docs/10-网络和远程连接.md#cmd-wget)、[curl](docs/10-网络和远程连接.md#cmd-curl)、[hostname](docs/10-网络和远程连接.md#cmd-hostname)、[ssh](docs/10-网络和远程连接.md#cmd-ssh)、[scp](docs/10-网络和远程连接.md#cmd-scp) | [ufw](docs/10-网络和远程连接.md#cmd-ufw)、[rsync](docs/10-网络和远程连接.md#cmd-rsync)、[ss](docs/10-网络和远程连接.md#cmd-ss)、[netstat](docs/10-网络和远程连接.md#cmd-netstat)、[dig](docs/10-网络和远程连接.md#cmd-dig)、[nslookup](docs/10-网络和远程连接.md#cmd-nslookup)、[traceroute](docs/10-网络和远程连接.md#cmd-traceroute)、[tracepath](docs/10-网络和远程连接.md#cmd-tracepath)、[nmcli](docs/10-网络和远程连接.md#cmd-nmcli)、[netplan](docs/10-网络和远程连接.md#cmd-netplan)、[resolvectl](docs/10-网络和远程连接.md#cmd-resolvectl)、[ssh-keygen](docs/10-网络和远程连接.md#cmd-ssh-keygen)、[ssh-copy-id](docs/10-网络和远程连接.md#cmd-ssh-copy-id)、[sftp](docs/10-网络和远程连接.md#cmd-sftp)、[iftop](docs/10-网络和远程连接.md#cmd-iftop)、[ssh-agent](docs/10-网络和远程连接.md#cmd-ssh-agent) | [iptables](docs/10-网络和远程连接.md#cmd-iptables)、[nft](docs/10-网络和远程连接.md#cmd-nft)、[tcpdump](docs/10-网络和远程连接.md#cmd-tcpdump)、[ethtool](docs/10-网络和远程连接.md#cmd-ethtool)、[bridge](docs/10-网络和远程连接.md#cmd-bridge)、[tc](docs/10-网络和远程连接.md#cmd-tc)、[wg](docs/10-网络和远程连接.md#cmd-wg)、[ipset](docs/10-网络和远程连接.md#cmd-ipset)、[conntrack](docs/10-网络和远程连接.md#cmd-conntrack)、[socat](docs/10-网络和远程连接.md#cmd-socat)、[nc](docs/10-网络和远程连接.md#cmd-nc)、[mtr](docs/10-网络和远程连接.md#cmd-mtr)、[iperf3](docs/10-网络和远程连接.md#cmd-iperf3) |
+| [11 系统信息和硬件](docs/11-系统信息和硬件.md)<br/>版本、内核、时间时区、CPU、内存、硬件和内核模块 | [free](docs/11-系统信息和硬件.md#cmd-free)、[uname](docs/11-系统信息和硬件.md#cmd-uname)、[date](docs/11-系统信息和硬件.md#cmd-date)、[cal](docs/11-系统信息和硬件.md#cmd-cal)、[uptime](docs/11-系统信息和硬件.md#cmd-uptime)、[lsb_release](docs/11-系统信息和硬件.md#cmd-lsb_release)、[fastfetch](docs/11-系统信息和硬件.md#cmd-fastfetch)、[lscpu](docs/11-系统信息和硬件.md#cmd-lscpu)、[lsusb](docs/11-系统信息和硬件.md#cmd-lsusb)、[lspci](docs/11-系统信息和硬件.md#cmd-lspci)、[nproc](docs/11-系统信息和硬件.md#cmd-nproc) | [hostnamectl](docs/11-系统信息和硬件.md#cmd-hostnamectl)、[timedatectl](docs/11-系统信息和硬件.md#cmd-timedatectl)、[localectl](docs/11-系统信息和硬件.md#cmd-localectl)、[dmesg](docs/11-系统信息和硬件.md#cmd-dmesg)、[lsmod](docs/11-系统信息和硬件.md#cmd-lsmod)、[modprobe](docs/11-系统信息和硬件.md#cmd-modprobe) | [sysctl](docs/11-系统信息和硬件.md#cmd-sysctl)、[udevadm](docs/11-系统信息和硬件.md#cmd-udevadm)、[dmidecode](docs/11-系统信息和硬件.md#cmd-dmidecode)、[lshw](docs/11-系统信息和硬件.md#cmd-lshw)、[sensors](docs/11-系统信息和硬件.md#cmd-sensors)、[cpupower](docs/11-系统信息和硬件.md#cmd-cpupower)、[numactl](docs/11-系统信息和硬件.md#cmd-numactl)、[sos](docs/11-系统信息和硬件.md#cmd-sos)、[apport-cli](docs/11-系统信息和硬件.md#cmd-apport-cli) |
 | [12 Shell使用](docs/12-Shell使用.md)<br/>历史、别名、环境变量、帮助、脚本基础、终端复用 | [clear](docs/12-Shell使用.md#cmd-clear)、[man](docs/12-Shell使用.md#cmd-man)、[history](docs/12-Shell使用.md#cmd-history)、[exit](docs/12-Shell使用.md#cmd-exit)、[which](docs/12-Shell使用.md#cmd-which)、[whereis](docs/12-Shell使用.md#cmd-whereis)、[alias](docs/12-Shell使用.md#cmd-alias)、[type](docs/12-Shell使用.md#cmd-type)、[help](docs/12-Shell使用.md#cmd-help)、[env](docs/12-Shell使用.md#cmd-env)、[export](docs/12-Shell使用.md#cmd-export)、[source](docs/12-Shell使用.md#cmd-source)、[xdg-open](docs/12-Shell使用.md#cmd-xdg-open) | [screen](docs/12-Shell使用.md#cmd-screen)、[tmux](docs/12-Shell使用.md#cmd-tmux)、[read](docs/12-Shell使用.md#cmd-read)、[test](docs/12-Shell使用.md#cmd-test)、[bc](docs/12-Shell使用.md#cmd-bc)、[expr](docs/12-Shell使用.md#cmd-expr) | — |
-| [13 性能监控](docs/13-性能监控.md)<br/>CPU、内存、磁盘 IO 的统计和监控 | — | [vmstat](docs/13-性能监控.md#cmd-vmstat)、[iostat](docs/13-性能监控.md#cmd-iostat)、[iotop](docs/13-性能监控.md#cmd-iotop) | — |
+| [13 性能监控](docs/13-性能监控.md)<br/>CPU、内存、磁盘 IO 的统计、历史数据和性能剖析 | — | [vmstat](docs/13-性能监控.md#cmd-vmstat)、[iostat](docs/13-性能监控.md#cmd-iostat)、[iotop](docs/13-性能监控.md#cmd-iotop) | [perf](docs/13-性能监控.md#cmd-perf)、[sar](docs/13-性能监控.md#cmd-sar)、[pidstat](docs/13-性能监控.md#cmd-pidstat)、[bpftrace](docs/13-性能监控.md#cmd-bpftrace)、[bpftool](docs/13-性能监控.md#cmd-bpftool) |
 | [14 定时任务](docs/14-定时任务.md)<br/>周期执行和一次性执行 | — | [crontab](docs/14-定时任务.md#cmd-crontab)、[at](docs/14-定时任务.md#cmd-at) | — |
-| [15 开发和容器](docs/15-开发和容器.md)<br/>版本控制和容器 | — | [git](docs/15-开发和容器.md#cmd-git)、[docker](docs/15-开发和容器.md#cmd-docker) | — |
+| [15 开发和容器](docs/15-开发和容器.md)<br/>版本控制、容器编排、调试工具和自动化运维 | — | [git](docs/15-开发和容器.md#cmd-git)、[docker](docs/15-开发和容器.md#cmd-docker) | [strace](docs/15-开发和容器.md#cmd-strace)、[ltrace](docs/15-开发和容器.md#cmd-ltrace)、[gdb](docs/15-开发和容器.md#cmd-gdb)、[kubectl](docs/15-开发和容器.md#cmd-kubectl)、[microk8s](docs/15-开发和容器.md#cmd-microk8s)、[podman](docs/15-开发和容器.md#cmd-podman)、[docker compose](docs/15-开发和容器.md#cmd-docker-compose)、[ansible](docs/15-开发和容器.md#cmd-ansible) |
+| [16 虚拟化和隔离](docs/16-虚拟化和隔离.md)<br/>虚拟机、系统容器、命名空间和 chroot | — | — | [lxc](docs/16-虚拟化和隔离.md#cmd-lxc)、[virsh](docs/16-虚拟化和隔离.md#cmd-virsh)、[qemu-img](docs/16-虚拟化和隔离.md#cmd-qemu-img)、[multipass](docs/16-虚拟化和隔离.md#cmd-multipass)、[nsenter](docs/16-虚拟化和隔离.md#cmd-nsenter)、[unshare](docs/16-虚拟化和隔离.md#cmd-unshare)、[chroot](docs/16-虚拟化和隔离.md#cmd-chroot)、[debootstrap](docs/16-虚拟化和隔离.md#cmd-debootstrap) |
+| [17 安全](docs/17-安全.md)<br/>证书和加密、强制访问控制、审计、防暴力破解、端口扫描 | — | — | [openssl](docs/17-安全.md#cmd-openssl)、[gpg](docs/17-安全.md#cmd-gpg)、[certbot](docs/17-安全.md#cmd-certbot)、[aa-status](docs/17-安全.md#cmd-aa-status)、[aa-complain](docs/17-安全.md#cmd-aa-complain)、[auditctl](docs/17-安全.md#cmd-auditctl)、[ausearch](docs/17-安全.md#cmd-ausearch)、[fail2ban-client](docs/17-安全.md#cmd-fail2ban-client)、[nmap](docs/17-安全.md#cmd-nmap) |
+| [18 启动和内核](docs/18-启动和内核.md)<br/>引导程序、initramfs、安全启动、第三方内核模块、云初始化、崩溃转储 | — | — | [update-initramfs](docs/18-启动和内核.md#cmd-update-initramfs)、[update-grub](docs/18-启动和内核.md#cmd-update-grub)、[grub-install](docs/18-启动和内核.md#cmd-grub-install)、[dkms](docs/18-启动和内核.md#cmd-dkms)、[mokutil](docs/18-启动和内核.md#cmd-mokutil)、[efibootmgr](docs/18-启动和内核.md#cmd-efibootmgr)、[cloud-init](docs/18-启动和内核.md#cmd-cloud-init)、[kdump-config](docs/18-启动和内核.md#cmd-kdump-config) |
 
 <!-- 分类目录结束 -->
 
 ## 总目录对应表（300 个）
 
-按使用频率排名。点指令名直接跳到它所在分类文件中的位置；高级指令写完后再归入分类。
+按使用频率排名。点指令名直接跳到它所在分类文件中的位置。
 
 <!-- 总目录开始 -->
 
@@ -337,106 +342,106 @@ U005,探头A,探头,12000
 
 | 排名 | 级别 | 指令 | 用途 | 所在分类 | 状态 |
 |---|---|---|---|---|---|
-| 201 | ★ | `iptables` | 传统防火墙规则 | 待分类 | 📝 |
-| 202 | ★ | `nft` | nftables 防火墙 | 待分类 | 📝 |
-| 203 | ★ | `tcpdump` | 抓包 | 待分类 | 📝 |
-| 204 | ★ | `strace` | 跟踪系统调用 | 待分类 | 📝 |
-| 205 | ★ | `ltrace` | 跟踪库函数调用 | 待分类 | 📝 |
-| 206 | ★ | `gdb` | 调试器 | 待分类 | 📝 |
-| 207 | ★ | `perf` | 性能剖析 | 待分类 | 📝 |
-| 208 | ★ | `lvcreate` | 创建 LVM 逻辑卷 | 待分类 | 📝 |
-| 209 | ★ | `pvcreate` | 创建 LVM 物理卷 | 待分类 | 📝 |
-| 210 | ★ | `vgcreate` | 创建 LVM 卷组 | 待分类 | 📝 |
-| 211 | ★ | `lvextend` | 扩容逻辑卷 | 待分类 | 📝 |
-| 212 | ★ | `resize2fs` | 调整 ext4 大小 | 待分类 | 📝 |
-| 213 | ★ | `xfs_growfs` | 扩容 XFS | 待分类 | 📝 |
-| 214 | ★ | `mdadm` | 软 RAID | 待分类 | 📝 |
-| 215 | ★ | `cryptsetup` | LUKS 磁盘加密 | 待分类 | 📝 |
-| 216 | ★ | `zfs` | ZFS 数据集管理 | 待分类 | 📝 |
-| 217 | ★ | `zpool` | ZFS 存储池 | 待分类 | 📝 |
-| 218 | ★ | `btrfs` | Btrfs 管理 | 待分类 | 📝 |
-| 219 | ★ | `lxc` | LXD 容器和虚拟机 | 待分类 | 📝 |
-| 220 | ★ | `virsh` | KVM 虚拟机管理 | 待分类 | 📝 |
-| 221 | ★ | `qemu-img` | 虚拟磁盘镜像 | 待分类 | 📝 |
-| 222 | ★ | `multipass` | 快速起 Ubuntu 虚拟机 | 待分类 | 📝 |
-| 223 | ★ | `kubectl` | Kubernetes 管理 | 待分类 | 📝 |
-| 224 | ★ | `microk8s` | 轻量 Kubernetes | 待分类 | 📝 |
-| 225 | ★ | `podman` | 无守护进程容器 | 待分类 | 📝 |
-| 226 | ★ | `docker compose` | 多容器编排 | 待分类 | 📝 |
-| 227 | ★ | `openssl` | 证书和加密工具 | 待分类 | 📝 |
-| 228 | ★ | `gpg` | 加密和签名 | 待分类 | 📝 |
-| 229 | ★ | `certbot` | Let's Encrypt 证书 | 待分类 | 📝 |
-| 230 | ★ | `aa-status` | AppArmor 状态 | 待分类 | 📝 |
-| 231 | ★ | `aa-complain` | AppArmor 告警模式 | 待分类 | 📝 |
-| 232 | ★ | `auditctl` | 审计规则 | 待分类 | 📝 |
-| 233 | ★ | `ausearch` | 搜索审计日志 | 待分类 | 📝 |
-| 234 | ★ | `fail2ban-client` | 防暴力破解 | 待分类 | 📝 |
-| 235 | ★ | `nmap` | 端口扫描（仅限自有或授权主机） | 待分类 | 📝 |
-| 236 | ★ | `setfacl` | 设置 ACL 权限 | 待分类 | 📝 |
-| 237 | ★ | `getfacl` | 查看 ACL | 待分类 | 📝 |
-| 238 | ★ | `chattr` | 文件特殊属性 | 待分类 | 📝 |
-| 239 | ★ | `lsattr` | 查看特殊属性 | 待分类 | 📝 |
-| 240 | ★ | `sysctl` | 内核参数 | 待分类 | 📝 |
-| 241 | ★ | `ulimit` | 资源限制 | 待分类 | 📝 |
-| 242 | ★ | `systemd-cgls` | cgroup 树 | 待分类 | 📝 |
-| 243 | ★ | `systemd-run` | 临时单元运行命令 | 待分类 | 📝 |
-| 244 | ★ | `systemd-cgtop` | 按 cgroup 看资源 | 待分类 | 📝 |
-| 245 | ★ | `nsenter` | 进入命名空间 | 待分类 | 📝 |
-| 246 | ★ | `unshare` | 创建新命名空间 | 待分类 | 📝 |
-| 247 | ★ | `chroot` | 切换根目录 | 待分类 | 📝 |
-| 248 | ★ | `debootstrap` | 构建最小 Ubuntu 根系统 | 待分类 | 📝 |
-| 249 | ★ | `update-initramfs` | 重建 initramfs | 待分类 | 📝 |
-| 250 | ★ | `update-grub` | 更新 GRUB 配置 | 待分类 | 📝 |
-| 251 | ★ | `grub-install` | 安装引导器 | 待分类 | 📝 |
-| 252 | ★ | `dkms` | 第三方内核模块管理 | 待分类 | 📝 |
-| 253 | ★ | `mokutil` | 安全启动密钥 | 待分类 | 📝 |
-| 254 | ★ | `efibootmgr` | UEFI 启动项 | 待分类 | 📝 |
-| 255 | ★ | `smartctl` | 硬盘健康 | 待分类 | 📝 |
-| 256 | ★ | `hdparm` | 磁盘参数和测速 | 待分类 | 📝 |
-| 257 | ★ | `nvme` | NVMe 管理 | 待分类 | 📝 |
-| 258 | ★ | `sar` | 历史性能数据 | 待分类 | 📝 |
-| 259 | ★ | `pidstat` | 按进程统计性能 | 待分类 | 📝 |
-| 260 | ★ | `bpftrace` | eBPF 动态追踪 | 待分类 | 📝 |
-| 261 | ★ | `ethtool` | 网卡参数 | 待分类 | 📝 |
-| 262 | ★ | `bridge` | 网桥管理 | 待分类 | 📝 |
-| 263 | ★ | `tc` | 流量控制和限速 | 待分类 | 📝 |
-| 264 | ★ | `wg` | WireGuard VPN | 待分类 | 📝 |
-| 265 | ★ | `ipset` | IP 集合 | 待分类 | 📝 |
-| 266 | ★ | `conntrack` | 连接跟踪表 | 待分类 | 📝 |
-| 267 | ★ | `socat` | 多功能端口转发 | 待分类 | 📝 |
-| 268 | ★ | `nc` | netcat 网络调试 | 待分类 | 📝 |
-| 269 | ★ | `mtr` | ping 加 traceroute | 待分类 | 📝 |
-| 270 | ★ | `iperf3` | 带宽测试 | 待分类 | 📝 |
-| 271 | ★ | `dpkg-reconfigure` | 重新配置软件包 | 待分类 | 📝 |
-| 272 | ★ | `dpkg-deb` | 构建和解包 .deb | 待分类 | 📝 |
-| 273 | ★ | `dpkg-query` | 查询已装软件包 | 待分类 | 📝 |
-| 274 | ★ | `debconf-set-selections` | 预置安装应答 | 待分类 | 📝 |
-| 275 | ★ | `cloud-init` | 云主机初始化 | 待分类 | 📝 |
-| 276 | ★ | `pro` | Ubuntu Pro 订阅和 ESM | 待分类 | 📝 |
-| 277 | ★ | `ubuntu-drivers` | 驱动自动安装 | 待分类 | 📝 |
-| 278 | ★ | `needrestart` | 检查需重启的服务 | 待分类 | 📝 |
-| 279 | ★ | `logrotate` | 日志轮转 | 待分类 | 📝 |
-| 280 | ★ | `logger` | 写入系统日志 | 待分类 | 📝 |
-| 281 | ★ | `coredumpctl` | 崩溃转储 | 待分类 | 📝 |
-| 282 | ★ | `busctl` | D-Bus 调试 | 待分类 | 📝 |
-| 283 | ★ | `udevadm` | 设备规则和事件 | 待分类 | 📝 |
-| 284 | ★ | `dmidecode` | BIOS 和硬件信息 | 待分类 | 📝 |
-| 285 | ★ | `lshw` | 硬件清单 | 待分类 | 📝 |
-| 286 | ★ | `sensors` | 温度和风扇 | 待分类 | 📝 |
-| 287 | ★ | `cpupower` | CPU 频率策略 | 待分类 | 📝 |
-| 288 | ★ | `numactl` | NUMA 绑定 | 待分类 | 📝 |
-| 289 | ★ | `taskset` | CPU 亲和性 | 待分类 | 📝 |
-| 290 | ★ | `ionice` | IO 优先级 | 待分类 | 📝 |
-| 291 | ★ | `chrt` | 实时调度策略 | 待分类 | 📝 |
-| 292 | ★ | `losetup` | 回环设备 | 待分类 | 📝 |
-| 293 | ★ | `wipefs` | 清除分区签名 | 待分类 | 📝 |
-| 294 | ★ | `sgdisk` | GPT 分区脚本化 | 待分类 | 📝 |
-| 295 | ★ | `ansible` | 批量自动化运维 | 待分类 | 📝 |
-| 296 | ★ | `sos` | 收集诊断报告 | 待分类 | 📝 |
-| 297 | ★ | `apport-cli` | 崩溃报告 | 待分类 | 📝 |
-| 298 | ★ | `snapcraft` | 构建 Snap 包 | 待分类 | 📝 |
-| 299 | ★ | `kdump-config` | 内核崩溃转储配置 | 待分类 | 📝 |
-| 300 | ★ | `bpftool` | eBPF 程序管理 | 待分类 | 📝 |
+| 201 | ★ | [`iptables`](docs/10-网络和远程连接.md#cmd-iptables) | 传统防火墙规则 | [10 网络和远程连接](docs/10-网络和远程连接.md) | ✅ |
+| 202 | ★ | [`nft`](docs/10-网络和远程连接.md#cmd-nft) | nftables 防火墙 | [10 网络和远程连接](docs/10-网络和远程连接.md) | ✅ |
+| 203 | ★ | [`tcpdump`](docs/10-网络和远程连接.md#cmd-tcpdump) | 抓包 | [10 网络和远程连接](docs/10-网络和远程连接.md) | ✅ |
+| 204 | ★ | [`strace`](docs/15-开发和容器.md#cmd-strace) | 跟踪系统调用 | [15 开发和容器](docs/15-开发和容器.md) | ✅ |
+| 205 | ★ | [`ltrace`](docs/15-开发和容器.md#cmd-ltrace) | 跟踪库函数调用 | [15 开发和容器](docs/15-开发和容器.md) | ✅ |
+| 206 | ★ | [`gdb`](docs/15-开发和容器.md#cmd-gdb) | 调试器 | [15 开发和容器](docs/15-开发和容器.md) | ✅ |
+| 207 | ★ | [`perf`](docs/13-性能监控.md#cmd-perf) | 性能剖析 | [13 性能监控](docs/13-性能监控.md) | ✅ |
+| 208 | ★ | [`lvcreate`](docs/07-磁盘管理.md#cmd-lvcreate) | 创建 LVM 逻辑卷 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 209 | ★ | [`pvcreate`](docs/07-磁盘管理.md#cmd-pvcreate) | 创建 LVM 物理卷 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 210 | ★ | [`vgcreate`](docs/07-磁盘管理.md#cmd-vgcreate) | 创建 LVM 卷组 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 211 | ★ | [`lvextend`](docs/07-磁盘管理.md#cmd-lvextend) | 扩容逻辑卷 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 212 | ★ | [`resize2fs`](docs/07-磁盘管理.md#cmd-resize2fs) | 调整 ext4 大小 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 213 | ★ | [`xfs_growfs`](docs/07-磁盘管理.md#cmd-xfs_growfs) | 扩容 XFS | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 214 | ★ | [`mdadm`](docs/07-磁盘管理.md#cmd-mdadm) | 软 RAID | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 215 | ★ | [`cryptsetup`](docs/07-磁盘管理.md#cmd-cryptsetup) | LUKS 磁盘加密 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 216 | ★ | [`zfs`](docs/07-磁盘管理.md#cmd-zfs) | ZFS 数据集管理 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 217 | ★ | [`zpool`](docs/07-磁盘管理.md#cmd-zpool) | ZFS 存储池 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 218 | ★ | [`btrfs`](docs/07-磁盘管理.md#cmd-btrfs) | Btrfs 管理 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 219 | ★ | [`lxc`](docs/16-虚拟化和隔离.md#cmd-lxc) | LXD 容器和虚拟机 | [16 虚拟化和隔离](docs/16-虚拟化和隔离.md) | ✅ |
+| 220 | ★ | [`virsh`](docs/16-虚拟化和隔离.md#cmd-virsh) | KVM 虚拟机管理 | [16 虚拟化和隔离](docs/16-虚拟化和隔离.md) | ✅ |
+| 221 | ★ | [`qemu-img`](docs/16-虚拟化和隔离.md#cmd-qemu-img) | 虚拟磁盘镜像 | [16 虚拟化和隔离](docs/16-虚拟化和隔离.md) | ✅ |
+| 222 | ★ | [`multipass`](docs/16-虚拟化和隔离.md#cmd-multipass) | 快速起 Ubuntu 虚拟机 | [16 虚拟化和隔离](docs/16-虚拟化和隔离.md) | ✅ |
+| 223 | ★ | [`kubectl`](docs/15-开发和容器.md#cmd-kubectl) | Kubernetes 管理 | [15 开发和容器](docs/15-开发和容器.md) | ✅ |
+| 224 | ★ | [`microk8s`](docs/15-开发和容器.md#cmd-microk8s) | 轻量 Kubernetes | [15 开发和容器](docs/15-开发和容器.md) | ✅ |
+| 225 | ★ | [`podman`](docs/15-开发和容器.md#cmd-podman) | 无守护进程容器 | [15 开发和容器](docs/15-开发和容器.md) | ✅ |
+| 226 | ★ | [`docker compose`](docs/15-开发和容器.md#cmd-docker-compose) | 多容器编排 | [15 开发和容器](docs/15-开发和容器.md) | ✅ |
+| 227 | ★ | [`openssl`](docs/17-安全.md#cmd-openssl) | 证书和加密工具 | [17 安全](docs/17-安全.md) | ✅ |
+| 228 | ★ | [`gpg`](docs/17-安全.md#cmd-gpg) | 加密和签名 | [17 安全](docs/17-安全.md) | ✅ |
+| 229 | ★ | [`certbot`](docs/17-安全.md#cmd-certbot) | Let's Encrypt 证书 | [17 安全](docs/17-安全.md) | ✅ |
+| 230 | ★ | [`aa-status`](docs/17-安全.md#cmd-aa-status) | AppArmor 状态 | [17 安全](docs/17-安全.md) | ✅ |
+| 231 | ★ | [`aa-complain`](docs/17-安全.md#cmd-aa-complain) | AppArmor 告警模式 | [17 安全](docs/17-安全.md) | ✅ |
+| 232 | ★ | [`auditctl`](docs/17-安全.md#cmd-auditctl) | 审计规则 | [17 安全](docs/17-安全.md) | ✅ |
+| 233 | ★ | [`ausearch`](docs/17-安全.md#cmd-ausearch) | 搜索审计日志 | [17 安全](docs/17-安全.md) | ✅ |
+| 234 | ★ | [`fail2ban-client`](docs/17-安全.md#cmd-fail2ban-client) | 防暴力破解 | [17 安全](docs/17-安全.md) | ✅ |
+| 235 | ★ | [`nmap`](docs/17-安全.md#cmd-nmap) | 端口扫描（仅限自有或授权主机） | [17 安全](docs/17-安全.md) | ✅ |
+| 236 | ★ | [`setfacl`](docs/05-用户和权限.md#cmd-setfacl) | 设置 ACL 权限 | [05 用户和权限](docs/05-用户和权限.md) | ✅ |
+| 237 | ★ | [`getfacl`](docs/05-用户和权限.md#cmd-getfacl) | 查看 ACL | [05 用户和权限](docs/05-用户和权限.md) | ✅ |
+| 238 | ★ | [`chattr`](docs/05-用户和权限.md#cmd-chattr) | 文件特殊属性 | [05 用户和权限](docs/05-用户和权限.md) | ✅ |
+| 239 | ★ | [`lsattr`](docs/05-用户和权限.md#cmd-lsattr) | 查看特殊属性 | [05 用户和权限](docs/05-用户和权限.md) | ✅ |
+| 240 | ★ | [`sysctl`](docs/11-系统信息和硬件.md#cmd-sysctl) | 内核参数 | [11 系统信息和硬件](docs/11-系统信息和硬件.md) | ✅ |
+| 241 | ★ | [`ulimit`](docs/08-进程管理.md#cmd-ulimit) | 资源限制 | [08 进程管理](docs/08-进程管理.md) | ✅ |
+| 242 | ★ | [`systemd-cgls`](docs/09-系统服务和开关机.md#cmd-systemd-cgls) | cgroup 树 | [09 系统服务和开关机](docs/09-系统服务和开关机.md) | ✅ |
+| 243 | ★ | [`systemd-run`](docs/09-系统服务和开关机.md#cmd-systemd-run) | 临时单元运行命令 | [09 系统服务和开关机](docs/09-系统服务和开关机.md) | ✅ |
+| 244 | ★ | [`systemd-cgtop`](docs/09-系统服务和开关机.md#cmd-systemd-cgtop) | 按 cgroup 看资源 | [09 系统服务和开关机](docs/09-系统服务和开关机.md) | ✅ |
+| 245 | ★ | [`nsenter`](docs/16-虚拟化和隔离.md#cmd-nsenter) | 进入命名空间 | [16 虚拟化和隔离](docs/16-虚拟化和隔离.md) | ✅ |
+| 246 | ★ | [`unshare`](docs/16-虚拟化和隔离.md#cmd-unshare) | 创建新命名空间 | [16 虚拟化和隔离](docs/16-虚拟化和隔离.md) | ✅ |
+| 247 | ★ | [`chroot`](docs/16-虚拟化和隔离.md#cmd-chroot) | 切换根目录 | [16 虚拟化和隔离](docs/16-虚拟化和隔离.md) | ✅ |
+| 248 | ★ | [`debootstrap`](docs/16-虚拟化和隔离.md#cmd-debootstrap) | 构建最小 Ubuntu 根系统 | [16 虚拟化和隔离](docs/16-虚拟化和隔离.md) | ✅ |
+| 249 | ★ | [`update-initramfs`](docs/18-启动和内核.md#cmd-update-initramfs) | 重建 initramfs | [18 启动和内核](docs/18-启动和内核.md) | ✅ |
+| 250 | ★ | [`update-grub`](docs/18-启动和内核.md#cmd-update-grub) | 更新 GRUB 配置 | [18 启动和内核](docs/18-启动和内核.md) | ✅ |
+| 251 | ★ | [`grub-install`](docs/18-启动和内核.md#cmd-grub-install) | 安装引导器 | [18 启动和内核](docs/18-启动和内核.md) | ✅ |
+| 252 | ★ | [`dkms`](docs/18-启动和内核.md#cmd-dkms) | 第三方内核模块管理 | [18 启动和内核](docs/18-启动和内核.md) | ✅ |
+| 253 | ★ | [`mokutil`](docs/18-启动和内核.md#cmd-mokutil) | 安全启动密钥 | [18 启动和内核](docs/18-启动和内核.md) | ✅ |
+| 254 | ★ | [`efibootmgr`](docs/18-启动和内核.md#cmd-efibootmgr) | UEFI 启动项 | [18 启动和内核](docs/18-启动和内核.md) | ✅ |
+| 255 | ★ | [`smartctl`](docs/07-磁盘管理.md#cmd-smartctl) | 硬盘健康 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 256 | ★ | [`hdparm`](docs/07-磁盘管理.md#cmd-hdparm) | 磁盘参数和测速 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 257 | ★ | [`nvme`](docs/07-磁盘管理.md#cmd-nvme) | NVMe 管理 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 258 | ★ | [`sar`](docs/13-性能监控.md#cmd-sar) | 历史性能数据 | [13 性能监控](docs/13-性能监控.md) | ✅ |
+| 259 | ★ | [`pidstat`](docs/13-性能监控.md#cmd-pidstat) | 按进程统计性能 | [13 性能监控](docs/13-性能监控.md) | ✅ |
+| 260 | ★ | [`bpftrace`](docs/13-性能监控.md#cmd-bpftrace) | eBPF 动态追踪 | [13 性能监控](docs/13-性能监控.md) | ✅ |
+| 261 | ★ | [`ethtool`](docs/10-网络和远程连接.md#cmd-ethtool) | 网卡参数 | [10 网络和远程连接](docs/10-网络和远程连接.md) | ✅ |
+| 262 | ★ | [`bridge`](docs/10-网络和远程连接.md#cmd-bridge) | 网桥管理 | [10 网络和远程连接](docs/10-网络和远程连接.md) | ✅ |
+| 263 | ★ | [`tc`](docs/10-网络和远程连接.md#cmd-tc) | 流量控制和限速 | [10 网络和远程连接](docs/10-网络和远程连接.md) | ✅ |
+| 264 | ★ | [`wg`](docs/10-网络和远程连接.md#cmd-wg) | WireGuard VPN | [10 网络和远程连接](docs/10-网络和远程连接.md) | ✅ |
+| 265 | ★ | [`ipset`](docs/10-网络和远程连接.md#cmd-ipset) | IP 集合 | [10 网络和远程连接](docs/10-网络和远程连接.md) | ✅ |
+| 266 | ★ | [`conntrack`](docs/10-网络和远程连接.md#cmd-conntrack) | 连接跟踪表 | [10 网络和远程连接](docs/10-网络和远程连接.md) | ✅ |
+| 267 | ★ | [`socat`](docs/10-网络和远程连接.md#cmd-socat) | 多功能端口转发 | [10 网络和远程连接](docs/10-网络和远程连接.md) | ✅ |
+| 268 | ★ | [`nc`](docs/10-网络和远程连接.md#cmd-nc) | netcat 网络调试 | [10 网络和远程连接](docs/10-网络和远程连接.md) | ✅ |
+| 269 | ★ | [`mtr`](docs/10-网络和远程连接.md#cmd-mtr) | ping 加 traceroute | [10 网络和远程连接](docs/10-网络和远程连接.md) | ✅ |
+| 270 | ★ | [`iperf3`](docs/10-网络和远程连接.md#cmd-iperf3) | 带宽测试 | [10 网络和远程连接](docs/10-网络和远程连接.md) | ✅ |
+| 271 | ★ | [`dpkg-reconfigure`](docs/06-软件包管理.md#cmd-dpkg-reconfigure) | 重新配置软件包 | [06 软件包管理](docs/06-软件包管理.md) | ✅ |
+| 272 | ★ | [`dpkg-deb`](docs/06-软件包管理.md#cmd-dpkg-deb) | 构建和解包 .deb | [06 软件包管理](docs/06-软件包管理.md) | ✅ |
+| 273 | ★ | [`dpkg-query`](docs/06-软件包管理.md#cmd-dpkg-query) | 查询已装软件包 | [06 软件包管理](docs/06-软件包管理.md) | ✅ |
+| 274 | ★ | [`debconf-set-selections`](docs/06-软件包管理.md#cmd-debconf-set-selections) | 预置安装应答 | [06 软件包管理](docs/06-软件包管理.md) | ✅ |
+| 275 | ★ | [`cloud-init`](docs/18-启动和内核.md#cmd-cloud-init) | 云主机初始化 | [18 启动和内核](docs/18-启动和内核.md) | ✅ |
+| 276 | ★ | [`pro`](docs/06-软件包管理.md#cmd-pro) | Ubuntu Pro 订阅和 ESM | [06 软件包管理](docs/06-软件包管理.md) | ✅ |
+| 277 | ★ | [`ubuntu-drivers`](docs/06-软件包管理.md#cmd-ubuntu-drivers) | 驱动自动安装 | [06 软件包管理](docs/06-软件包管理.md) | ✅ |
+| 278 | ★ | [`needrestart`](docs/06-软件包管理.md#cmd-needrestart) | 检查需重启的服务 | [06 软件包管理](docs/06-软件包管理.md) | ✅ |
+| 279 | ★ | [`logrotate`](docs/09-系统服务和开关机.md#cmd-logrotate) | 日志轮转 | [09 系统服务和开关机](docs/09-系统服务和开关机.md) | ✅ |
+| 280 | ★ | [`logger`](docs/09-系统服务和开关机.md#cmd-logger) | 写入系统日志 | [09 系统服务和开关机](docs/09-系统服务和开关机.md) | ✅ |
+| 281 | ★ | [`coredumpctl`](docs/09-系统服务和开关机.md#cmd-coredumpctl) | 崩溃转储 | [09 系统服务和开关机](docs/09-系统服务和开关机.md) | ✅ |
+| 282 | ★ | [`busctl`](docs/09-系统服务和开关机.md#cmd-busctl) | D-Bus 调试 | [09 系统服务和开关机](docs/09-系统服务和开关机.md) | ✅ |
+| 283 | ★ | [`udevadm`](docs/11-系统信息和硬件.md#cmd-udevadm) | 设备规则和事件 | [11 系统信息和硬件](docs/11-系统信息和硬件.md) | ✅ |
+| 284 | ★ | [`dmidecode`](docs/11-系统信息和硬件.md#cmd-dmidecode) | BIOS 和硬件信息 | [11 系统信息和硬件](docs/11-系统信息和硬件.md) | ✅ |
+| 285 | ★ | [`lshw`](docs/11-系统信息和硬件.md#cmd-lshw) | 硬件清单 | [11 系统信息和硬件](docs/11-系统信息和硬件.md) | ✅ |
+| 286 | ★ | [`sensors`](docs/11-系统信息和硬件.md#cmd-sensors) | 温度和风扇 | [11 系统信息和硬件](docs/11-系统信息和硬件.md) | ✅ |
+| 287 | ★ | [`cpupower`](docs/11-系统信息和硬件.md#cmd-cpupower) | CPU 频率策略 | [11 系统信息和硬件](docs/11-系统信息和硬件.md) | ✅ |
+| 288 | ★ | [`numactl`](docs/11-系统信息和硬件.md#cmd-numactl) | NUMA 绑定 | [11 系统信息和硬件](docs/11-系统信息和硬件.md) | ✅ |
+| 289 | ★ | [`taskset`](docs/08-进程管理.md#cmd-taskset) | CPU 亲和性 | [08 进程管理](docs/08-进程管理.md) | ✅ |
+| 290 | ★ | [`ionice`](docs/08-进程管理.md#cmd-ionice) | IO 优先级 | [08 进程管理](docs/08-进程管理.md) | ✅ |
+| 291 | ★ | [`chrt`](docs/08-进程管理.md#cmd-chrt) | 实时调度策略 | [08 进程管理](docs/08-进程管理.md) | ✅ |
+| 292 | ★ | [`losetup`](docs/07-磁盘管理.md#cmd-losetup) | 回环设备 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 293 | ★ | [`wipefs`](docs/07-磁盘管理.md#cmd-wipefs) | 清除分区签名 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 294 | ★ | [`sgdisk`](docs/07-磁盘管理.md#cmd-sgdisk) | GPT 分区脚本化 | [07 磁盘管理](docs/07-磁盘管理.md) | ✅ |
+| 295 | ★ | [`ansible`](docs/15-开发和容器.md#cmd-ansible) | 批量自动化运维 | [15 开发和容器](docs/15-开发和容器.md) | ✅ |
+| 296 | ★ | [`sos`](docs/11-系统信息和硬件.md#cmd-sos) | 收集诊断报告 | [11 系统信息和硬件](docs/11-系统信息和硬件.md) | ✅ |
+| 297 | ★ | [`apport-cli`](docs/11-系统信息和硬件.md#cmd-apport-cli) | 崩溃报告 | [11 系统信息和硬件](docs/11-系统信息和硬件.md) | ✅ |
+| 298 | ★ | [`snapcraft`](docs/06-软件包管理.md#cmd-snapcraft) | 构建 Snap 包 | [06 软件包管理](docs/06-软件包管理.md) | ✅ |
+| 299 | ★ | [`kdump-config`](docs/18-启动和内核.md#cmd-kdump-config) | 内核崩溃转储配置 | [18 启动和内核](docs/18-启动和内核.md) | ✅ |
+| 300 | ★ | [`bpftool`](docs/13-性能监控.md#cmd-bpftool) | eBPF 程序管理 | [13 性能监控](docs/13-性能监控.md) | ✅ |
 
 
 <!-- 总目录结束 -->

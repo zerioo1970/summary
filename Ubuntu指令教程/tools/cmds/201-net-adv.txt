@@ -1,0 +1,32 @@
+iptables --version; nft --version
+readlink -f /usr/sbin/iptables
+iptables -L -n
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp -s 192.168.1.0/24 --dport 1433 -j ACCEPT
+iptables -A INPUT -p tcp --dport 3306 -j DROP
+iptables -L INPUT -n -v --line-numbers
+iptables -S INPUT
+iptables -D INPUT 5; iptables -S INPUT | tail -2
+iptables -I INPUT 1 -s 203.0.113.9 -j DROP; iptables -L INPUT -n --line-numbers | head -4
+iptables-save > /tmp/rules.v4; head -5 /tmp/rules.v4
+iptables -F; iptables -L INPUT -n
+iptables-restore < /tmp/rules.v4; iptables -L INPUT -n | wc -l
+nft list ruleset | head -20
+nft flush ruleset
+nft add table inet filter
+nft add chain inet filter input '{ type filter hook input priority 0; policy accept; }'
+nft add rule inet filter input tcp dport 22 accept
+nft add rule inet filter input tcp dport 3306 drop
+nft list table inet filter
+nft -a list chain inet filter input
+nft delete rule inet filter input handle 3; nft list chain inet filter input
+nft flush ruleset
+python3 -m http.server 18080 >/dev/null 2>&1 & sleep 1
+timeout 3 tcpdump -i lo -nn -c 6 'tcp port 18080' 2>&1 & sleep 0.5; curl -s -o /dev/null http://127.0.0.1:18080/; wait %2 2>/dev/null; sleep 2
+timeout 3 tcpdump -i lo -nn -c 6 -w /tmp/cap.pcap 'tcp port 18080' 2>&1 & sleep 0.5; curl -s -o /dev/null http://127.0.0.1:18080/; sleep 2.6
+tcpdump -nn -r /tmp/cap.pcap 2>&1 | head -3
+timeout 2 tcpdump -i lo -nn -A -c 4 'tcp port 18080 and tcp[tcpflags] & tcp-push != 0' 2>&1 & sleep 0.5; curl -s -o /dev/null http://127.0.0.1:18080/abc; sleep 1.6
+tcpdump -D | head -3
+kill %1

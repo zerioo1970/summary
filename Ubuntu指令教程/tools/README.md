@@ -49,6 +49,7 @@ ROOT=1 bash u.sh cmds/063-064.txt   # 以 root 身份执行
 | 没有真实终端 | nano、vim、less、htop 的界面，交互式输入密码 |
 | `/home`、`/tmp` 是 tmpfs，updatedb 默认不收录 | locate 的演示改用 `/opt` |
 | 没有独立网络时，root 修改防火墙会改到宿主机 | **ufw、iptables、nft 等防火墙示例必须加 `NONET=1`** |
+| 内核参数是全机共享的，root 修改会改到宿主机 | **不要在测试环境执行 `sysctl -w`、`sysctl --system`**，只做读取类示例 |
 | 没有 D-Bus | hostnamectl、timedatectl、localectl、loginctl、resolvectl、nmcli |
 
 这些内容在页面里都标注了 `⚠️ 未实机验证`。

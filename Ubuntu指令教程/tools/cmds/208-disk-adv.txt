@@ -1,0 +1,32 @@
+cd /root; rm -f *.img; truncate -s 1G d.img
+losetup -f 2>&1; losetup -a 2>&1 | head -2
+pvcreate /root/d.img 2>&1 | head -2
+lvm version | head -3
+truncate -s 300M e.img; mkfs.ext4 -q -F e.img; dumpe2fs -h e.img 2>/dev/null | grep -E "^(Block count|Block size)"
+truncate -s 600M e.img; resize2fs e.img
+dumpe2fs -h e.img 2>/dev/null | grep -E "^Block count"
+resize2fs e.img 200M
+e2fsck -f -y e.img >/dev/null; resize2fs e.img 400M
+resize2fs -P e.img
+xfs_growfs -V; truncate -s 400M x.img; mkfs.xfs -q x.img; xfs_info x.img 2>&1 | head -2
+xfs_growfs x.img 2>&1 | head -2
+mdadm --version 2>&1
+truncate -s 64M r1.img r2.img; mdadm --create /dev/md0 --level=1 --raid-devices=2 r1.img r2.img 2>&1 | head -2
+cat /proc/mdstat
+truncate -s 64M c.img; echo -n 'Luks@2026' | cryptsetup luksFormat --batch-mode --key-file=- c.img; echo rc=$?
+cryptsetup luksDump c.img | head -12
+cryptsetup isLuks c.img && echo 是LUKS
+echo -n 'Luks@2026' | cryptsetup open --key-file=- c.img secret 2>&1 | head -2
+truncate -s 1G b.img; mkfs.btrfs -L data b.img | head -12
+btrfs filesystem show b.img
+btrfs --version
+truncate -s 1G g.img; sgdisk -n 1:0:+100M -t 1:ef00 -c 1:EFI -n 2:0:0 -t 2:8300 -c 2:root g.img; sgdisk -p g.img
+sgdisk --backup=/root/g.gpt g.img; ls -l /root/g.gpt
+sgdisk -Z g.img; sgdisk -p g.img 2>&1 | tail -3
+wipefs e.img b.img
+wipefs -n -a b.img 2>&1
+wipefs -a b.img; blkid b.img; echo "blkid退出码=$?"
+smartctl --version | head -1; smartctl -a /dev/nvme0n1 2>&1 | head -5
+hdparm -V; hdparm -I /dev/nvme0n1 2>&1 | head -3
+nvme version; nvme list 2>&1 | head -3
+zpool 2>&1 | head -1; zfs 2>&1 | head -1

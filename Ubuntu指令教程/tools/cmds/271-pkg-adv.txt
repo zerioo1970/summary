@@ -1,0 +1,23 @@
+cd /root; ls -l /etc/localtime; DEBIAN_FRONTEND=noninteractive dpkg-reconfigure tzdata 2>&1 | tail -3
+echo "tzdata tzdata/Areas select Asia" | debconf-set-selections; echo "tzdata tzdata/Zones/Asia select Shanghai" | debconf-set-selections; rm -f /etc/localtime /etc/timezone; DEBIAN_FRONTEND=noninteractive dpkg-reconfigure tzdata 2>&1 | tail -3; ls -l /etc/localtime
+debconf-get-selections 2>/dev/null | grep "^tzdata" | head -3
+debconf-show tzdata
+ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime; echo Etc/UTC > /etc/timezone
+dpkg-query -W -f='${Package} ${Version}\n' tree htop curl
+dpkg-query -W -f='${Installed-Size}\t${Package}\n' | sort -nr | head -5
+dpkg-query -l 'linux-*' 2>&1 | tail -2
+dpkg-query -s openssh-server | grep -E "^(Status|Version)"
+dpkg-query -W nothere-pkg; echo "退出码=$?"
+apt-get download -q tree 2>&1 | tail -1; dpkg-deb -I tree_*.deb | head -14
+dpkg-deb -c tree_*.deb | head -4
+mkdir -p hello/DEBIAN hello/usr/local/bin; printf '#!/bin/sh\necho "你好，价格系统"\n' > hello/usr/local/bin/hello-price; chmod 755 hello/usr/local/bin/hello-price; printf 'Package: hello-price\nVersion: 1.0.0\nArchitecture: all\nMaintainer: Tom <tom@example.com>\nDescription: 演示用的 deb 包\n' > hello/DEBIAN/control; dpkg-deb --build --root-owner-group hello hello-price_1.0.0_all.deb
+dpkg -i hello-price_1.0.0_all.deb | tail -1; hello-price
+dpkg-deb -x hello-price_1.0.0_all.deb /tmp/x; find /tmp/x -type f
+dpkg -r hello-price | tail -1
+pro version 2>&1; pro status 2>&1 | head -12
+ubuntu-drivers --help 2>&1 | head -12
+ubuntu-drivers list 2>&1 | tail -2
+ubuntu-drivers devices 2>&1 | tail -2
+needrestart -b 2>&1 | head -8
+needrestart -r l -k 2>&1 | head -5
+snapcraft --version 2>&1 | head -1
