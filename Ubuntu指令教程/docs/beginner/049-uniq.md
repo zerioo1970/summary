@@ -89,3 +89,7 @@ $ cut -d, -f2 src/products.csv | tail -n +2 | sort | uniq -u
 ## 6. 一句话总结
 
 `sort | uniq -c | sort -nr` 是命令行里的“分组计数并排序”。
+
+---
+
+[← 上一个：sort](048-sort.md) · [返回目录](../../README.md) · [下一个：rmdir →](050-rmdir.md)

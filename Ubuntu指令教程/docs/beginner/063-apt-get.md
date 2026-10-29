@@ -102,3 +102,7 @@ partial
 ## 6. 一句话总结
 
 脚本里用 `apt-get install -y`，配上 `DEBIAN_FRONTEND=noninteractive`。
+
+---
+
+[← 上一个：help](062-help.md) · [返回目录](../../README.md) · [下一个：dpkg →](064-dpkg.md)

@@ -141,3 +141,7 @@ Failed to connect to system scope bus via local transport: Host is down
 ## 6. 一句话总结
 
 `status` 看状态，`restart` 重启，`enable --now` 开机自启；改单元文件后先 `daemon-reload`。
+
+---
+
+[← 上一个：snap](065-snap.md) · [返回目录](../../README.md) · [下一个：lsblk →](067-lsblk.md)

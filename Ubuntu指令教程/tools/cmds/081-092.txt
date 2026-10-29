@@ -1,0 +1,31 @@
+cp logs/app.log app.log; gzip app.log; ls -l app.log*
+gzip -l app.log.gz
+zcat app.log.gz | head -2
+gunzip app.log.gz; ls -l app.log*
+gzip -k app.log; ls -C app.log*
+gzip app.log
+rm app.log; gzip -d app.log.gz; ls -C app.log*
+gzip -9 -v app.log
+gunzip -c app.log.gz > copy.log; ls -C app.log* copy.log
+gunzip nothere.gz
+gzip logs
+gzip -r logs; ls logs
+gunzip -r logs; ls logs
+time sleep 1
+time (find / -name "*.conf" 2>/dev/null | wc -l)
+sleep 0.5; echo done
+sleep 1s; sleep 0.1m 2>&1; echo ok
+timeout 3 watch -n 1 date 2>&1 | head -3
+basename /home/tom/demo/logs/app.log
+basename /home/tom/demo/logs/app.log .log
+basename -s .csv src/products.csv
+dirname /home/tom/demo/logs/app.log
+dirname app.log
+f=/var/log/nginx/access.log; echo "目录=$(dirname $f) 文件=$(basename $f)"
+f=/var/log/nginx/access.log; echo "${f##*/} ${f%/*}"
+for f in logs/*.log; do cp "$f" "/tmp/$(basename "$f" .log)-$(date +%Y%m%d).log"; done; ls /tmp
+stat readme.txt
+stat -c "%n %s %U %a %y" readme.txt
+stat -c %s big.iso
+stat logs
+stat nothere

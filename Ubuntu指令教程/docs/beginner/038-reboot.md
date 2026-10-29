@@ -53,3 +53,7 @@ uptime        # 确认刚刚重启过：up 后面的时间只有几分钟
 ## 6. 一句话总结
 
 `sudo reboot` 立即重启；先确认主机名，有 `/var/run/reboot-required` 才需要重启。
+
+---
+
+[← 上一个：unzip](037-unzip.md) · [返回目录](../../README.md) · [下一个：shutdown →](039-shutdown.md)

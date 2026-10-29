@@ -50,3 +50,7 @@ fi
 ## 5. 一句话总结
 
 `whoami` 看当前身份，脚本里判断 root 用 `id -u` 等于 0。
+
+---
+
+[← 上一个：shutdown](039-shutdown.md) · [返回目录](../../README.md) · [下一个：uname →](041-uname.md)

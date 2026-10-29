@@ -84,3 +84,7 @@ $ file /usr/bin/grep
 ## 6. 一句话总结
 
 不确定文件是什么就 `file` 一下，查编码加 `-i`。
+
+---
+
+[← 上一个：whereis](045-whereis.md) · [返回目录](../../README.md) · [下一个：wc →](047-wc.md)

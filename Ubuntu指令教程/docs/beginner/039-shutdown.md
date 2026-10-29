@@ -59,3 +59,7 @@ sudo shutdown -c                                  # 取消
 ## 6. 一句话总结
 
 关机 `shutdown -h now`，定时重启 `shutdown -r +分钟`，反悔用 `-c`。
+
+---
+
+[← 上一个：reboot](038-reboot.md) · [返回目录](../../README.md) · [下一个：whoami →](040-whoami.md)

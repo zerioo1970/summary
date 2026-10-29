@@ -54,3 +54,7 @@ hostname: Name or service not known
 ## 6. 一句话总结
 
 `hostname` 看主机名，`hostname -I` 看本机 IP，永久修改用 `hostnamectl`。
+
+---
+
+[← 上一个：su](054-su.md) · [返回目录](../../README.md) · [下一个：uptime →](056-uptime.md)

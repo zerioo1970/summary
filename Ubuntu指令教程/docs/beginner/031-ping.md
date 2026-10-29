@@ -112,3 +112,7 @@ PING archive.ubuntu.com (91.189.91.82) 56(84) bytes of data.
 ## 7. 一句话总结
 
 `ping -c 4 主机` 测连通；ping 不通不等于服务不可用，测端口用 `nc`。
+
+---
+
+[← 上一个：kill](030-kill.md) · [返回目录](../../README.md) · [下一个：ip →](032-ip.md)

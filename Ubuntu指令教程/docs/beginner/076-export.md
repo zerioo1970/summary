@@ -80,3 +80,7 @@ source ~/.bashrc
 ## 6. 一句话总结
 
 子程序要用的变量要 `export`；改 PATH 一定带上 `:$PATH`；永久生效写进 `~/.bashrc`。
+
+---
+
+[← 上一个：env](075-env.md) · [返回目录](../../README.md) · [下一个：source →](077-source.md)

@@ -88,3 +88,7 @@ sudo passwd -l zhang
 ## 6. 一句话总结
 
 `passwd` 改自己的，`sudo passwd 用户` 重设别人的，`-S` 查状态，`-l` 锁定。
+
+---
+
+[← 上一个：more](052-more.md) · [返回目录](../../README.md) · [下一个：su →](054-su.md)

@@ -159,3 +159,7 @@ curl: (22) The requested URL returned error: 404
 ## 6. 一句话总结
 
 测接口用 `curl -s`，看状态用 `-I` 或 `-w`，脚本里加 `-fsS`，下载加 `-LO`。
+
+---
+
+[← 上一个：wget](033-wget.md) · [返回目录](../../README.md) · [下一个：tar →](035-tar.md)

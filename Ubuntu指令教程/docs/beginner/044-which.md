@@ -68,3 +68,7 @@ cd is a shell builtin
 ## 6. 一句话总结
 
 `which 命令` 查程序路径，多版本冲突时加 `-a`，内建命令和别名用 `type` 查。
+
+---
+
+[← 上一个：cal](043-cal.md) · [返回目录](../../README.md) · [下一个：whereis →](045-whereis.md)

@@ -162,3 +162,7 @@ $ grep error logs/app.log; echo "退出码=$?"
 ## 6. 一句话总结
 
 `grep -rni 关键词 目录` 能解决大部分查找；看上下文加 `-C`，排除用 `-v`。
+
+---
+
+[← 上一个：tail](020-tail.md) · [返回目录](../../README.md) · [下一个：find →](022-find.md)

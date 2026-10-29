@@ -67,3 +67,7 @@ sudo snap remove code              # 卸载
 ## 6. 一句话总结
 
 apt 找不到或官方推荐 snap 时用 `sudo snap install`，开发工具加 `--classic`。
+
+---
+
+[← 上一个：dpkg](064-dpkg.md) · [返回目录](../../README.md) · [下一个：systemctl →](066-systemctl.md)

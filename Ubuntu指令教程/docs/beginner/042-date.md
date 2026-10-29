@@ -117,3 +117,7 @@ backup-20261029.tar.gz
 ## 6. 一句话总结
 
 `date +%F` 取日期，`-d yesterday` 算日期，文件名用 `+%Y%m%d` 格式。
+
+---
+
+[← 上一个：uname](041-uname.md) · [返回目录](../../README.md) · [下一个：cal →](043-cal.md)

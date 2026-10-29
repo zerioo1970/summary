@@ -109,3 +109,7 @@ echo "192.168.1.10 db01" | sudo tee -a /etc/hosts
 ## 6. 一句话总结
 
 管理操作前加 `sudo`，连续操作用 `sudo -i`，写系统文件用 `sudo tee`。
+
+---
+
+[← 上一个：pwd](003-pwd.md) · [返回目录](../../README.md) · [下一个：cat →](005-cat.md)

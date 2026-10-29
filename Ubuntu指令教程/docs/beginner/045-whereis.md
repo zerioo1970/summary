@@ -48,3 +48,7 @@ bash 的结果里有两项：程序 `/usr/bin/bash` 和手册 `bash.1.gz`。ngin
 ## 6. 一句话总结
 
 `whereis 名称` 查程序和手册装在哪，后面为空就是没装。
+
+---
+
+[← 上一个：which](044-which.md) · [返回目录](../../README.md) · [下一个：file →](046-file.md)

@@ -68,3 +68,7 @@ $ nproc
 ## 7. 一句话总结
 
 `uptime` 看开机多久和负载，负载要和 `nproc` 的核数比较。
+
+---
+
+[← 上一个：hostname](055-hostname.md) · [返回目录](../../README.md) · [下一个：lsb_release →](057-lsb_release.md)

@@ -1,0 +1,52 @@
+# 实测工具
+
+本目录的脚本用来在 Ubuntu 26.04.1 的官方根文件系统里执行示例命令，得到文中的输出。它们是给维护教程的人（或 AI）用的，读者练习时只需要 `setup-demo.sh`。
+
+| 文件 | 作用 |
+|---|---|
+| `setup-demo.sh` | 建用户 tom 和演示目录 `~/demo`。在自己的测试机上用 `sudo bash setup-demo.sh` 也能建一份同样的环境 |
+| `u.sh` | 用 bwrap 进入 Ubuntu 根文件系统，逐行执行一个命令清单，输出 `$ 命令` 和结果 |
+| `norm.py` | 把 `ls -l` 风格的输出规整成普通 ext4 机器上的样子（去掉 SELinux 带来的 `+`，目录大小改为 4096，重新对齐列） |
+| `cmds/` | 各页面用到的命令清单 |
+| `gen_readme.py` | 生成 README 的目录表格，并给每个指令页加上“上一个 / 下一个”导航 |
+
+## 在一个新的 Linux 沙箱里重建
+
+```bash
+# 在任意可写目录执行，这里以 /projects/sandbox/.tools 为例
+mkdir -p /projects/sandbox/.tools/u2604 && cd /projects/sandbox/.tools
+curl -sSLo ub.tar.gz https://cdimage.ubuntu.com/ubuntu-base/releases/26.04.1/release/ubuntu-base-26.04.1-base-amd64.tar.gz
+tar -xzf ub.tar.gz -C u2604
+```
+
+然后以 root 身份，在根文件系统里装好需要的软件包（命令清单写在一个文件里，用 `ROOT=1` 执行）：
+
+```bash
+cd Ubuntu指令教程/tools
+printf '%s\n' 'echo "APT::Sandbox::User \"root\";" > /etc/apt/apt.conf.d/99sandbox' \
+  'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq sudo sudo-rs nano vim less man-db wget curl ca-certificates zip unzip xz-utils bzip2 tree htop fastfetch iputils-ping iproute2 procps psmisc plocate lsb-release pciutils usbutils file ncal xdg-utils openssh-client openssh-server diffutils hostname manpages systemd cron wtmpdb' > /tmp/install.txt
+ROOT=1 bash u.sh /tmp/install.txt
+```
+
+基础镜像是“最小化”的，没有手册页。要让 `man` 可用，还需要删除 `/etc/dpkg/dpkg.cfg.d/excludes`、移除 `/usr/bin/man` 的转向（`rm -f /usr/bin/man; dpkg-divert --local --rename --remove /usr/bin/man`），再用 `apt-get install --reinstall` 重装相关软件包并执行 `mandb`。
+
+执行一个页面的命令清单：
+
+```bash
+bash u.sh cmds/001-ls.txt           # 以 tom 身份在 ~/demo 下执行
+ROOT=1 bash u.sh cmds/063-064.txt   # 以 root 身份执行
+```
+
+根文件系统不在默认位置时，用环境变量 `UROOT` 指定。
+
+## 测试环境的限制
+
+| 限制 | 影响的指令 |
+|---|---|
+| 进程带有 no_new_privs 标志，setuid/setgid 程序无法提权 | sudo、普通用户的 locate、su 到 root |
+| 没有以 systemd 作为 1 号进程启动 | systemctl start/stop/status、reboot、shutdown、snap |
+| 不能挂载设备 | mount、umount |
+| 没有真实终端 | nano、vim、less、htop 的界面，交互式输入密码 |
+| `/home`、`/tmp` 是 tmpfs，updatedb 默认不收录 | locate 的演示改用 `/opt` |
+
+这些内容在页面里都标注了 `⚠️ 未实机验证`。

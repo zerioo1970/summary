@@ -65,3 +65,7 @@ $ bash -c "exit"; echo $?
 ## 5. 一句话总结
 
 `exit` 退出当前一层 Shell；脚本里用 `exit 1` 告诉调用方失败了。
+
+---
+
+[← 上一个：history](016-history.md) · [返回目录](../../README.md) · [下一个：less →](018-less.md)

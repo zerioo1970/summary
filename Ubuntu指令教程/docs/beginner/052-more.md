@@ -54,3 +54,7 @@ ps aux | more
 ## 6. 一句话总结
 
 more 只适合往下翻着看，日常用 less。
+
+---
+
+[← 上一个：ln](051-ln.md) · [返回目录](../../README.md) · [下一个：passwd →](053-passwd.md)

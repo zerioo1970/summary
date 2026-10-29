@@ -99,3 +99,7 @@ $ sudo gnuchown tom: run.sh; ls -l run.sh
 ## 6. 一句话总结
 
 `sudo chown -R 用户:组 目录` 把目录交给运行账号；在 26.04 上组名要写全。
+
+---
+
+[← 上一个：chmod](023-chmod.md) · [返回目录](../../README.md) · [下一个：df →](025-df.md)

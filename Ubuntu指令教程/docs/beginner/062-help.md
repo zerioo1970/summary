@@ -77,3 +77,7 @@ ls 是独立程序，用 `man ls` 或 `ls --help`。
 ## 6. 一句话总结
 
 内建命令查 `help`，程序查 `man`，分不清先 `type`。
+
+---
+
+[← 上一个：type](061-type.md) · [返回目录](../../README.md) · [下一个：apt-get →](063-apt-get.md)

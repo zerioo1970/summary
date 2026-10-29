@@ -59,3 +59,7 @@ sudo journalctl -u ssh --since today | grep "Failed password"
 ## 6. 一句话总结
 
 `last -n 10` 查最近谁登录过，加 `-x` 看开关机记录。
+
+---
+
+[← 上一个：w](073-w.md) · [返回目录](../../README.md) · [下一个：env →](075-env.md)

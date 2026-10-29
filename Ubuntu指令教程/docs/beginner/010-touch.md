@@ -96,3 +96,7 @@ $ ls -l big.iso new.txt
 ## 6. 一句话总结
 
 `touch` 建空文件或刷新时间，指定时间用 `-d`，不想新建加 `-c`。
+
+---
+
+[← 上一个：mkdir](009-mkdir.md) · [返回目录](../../README.md) · [下一个：nano →](011-nano.md)

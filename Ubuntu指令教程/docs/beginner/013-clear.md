@@ -36,3 +36,7 @@ clear
 ## 5. 一句话总结
 
 清屏用 `Ctrl+L`，终端乱码用 `reset`。
+
+---
+
+[← 上一个：apt](012-apt.md) · [返回目录](../../README.md) · [下一个：echo →](014-echo.md)

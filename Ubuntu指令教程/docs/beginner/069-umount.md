@@ -45,3 +45,7 @@ sudo umount /dev/sdc1
 ## 6. 一句话总结
 
 拔盘之前先 `sudo umount 挂载点`，提示 busy 就先离开目录、找出占用的进程。
+
+---
+
+[← 上一个：mount](068-mount.md) · [返回目录](../../README.md) · [下一个：id →](070-id.md)

@@ -139,3 +139,7 @@ find: possible unquoted pattern after predicate `-name'?
 ## 6. 一句话总结
 
 `find 目录 -name "模式" -type f` 按名字找；删除前先 `-print` 预览，`-delete` 放最后。
+
+---
+
+[← 上一个：grep](021-grep.md) · [返回目录](../../README.md) · [下一个：chmod →](023-chmod.md)

@@ -66,3 +66,7 @@ Linux 6.1.188-233.393.amzn2023.x86_64 x86_64
 ## 6. 一句话总结
 
 `uname -r` 看内核版本，`uname -m` 看 CPU 架构，发行版版本要用 `lsb_release`。
+
+---
+
+[← 上一个：whoami](040-whoami.md) · [返回目录](../../README.md) · [下一个：date →](042-date.md)

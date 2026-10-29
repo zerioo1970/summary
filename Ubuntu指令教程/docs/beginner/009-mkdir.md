@@ -80,3 +80,7 @@ Ubuntu 26.04 的 mkdir 由 Rust 版 coreutils 提供，报错信息比较简短�
 ## 6. 一句话总结
 
 建目录一律用 `mkdir -p`，批量建配合 `{}`，私密目录加 `-m 700`。
+
+---
+
+[← 上一个：rm](008-rm.md) · [返回目录](../../README.md) · [下一个：touch →](010-touch.md)

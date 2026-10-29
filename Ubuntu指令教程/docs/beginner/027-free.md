@@ -80,3 +80,7 @@ Swap:          2.0Gi          0B       2.0Gi
 ## 6. 一句话总结
 
 `free -h` 看内存，判断够不够看 available 列。
+
+---
+
+[← 上一个：du](026-du.md) · [返回目录](../../README.md) · [下一个：top →](028-top.md)

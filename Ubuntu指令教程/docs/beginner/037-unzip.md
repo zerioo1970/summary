@@ -108,3 +108,7 @@ No errors detected in compressed data of pkg.zip.
 ## 6. 一句话总结
 
 先 `unzip -l` 看结构，再 `unzip 包 -d 目录`；中文乱码加 `-O GBK`。
+
+---
+
+[← 上一个：zip](036-zip.md) · [返回目录](../../README.md) · [下一个：reboot →](038-reboot.md)

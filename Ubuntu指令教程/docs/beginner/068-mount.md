@@ -74,3 +74,7 @@ UUID 从 `lsblk -f` 或 `blkid` 获得。加完后先执行 `sudo mount -a` 测�
 ## 6. 一句话总结
 
 `sudo mount 设备 目录` 临时挂载，永久挂载写 /etc/fstab，写完先 `mount -a` 测试。
+
+---
+
+[← 上一个：lsblk](067-lsblk.md) · [返回目录](../../README.md) · [下一个：umount →](069-umount.md)

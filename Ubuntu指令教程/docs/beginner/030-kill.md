@@ -93,3 +93,7 @@ $ kill -9 203; sleep 0.3; ps -p 203 -o pid,cmd
 ## 6. 一句话总结
 
 先 `kill PID` 礼貌请求，没反应再 `kill -9`；服务要用 `systemctl stop`。
+
+---
+
+[← 上一个：ps](029-ps.md) · [返回目录](../../README.md) · [下一个：ping →](031-ping.md)

@@ -80,3 +80,7 @@ sudo nano -B /etc/hosts
 ## 7. 一句话总结
 
 `nano 文件` 打开，`Ctrl+O` 保存，`Ctrl+X` 退出，系统文件记得加 sudo。
+
+---
+
+[← 上一个：touch](010-touch.md) · [返回目录](../../README.md) · [下一个：apt →](012-apt.md)

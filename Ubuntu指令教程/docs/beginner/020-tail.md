@@ -97,3 +97,7 @@ old
 ## 6. 一句话总结
 
 `tail -n N` 看最后 N 行，盯实时日志用 `tail -F`。
+
+---
+
+[← 上一个：head](019-head.md) · [返回目录](../../README.md) · [下一个：grep →](021-grep.md)

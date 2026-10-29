@@ -1,0 +1,10 @@
+updatedb
+locate sshd_config
+locate -c "*.conf"
+locate -b '\hosts' | head -3
+locate -i "SSHD_CONFIG" | head -2
+touch /opt/new-report.xlsx; locate new-report.xlsx; echo "退出码=$?"
+updatedb; locate new-report.xlsx
+rm /opt/new-report.xlsx; locate new-report.xlsx
+locate -e new-report.xlsx; echo "退出码=$?"
+grep -E "^PRUNEPATHS" /etc/updatedb.conf

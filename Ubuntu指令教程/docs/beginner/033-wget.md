@@ -92,3 +92,7 @@ SHA256SUMS.1  link.txt  readme.txt  src
 ## 6. 一句话总结
 
 `wget 网址` 下载，`-O` 改名，`-P` 指定目录，大文件加 `-c` 续传。
+
+---
+
+[← 上一个：ip](032-ip.md) · [返回目录](../../README.md) · [下一个：curl →](034-curl.md)

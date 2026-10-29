@@ -73,3 +73,7 @@ builtin
 ## 6. 一句话总结
 
 `type 命令` 看它是别名、内建还是文件，比 which 更准确。
+
+---
+
+[← 上一个：alias](060-alias.md) · [返回目录](../../README.md) · [下一个：help →](062-help.md)

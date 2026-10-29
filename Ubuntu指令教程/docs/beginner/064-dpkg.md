@@ -125,3 +125,7 @@ dpkg-query: no packages found matching tree
 ## 6. 一句话总结
 
 装 .deb 用 `sudo apt install ./文件.deb`；查询用 `dpkg -l`、`-L`、`-S`。
+
+---
+
+[← 上一个：apt-get](063-apt-get.md) · [返回目录](../../README.md) · [下一个：snap →](065-snap.md)

@@ -99,3 +99,7 @@ lsblk -f
 ## 6. 一句话总结
 
 `lsblk` 看有哪些盘和分区，`lsblk -f` 看文件系统和 UUID。
+
+---
+
+[← 上一个：systemctl](066-systemctl.md) · [返回目录](../../README.md) · [下一个：mount →](068-mount.md)

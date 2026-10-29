@@ -76,3 +76,7 @@ ID_LIKE=debian
 ## 7. 一句话总结
 
 `lsb_release -a` 看 Ubuntu 版本，脚本里用 `-cs` 取代号。
+
+---
+
+[← 上一个：uptime](056-uptime.md) · [返回目录](../../README.md) · [下一个：vim →](058-vim.md)

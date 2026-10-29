@@ -77,3 +77,7 @@ du -ah | sort -rh | head  # 占空间最大的 10 项
 ## 6. 一句话总结
 
 `head -n N` 看前 N 行，`-n -N` 去掉最后 N 行，常接在管道后面取前几条。
+
+---
+
+[← 上一个：less](018-less.md) · [返回目录](../../README.md) · [下一个：tail →](020-tail.md)

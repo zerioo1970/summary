@@ -75,3 +75,7 @@ activate 脚本要修改当前 Shell 的 PATH 和提示符，所以必须用 sou
 ## 5. 一句话总结
 
 要让脚本里的变量、cd 留在当前终端，就用 `source 文件`（或 `. 文件`）。
+
+---
+
+[← 上一个：export](076-export.md) · [返回目录](../../README.md) · [下一个：diff →](078-diff.md)
