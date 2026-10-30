@@ -9,7 +9,13 @@ EF Core 查数据库，写的不是 SQL，而是 LINQ。不弄清 LINQ 是什么
 ## 开始之前
 
 - 上一章你已经会了：`Product` 类、`List<Product>`、`foreach` + `if` + `Add` 的筛选写法（第 0 章）；另外你熟悉 SQL 的 `SELECT ... FROM ... WHERE`。
-- 需要的环境：第 0 章建好的解决方案 `EfCoreStudy`。本章不连数据库，第 5 章才连 SQL Server。
+- 需要的环境：
+
+| 项 | 要求 | 怎么确认 |
+|---|---|---|
+| Visual Studio 2026 | 已勾选工作负荷「ASP.NET 和 Web 开发」（自带 .NET 10 SDK，第 15 章也要用） | 开始菜单打开「Visual Studio Installer」→ VS 2026 那一栏点「修改」→「工作负荷」页查看 |
+| 解决方案 | 第 0 章建好的 `EfCoreStudy`，里面有项目 `Ch00Basics` | 「解决方案资源管理器」里能看到 `Ch00Basics`，展开后有 `Product.cs` 和 `SampleData.cs` |
+| 数据库 | **本章不需要** | 第 5 章才连 SQL Server |
 
 > 预计耗时：75 分钟。
 
@@ -355,7 +361,15 @@ Where 写法：2 个
 
 ## 🧱 类比：SQL 和 LINQ 逐段对照
 
-同一个需求"探头类、有库存"，SQL 写 `SELECT * FROM Products WHERE Category = N'探头' AND Stock > 0`，LINQ 写 `products.Where(p => p.Category == "探头" && p.Stock > 0).ToList()`：
+同一个需求"探头类、有库存"，三种写法：
+
+| 写法 | 代码 |
+|---|---|
+| SQL | `SELECT * FROM Products WHERE Category = N'探头' AND Stock > 0` |
+| foreach（第 0 章） | `foreach` + `if` + `list.Add(p)`，6–8 行 |
+| LINQ | `products.Where(p => p.Category == "探头" && p.Stock > 0).ToList()` |
+
+逐段对照：
 
 | SQL | LINQ | 区别 |
 |---|---|---|
