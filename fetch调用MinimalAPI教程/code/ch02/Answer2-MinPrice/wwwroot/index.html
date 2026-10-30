@@ -1,0 +1,29 @@
+<!-- code/ch02/Answer2-MinPrice/wwwroot/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>产品列表</title>
+</head>
+<body>
+  <h1>产品列表</h1>
+  <p>
+    名称包含：<input id="keyword">
+    最低价格：<input id="minPrice" type="number">
+    <button id="btnSearch">查询</button>
+  </p>
+  <p>
+    按 Id 查：<input id="productId" type="number">
+    <button id="btnGetOne">查一条</button>
+  </p>
+  <!-- 加载中、没有数据、查不到，都显示在这一行 -->
+  <p id="msg"></p>
+  <table border="1">
+    <thead>
+      <tr><th>Id</th><th>编码</th><th>名称</th><th>价格</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <script src="app.js"></script>
+</body>
+</html>

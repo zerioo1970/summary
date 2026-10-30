@@ -1,0 +1,44 @@
+<!-- code/ch04/FetchDemo/wwwroot/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>产品列表</title>
+  <style>
+    .err { color: red; }
+  </style>
+</head>
+<body>
+  <h1>产品列表</h1>
+
+  <h2>新增产品</h2>
+  <form id="addForm">
+    <p>编码：<input id="code"> <span class="err" id="err-code"></span></p>
+    <p>名称：<input id="name"> <span class="err" id="err-name"></span></p>
+    <p>价格：<input id="price" type="number" step="0.01"> <span class="err" id="err-price"></span></p>
+    <button type="submit">保存</button>
+  </form>
+
+  <h2>删除产品</h2>
+  <p>
+    Id：<input id="deleteId" type="number">
+    <button id="btnDelete">删除</button>
+  </p>
+
+  <h2>列表</h2>
+  <p>
+    名称包含：<input id="keyword">
+    <button id="btnSearch">查询</button>
+  </p>
+  <p id="msg"></p>
+  <table border="1">
+    <thead>
+      <tr><th>Id</th><th>编码</th><th>名称</th><th>价格</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <!-- 顺序不能反：app.js 一加载就会调用 api.js 里的 api() -->
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
