@@ -1,0 +1,34 @@
+/* src/index.css */
+/* 全局样式：整个页面通用的基础样式。只属于某一个组件的样式，放到它自己的 .module.css 里 */
+body {
+  margin: 24px;
+  font-family: system-ui, 'Microsoft YaHei', sans-serif;
+}
+
+.subtitle {
+  color: #666;
+}
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 16px;
+  margin-bottom: 12px;
+  max-width: 360px;
+}
+
+.panel {
+  border-left: 4px solid #3b82f6;
+  padding-left: 12px;
+  margin-bottom: 16px;
+}
+
+.empty {
+  color: #999;
+}
+
+.product-form label { display: block; margin: 6px 0; }
+.error { display: block; color: #dc2626; font-size: 14px; }
+.success { color: #16a34a; }
+.filter-bar { display: block; margin-bottom: 8px; }
+.nav { margin-bottom: 12px; }
