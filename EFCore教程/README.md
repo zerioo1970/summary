@@ -31,11 +31,11 @@ VS 操作都给出了精确的菜单路径。需要截图的位置都留了 `�
 
 | 章节 | 状态 |
 | --- | --- |
-| **[第 1 章 LINQ 是什么：原理与第一个查询](docs/ch01-first-linq.md)** | ✅ |
-| 第 2 章 挑列、排序、取一条 | 📝 |
-| 第 3 章 汇总、分组与分页 | 📝 |
-| 第 4 章 延迟执行与查询语法 | 📝 |
-| 第 5 章 第一个 EF Core 程序：由代码生成表 | 📝 |
+| [第 1 章 LINQ 是什么：原理与第一个查询](docs/ch01-first-linq.md) | ✅ |
+| [第 2 章 挑列、排序、取一条](docs/ch02-select-orderby-first.md) | ✅ |
+| [第 3 章 汇总、分组与分页](docs/ch03-aggregate-groupby-paging.md) | ✅ |
+| [第 4 章 延迟执行与查询语法](docs/ch04-deferred-query-syntax.md) | ✅ |
+| **第 5 章 第一个 EF Core 程序：由代码生成表（下一章）** | 📝 |
 | 第 6 章 映射：约定与配置 | 📝 |
 | 第 7 章 迁移进阶：改表、回滚、发布 | 📝 |
 | 第 8 章 LINQ 是怎么变成 SQL 的 | 📝 |
@@ -58,11 +58,11 @@ VS 操作都给出了精确的菜单路径。需要截图的位置都留了 `�
 **[第 1 章 LINQ 是什么：原理与第一个查询](docs/ch01-first-linq.md)**
 先看清原理：查询方法就是 .NET 替你写好的 `foreach`，规则由你交给它（自己写一个 `Where` 来证明）。新概念：LINQ 的组成与扩展方法、lambda 表达式、`Where`。
 
-**第 2 章 挑列、排序、取一条** —— `Select` 与匿名类型；`OrderBy`/`ThenBy`；`First`/`FirstOrDefault`/`Single` 的区别。
+**[第 2 章 挑列、排序、取一条](docs/ch02-select-orderby-first.md)** —— `Select` 与匿名类型；`OrderBy`/`ThenBy`；`First`/`FirstOrDefault`/`Single` 的区别。
 
-**第 3 章 汇总、分组与分页** —— `Count`/`Any`/`Sum`/`Max`/`Average`；`GroupBy`；`Skip`/`Take`。
+**[第 3 章 汇总、分组与分页](docs/ch03-aggregate-groupby-paging.md)** —— `Count`/`Any`/`Sum`/`Max`/`Average`；`GroupBy`；`Skip`/`Take`。
 
-**第 4 章 延迟执行与查询语法** —— 为什么末尾要 `ToList()`、查询到底什么时候执行；`IEnumerable<T>`；像 SQL 一样的 `from ... where ... select` 写法。
+**[第 4 章 延迟执行与查询语法](docs/ch04-deferred-query-syntax.md)** —— 为什么末尾要 `ToList()`、查询到底什么时候执行；`IEnumerable<T>`；像 SQL 一样的 `from ... where ... select` 写法。
 
 ### 第二部分 EF Core 起步（先写类，再生成表）
 
