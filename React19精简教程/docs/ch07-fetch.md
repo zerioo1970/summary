@@ -71,7 +71,7 @@ graph TB
 
 **业务场景**：标题只和「产品数量」有关，所以依赖是 `[products.length]`：入库不会触发，删除才会。加载数据只需要在页面打开时做一次，依赖写 `[]`。
 
-**反例（什么时候不该用）**：不要为了「少执行几次」故意不写 effect 里用到的值。比如 effect 用了 `products.length`，依赖却写 `[]`，删除产品后标题就不会更新了。执行 `npm run lint` 能查出来，会给出警告 `react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency: 'count'`。
+**反例（什么时候不该用）**：不要为了「少执行几次」故意不写 effect 里用到的值。比如 effect 用了 `products.length`，依赖却写 `[]`，删除产品后标题就不会更新了。执行 `npm run lint` 能查出来，会给出警告 `react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency: 'products.length'`。
 
 | 写法 | 什么时候执行 |
 | --- | --- |
