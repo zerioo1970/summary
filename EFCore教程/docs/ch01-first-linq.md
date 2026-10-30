@@ -25,6 +25,37 @@ EF Core 查数据库，写的不是 SQL，而是 LINQ。不弄清 LINQ 是什么
 > 截好后保存为 `images/ch01-01-add-existing.png`，再删掉下一行的 `<!--` 和 `-->`。
 <!-- ![添加现有项](../images/ch01-01-add-existing.png) -->
 
+#### 复制过来的两个文件是什么
+
+这两个文件是[第 0 章](ch00-basics.md)写的，本章不改它们，只拿来用：
+
+| 文件 | 是什么 |
+|---|---|
+| `Product.cs` | 产品类，6 个属性：`Id`、`Code`（编码）、`Name`（名称）、`Category`（分类）、`Price`（单价）、`Stock`（库存） |
+| `SampleData.cs` | 一个**自己写的静态类**，不是 .NET 自带的，也不读数据库。它只有一个方法 `Products()`，返回一个装着 8 个产品的 `List<Product>`，产品数据直接写在代码里 |
+
+本章每段代码开头都是这两行：
+
+```text
+using EfCoreStudy;                       // Product 和 SampleData 都在 EfCoreStudy 命名空间里
+var products = SampleData.Products();    // 静态类不用 new，直接用类名调用，拿到 8 个产品
+```
+
+8 个产品如下，后面的输出都可以对照这张表核对：
+
+| Id | 编码 | 名称 | 分类 | 单价 | 库存 |
+|---|---|---|---|---|---|
+| 1 | US-100 | 便携超声主机 | 主机 | 180,000 | 3 |
+| 2 | US-200 | 彩超工作站 | 主机 | 420,000 | 2 |
+| 3 | PB-L01 | 线阵探头 | 探头 | 26,000 | 8 |
+| 4 | PB-C02 | 凸阵探头 | 探头 | 24,000 | 0 |
+| 5 | PB-E03 | 腔内探头 | 探头 | 31,000 | 5 |
+| 6 | GEL-250 | 耦合剂 | 耗材 | 35 | 120 |
+| 7 | CVR-01 | 探头保护套 | 耗材 | 12 | 300 |
+| 8 | PPR-110 | 热敏打印纸 | 耗材 | 80 | 6 |
+
+`Products()` 每次调用都**新建**一份 List，所以某段代码改了数据，不会影响其他代码。第 1–4 章用它代替数据库；到第 5 章，同样的 8 个产品会写进 SQL Server 的 `Products` 表，`SampleData.Products()` 换成 `db.Products`，LINQ 的写法基本不变。
+
 > 仓库里每一节是一个独立项目（[`code/ch01/`](../code/ch01/) 下的 `Step1-WhatIsLinq`、`Step2-Lambda`……），方便对照。你自己练习时**只用 `Ch01Linq` 一个项目就行**，每节把 `Program.cs` 整个替换掉。
 
 ### 1.2 概念一：LINQ 是什么
