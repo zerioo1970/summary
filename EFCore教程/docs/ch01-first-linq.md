@@ -8,69 +8,22 @@ EF Core 查数据库，写的不是 SQL，而是 LINQ。不弄清 LINQ 是什么
 
 ## 开始之前
 
-- 你已经会：C# 的类、`List<T>`、`foreach`；SQL 的 `SELECT ... FROM ... WHERE`。
-- 需要的环境：Visual Studio 2026，已勾选工作负荷「ASP.NET 和 Web 开发」（自带 .NET 10 SDK）。确认方法：开始菜单打开「Visual Studio Installer」→ VS 2026 那一栏点「修改」→「工作负荷」页查看。
-- 数据库：**本章不需要**，第 5 章才连 SQL Server。
+- 上一章你已经会了：`Product` 类、`List<Product>`、`foreach` + `if` + `Add` 的筛选写法（第 0 章）；另外你熟悉 SQL 的 `SELECT ... FROM ... WHERE`。
+- 需要的环境：第 0 章建好的解决方案 `EfCoreStudy`。本章不连数据库，第 5 章才连 SQL Server。
 
 > 预计耗时：75 分钟。
 
 ## 正文
 
-### 1.1 建项目、放好示例数据
+### 1.1 新建本章项目
 
-整本教程用**一个解决方案** `EfCoreStudy`，每章在里面新建一个项目。
+1. 在「解决方案资源管理器」里右键解决方案 `EfCoreStudy` →「**添加 → 新建项目**」，选「**控制台应用**」，项目名称填 `Ch01Linq`，框架选 **.NET 10.0**，点「创建」。
+2. 右键项目 `Ch01Linq` →「**添加 → 现有项**」，进入 `Ch00Basics` 文件夹，按住 Ctrl 选中 `Product.cs` 和 `SampleData.cs`，点「添加」。VS 会把这两个文件**复制**一份到 `Ch01Linq`。
+3. 右键项目 `Ch01Linq` →「**设为启动项目**」。之后按 Ctrl+F5 运行的就是它。
 
-1. 启动 VS 2026，在开始窗口点「**创建新项目**」。
-2. 在搜索框输入 `控制台`，选中「**控制台应用**」（语言标签是 C#）。⚠ 不要选「控制台应用 (.NET Framework)」，那是旧框架。点「下一步」。
-3. 「项目名称」填 `Ch01Linq`，「解决方案名称」改成 `EfCoreStudy`。点「下一步」。
-4. 「框架」选 **.NET 10.0（长期支持）**，「不使用顶级语句」**不要勾**。点「创建」。
-
-> 📷 **截图占位 ch01-01**：「配置新项目」页，项目名称 Ch01Linq，解决方案名称 EfCoreStudy。
-> 截好后保存为 `images/ch01-01-create-project.png`，再删掉下一行的 `<!--` 和 `-->`。
-<!-- ![创建项目](../images/ch01-01-create-project.png) -->
-
-5. 在「解决方案资源管理器」里右键项目 `Ch01Linq` →「**添加 → 类**」，新建 `Product.cs`，内容全部替换成：
-
-```csharp
-// code/ch01/Step1-WhatIsLinq/Product.cs
-namespace EfCoreStudy;
-
-// 产品。第 5 章起它会原样变成数据库里的 Products 表，所以现在就按"一行数据"来设计
-public class Product
-{
-    public int Id { get; set; }
-    public string Code { get; set; } = "";      // 给默认值，避免 Nullable 警告 CS8618
-    public string Name { get; set; } = "";
-    public string Category { get; set; } = "";  // 第 12 章会拆成单独的 Category 表
-    public decimal Price { get; set; }          // 金额一律 decimal，不用 double
-    public int Stock { get; set; }
-}
-```
-
-6. 用同样的方法新建 `SampleData.cs`：
-
-```csharp
-// code/ch01/Step1-WhatIsLinq/SampleData.cs
-namespace EfCoreStudy;
-
-// 第 1–4 章不连数据库，数据就放在内存里。每次调用都返回一份新的 List，互不影响
-public static class SampleData
-{
-    public static List<Product> Products() =>
-    [
-        new() { Id = 1, Code = "US-100",  Name = "便携超声主机", Category = "主机", Price = 180000m, Stock = 3 },
-        new() { Id = 2, Code = "US-200",  Name = "彩超工作站",   Category = "主机", Price = 420000m, Stock = 2 },
-        new() { Id = 3, Code = "PB-L01",  Name = "线阵探头",     Category = "探头", Price = 26000m,  Stock = 8 },
-        new() { Id = 4, Code = "PB-C02",  Name = "凸阵探头",     Category = "探头", Price = 24000m,  Stock = 0 },
-        new() { Id = 5, Code = "PB-E03",  Name = "腔内探头",     Category = "探头", Price = 31000m,  Stock = 5 },
-        new() { Id = 6, Code = "GEL-250", Name = "耦合剂",       Category = "耗材", Price = 35m,     Stock = 120 },
-        new() { Id = 7, Code = "CVR-01",  Name = "探头保护套",   Category = "耗材", Price = 12m,     Stock = 300 },
-        new() { Id = 8, Code = "PPR-110", Name = "热敏打印纸",   Category = "耗材", Price = 80m,     Stock = 6 },
-    ];
-}
-```
-
-两处新语法：`[ ... ]` 是集合表达式（C# 12 起），作用等同于 `new List<Product> { ... }`；`new() { ... }` 省略了类名，编译器根据 List 的元素类型推断出是 `Product`。
+> 📷 **截图占位 ch01-01**：右键项目后的菜单，「添加 → 现有项」高亮。
+> 截好后保存为 `images/ch01-01-add-existing.png`，再删掉下一行的 `<!--` 和 `-->`。
+<!-- ![添加现有项](../images/ch01-01-add-existing.png) -->
 
 > 仓库里每一节是一个独立项目（[`code/ch01/`](../code/ch01/) 下的 `Step1-WhatIsLinq`、`Step2-Lambda`……），方便对照。你自己练习时**只用 `Ch01Linq` 一个项目就行**，每节把 `Program.cs` 整个替换掉。
 
@@ -218,7 +171,7 @@ error CS1061: 'List<Product>' does not contain a definition for 'MyWhere' and no
 
 #### 🖼 图解：规则方法太短，就地简写
 
-像 1.2 节 `IsLowStock` 这样的规则方法，真正有用的只有一句，却要写 4 行、起个名字，而查询规则又多半只用一次。所以 C# 允许你把规则就地简写。下面用本节代码里的规则 `IsExpensive`（价格是否超过 10000）演示，每一步删掉编译器能自己推断出来的东西：
+1.2 节的规则 `IsLowStock` 真正有用的只有一句，却要写 4 行、起个名字。查询规则又多半只用一次。所以 C# 允许你把规则就地简写，每一步删掉编译器能自己推断出来的东西：
 
 ```mermaid
 graph TB
@@ -286,6 +239,12 @@ static bool IsExpensive(Product p)
 - 写法 A 只写方法名 `IsExpensive`，**不加括号**。加了括号就是"现在就调用它"，而这里要的是"把方法交出去"。`Button1.Click += Button1_Click;` 也不加括号，道理相同。
 - 最后一段是写法 A 做不到的：规则里用到了外面的变量 `minPrice`。`IsExpensive` 只收一个 `Product` 参数，没地方放价格下限；lambda 写在括号里，能直接用上面定义的 `minPrice`。实际的查询条件大多是这种情况，所以绝大多数时候都写 lambda。
 
+| lambda 的部分 | 含义（按"给我什么 → 我回答什么"去读） |
+|---|---|
+| `p` | `=>` 左边：参数，"给我一个产品 p"。名字随便起，习惯用类名的首字母 |
+| `=>` | 分开参数和方法体 |
+| `p.Price > minPrice` | `=>` 右边：返回值，"我告诉你它的价格是不是大于 minPrice" |
+
 > 到了 EF Core，查数据库时**必须用 lambda**：EF Core 能读懂 lambda 里写的条件，翻译成 SQL 的 `WHERE`；交给它一个具名方法，它只看得到方法名，翻译不了。第 8 章细讲。
 
 #### 改坏一处试试
@@ -297,11 +256,20 @@ static bool IsExpensive(Product p)
 
 ### 1.4 概念三：Where —— 筛选行
 
-**白话定义**：`Where` 对集合里的每个元素调用一次你给的规则，只留下回答 true 的那些（🖼 图解就是 1.2 节那张原理图）。作用就是 SQL 的 `WHERE`。
+**白话定义**：`Where` 对集合里的每个元素调用一次你给的规则，只留下回答 true 的那些。作用就是 SQL 的 `WHERE`。
 
 **业务场景**：仓库要一份"探头类、目前有货"的清单，拿去盘点。
 
 **反例**：只想知道"**有没有**"满足条件的，不要写 `Where(...).Count() > 0`，用第 3 章的 `Any`，找到第一个就停；按主键找**一条**，用第 2 章的 `First` / `FirstOrDefault`，意图更清楚。
+
+#### 🖼 图解
+
+```mermaid
+graph TB
+    A["products：8 个产品"] --> B["Where：每个产品<br/>代入规则算一次"]
+    B --> C["回答 true 的留下<br/>回答 false 的丢掉"]
+    C --> D["ToList：收成新 List<br/>（2 个产品）"]
+```
 
 #### 💻 最小可运行代码
 
