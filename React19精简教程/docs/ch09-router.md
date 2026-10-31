@@ -27,7 +27,60 @@ npm run dev
 4. `return` 里的 `<main>` 和 `</main>` 改成 `<section>` 和 `</section>`，删掉 `<PageHeader />` 和 `<PageFooter />`（它们留在 `App` 里，所有页面共用）。
 5. 删掉最后的 `export default App`。
 
-完整文件见仓库 `code/ch09/price-list/src/pages/ListPage.tsx`。再新建两个简单页面：
+改完的完整文件：
+
+```tsx
+// src/pages/ListPage.tsx
+// 产品列表页：第 8 章 App 的内容原样搬过来，去掉页头页脚（它们留在 App 里，所有页面共用）
+import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
+import { useProducts } from '../hooks/useProducts.ts'
+import { FilterBar } from '../components/FilterBar.tsx'
+import { ProductTable } from '../components/ProductTable.tsx'
+import { ProductForm } from '../components/ProductForm.tsx'
+
+export function ListPage() {
+  // 加载和增删改的细节都在 useProducts 里，列表页只拿结果
+  const { state, addProduct, deleteProduct, restockProduct } = useProducts()
+  // 状态提升：搜索框和表格都要用 keyword，所以放在它们共同的父组件 App 里
+  const [keyword, setKeyword] = useState('')
+
+  const count = state.status === 'success' ? state.products.length : 0
+
+  useEffect(() => {
+    document.title = `产品价格清单（${count} 种）`
+  }, [count])
+
+  let content: ReactNode
+  if (state.status === 'loading') {
+    content = <p>加载中…</p>
+  } else if (state.status === 'error') {
+    content = <p className="error">加载失败：{state.message}</p>
+  } else {
+    // 筛选结果是派生值：由 products 和 keyword 现算，不另存 state
+    const k = keyword.trim().toLowerCase()
+    const visible = state.products.filter(
+      (p) => p.name.toLowerCase().includes(k) || p.code.toLowerCase().includes(k),
+    )
+    // 把 useProducts 给的函数直接作为回调传下去
+    content = <ProductTable products={visible} onDelete={deleteProduct} onRestock={restockProduct} />
+  }
+
+  return (
+    <section>
+      <p>共 {count} 种产品</p>
+      {/* 把值和「修改它的函数」一起交给搜索框 */}
+      <FilterBar keyword={keyword} onKeywordChange={setKeyword} />
+      {content}
+      <ProductForm onAdd={addProduct} />
+    </section>
+  )
+}
+```
+
+为什么页头、页脚不放进 `ListPage`：它们每个页面都要显示，放在 `App` 里写一次，切换页面时只换中间的部分。
+
+再新建两个简单页面：
 
 ```tsx
 // src/pages/AboutPage.tsx
@@ -74,7 +127,7 @@ export function NotFoundPage() {
 ```mermaid
 graph TB
     A["地址栏：/about"] --> B["BrowserRouter<br/>读取当前路径"]
-    B --> C["Routes 从上往下比对 path"]
+    B --> C["Routes 找出最匹配的 path<br/>与写的先后顺序无关"]
     C --> D["匹配 /about<br/>显示 AboutPage"]
 ```
 
@@ -121,11 +174,11 @@ function App() {
   return (
     <main>
       <PageHeader />
-      {/* 路由表：从上往下找第一条与当前地址匹配的 path，显示它的 element */}
+      {/* 路由表：React Router 找出与当前地址最匹配的那条 path，显示它的 element */}
       <Routes>
         <Route path="/" element={<ListPage />} />
         <Route path="/about" element={<AboutPage />} />
-        {/* * 匹配任何地址，放在最后兜底 */}
+        {/* * 匹配任何地址，但只有别的路由都对不上时才会用它，相当于兜底 */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <PageFooter />
@@ -194,11 +247,11 @@ function App() {
         {/* Link 改地址但不刷新页面；React Router 发现地址变了，换掉下面 Routes 里显示的页面 */}
         <Link to="/">产品清单</Link> | <Link to="/about">关于</Link>
       </nav>
-      {/* 路由表：从上往下找第一条与当前地址匹配的 path，显示它的 element */}
+      {/* 路由表：React Router 找出与当前地址最匹配的那条 path，显示它的 element */}
       <Routes>
         <Route path="/" element={<ListPage />} />
         <Route path="/about" element={<AboutPage />} />
-        {/* * 匹配任何地址，放在最后兜底 */}
+        {/* * 匹配任何地址，但只有别的路由都对不上时才会用它，相当于兜底 */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <PageFooter />
@@ -209,7 +262,11 @@ function App() {
 export default App
 ```
 
-在 `src/index.css` 末尾加一行：`.nav { margin-bottom: 12px; }`
+在 `src/index.css` 末尾加一行：
+
+```css
+.nav { margin-bottom: 12px; }
+```
 
 #### 🔍 拆解运行结果
 
@@ -277,14 +334,99 @@ export function ProductDetailPage() {
 }
 ```
 
-在 `src/App.tsx` 里加两行：import 区加 `import { ProductDetailPage } from './pages/ProductDetailPage.tsx'`；在 `/about` 那条路由下面加 `<Route path="/products/:id" element={<ProductDetailPage />} />`（完整文件见仓库 `code/ch09/price-list/src/App.tsx`）。
-
-最后让表格里的产品名可以点。在 `src/components/ProductTable.tsx` 顶部加 `import { Link } from 'react-router'`，把名称单元格里的 `{p.name}` 换成：
+用下面的内容整个替换 `src/App.tsx`。和 9.2 相比加了两行：import 区的 `ProductDetailPage`，以及路由表里的 `/products/:id` 这一条。`Routes` 会按「具体程度」选出最匹配的一条，和书写顺序无关：实测把 `*` 那一条挪到最前面，`/about`、`/products/2` 照样显示正确的页面。习惯上仍把 `*` 写在最后，读代码时一眼能看出它是兜底。
 
 ```tsx
+// src/App.tsx
+// App 变成「外框」：页头、导航、页脚所有页面共用，中间按地址显示不同的页面
+import { Link, Route, Routes } from 'react-router'
+import { PageHeader } from './components/PageHeader.tsx'
+import { PageFooter } from './components/PageFooter.tsx'
+import { ListPage } from './pages/ListPage.tsx'
+import { AboutPage } from './pages/AboutPage.tsx'
+import { ProductDetailPage } from './pages/ProductDetailPage.tsx'
+import { NotFoundPage } from './pages/NotFoundPage.tsx'
+
+function App() {
+  return (
+    <main>
+      <PageHeader />
+      <nav className="nav">
+        {/* Link 改地址但不刷新页面；React Router 发现地址变了，换掉下面 Routes 里显示的页面 */}
+        <Link to="/">产品清单</Link> | <Link to="/about">关于</Link>
+      </nav>
+      {/* 路由表：React Router 找出与当前地址最匹配的那条 path，显示它的 element */}
+      <Routes>
+        <Route path="/" element={<ListPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        {/* :id 是参数，/products/1、/products/25 都匹配这一条 */}
+        <Route path="/products/:id" element={<ProductDetailPage />} />
+        {/* * 匹配任何地址，但只有别的路由都对不上时才会用它，相当于兜底 */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+      <PageFooter />
+    </main>
+  )
+}
+
+export default App
+```
+
+最后让表格里的产品名可以点。用下面的内容整个替换 `src/components/ProductTable.tsx`。和第 8 章相比改了两处：顶部多了 `import { Link } from 'react-router'`；名称单元格里的 `{p.name}` 换成了 `<Link>`。
+
+```tsx
+// src/components/ProductTable.tsx
+// 只负责显示表格。数据从 props 来；点了按钮不自己改数据，而是调用父组件给的函数「通知」它
+import { Link } from 'react-router'
+import type { Product } from '../types.ts'
+
+type ProductTableProps = {
+  products: Product[]
+  // 回调 props：类型写清楚「调用时传什么参数、返回什么」。void 表示不关心返回值
+  onDelete: (id: number) => void
+  onRestock: (id: number) => void
+}
+
+export function ProductTable({ products, onDelete, onRestock }: ProductTableProps) {
+  if (products.length === 0) {
+    return <p className="empty">暂无产品</p>
+  }
+
+  return (
+    <table className="product-table">
+      <thead>
+        <tr>
+          <th>编号</th>
+          <th>名称</th>
+          <th>单价（元）</th>
+          <th>库存</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {products.map((p) => (
+          <tr key={p.id}>
+            <td>{p.code}</td>
+            <td>
               {/* 点产品名进入详情页，地址形如 /products/3 */}
               <Link to={`/products/${p.id}`}>{p.name}</Link>
+              {p.stock === 0 && <span className="out-of-stock">缺货</span>}
+            </td>
+            <td>{p.price.toLocaleString()}</td>
+            <td className={p.stock < 5 ? 'low' : undefined}>{p.stock}</td>
+            <td>
+              <button type="button" onClick={() => onRestock(p.id)}>入库 +1</button>{' '}
+              <button type="button" onClick={() => onDelete(p.id)}>删除</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
 ```
+
+`` to={`/products/${p.id}`} `` 用模板字符串拼出地址：`p.id` 是 3 时，地址就是 `/products/3`。
 
 #### 🔍 拆解运行结果
 
@@ -422,7 +564,7 @@ function App() {
         {/* Link 改地址但不刷新页面；React Router 发现地址变了，换掉下面 Routes 里显示的页面 */}
         <Link to="/">产品清单</Link> | <Link to="/about">关于</Link>
       </nav>
-      {/* 路由表：从上往下找第一条与当前地址匹配的 path，显示它的 element */}
+      {/* 路由表：React Router 找出与当前地址最匹配的那条 path，显示它的 element */}
       <Routes>
         <Route
           path="/"
@@ -440,9 +582,19 @@ function App() {
 export default App
 ```
 
-`ListPage.tsx` 的改法：删掉 `useProducts` 的 import 和调用，加上 props 类型，把用到 `addProduct` 等的地方换成 `onAdd` 等。完整文件见仓库 `code/ch09/answers/src/pages/ListPage.tsx`，开头部分是：
+`ListPage.tsx` 的改法：删掉 `useProducts` 的 import 和调用，加上 `ListPageProps` 类型，把用到 `addProduct`、`deleteProduct`、`restockProduct` 的地方换成 `onAdd`、`onDelete`、`onRestock`。完整文件：
 
 ```tsx
+// src/pages/ListPage.tsx
+// 练习 1 之后的版本：数据和增删改函数都由 App 通过 props 传进来
+import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
+import type { Product } from '../types.ts'
+import type { LoadState } from '../hooks/useProducts.ts'
+import { FilterBar } from '../components/FilterBar.tsx'
+import { ProductTable } from '../components/ProductTable.tsx'
+import { ProductForm } from '../components/ProductForm.tsx'
+
 type ListPageProps = {
   state: LoadState
   onAdd: (product: Product) => void
@@ -451,6 +603,39 @@ type ListPageProps = {
 }
 
 export function ListPage({ state, onAdd, onDelete, onRestock }: ListPageProps) {
+  // 状态提升：搜索框和表格都要用 keyword，所以放在它们共同的父组件 App 里
+  const [keyword, setKeyword] = useState('')
+
+  const count = state.status === 'success' ? state.products.length : 0
+
+  useEffect(() => {
+    document.title = `产品价格清单（${count} 种）`
+  }, [count])
+
+  let content: ReactNode
+  if (state.status === 'loading') {
+    content = <p>加载中…</p>
+  } else if (state.status === 'error') {
+    content = <p className="error">加载失败：{state.message}</p>
+  } else {
+    // 筛选结果是派生值：由 products 和 keyword 现算，不另存 state
+    const k = keyword.trim().toLowerCase()
+    const visible = state.products.filter(
+      (p) => p.name.toLowerCase().includes(k) || p.code.toLowerCase().includes(k),
+    )
+    content = <ProductTable products={visible} onDelete={onDelete} onRestock={onRestock} />
+  }
+
+  return (
+    <section>
+      <p>共 {count} 种产品</p>
+      {/* 把值和「修改它的函数」一起交给搜索框 */}
+      <FilterBar keyword={keyword} onKeywordChange={setKeyword} />
+      {content}
+      <ProductForm onAdd={onAdd} />
+    </section>
+  )
+}
 ```
 
 ### 练习 2

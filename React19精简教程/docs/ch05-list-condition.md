@@ -29,12 +29,41 @@ export const initialProducts: Product[] = [
 在 `src/index.css` 末尾追加表格和提示的样式：
 
 ```css
-.product-table { border-collapse: collapse; margin-bottom: 16px; }
-.product-table th, .product-table td { border: 1px solid #ddd; padding: 6px 10px; }
-.out-of-stock { margin-left: 6px; padding: 0 6px; color: #fff; background: #dc2626; border-radius: 4px; font-size: 12px; }
-.low { color: #dc2626; }
-.empty { color: #999; }
+.product-table {
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.product-table th,
+.product-table td {
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+}
+
+.out-of-stock {
+  margin-left: 6px;
+  padding: 0 6px;
+  color: #fff;
+  background: #dc2626;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.low {
+  color: #dc2626;
+}
+
+.empty {
+  color: #999;
+}
 ```
+
+| 类名 | 用在哪 |
+| --- | --- |
+| `.product-table` | 表格本身；`border-collapse: collapse` 让相邻单元格的边框合成一条线 |
+| `.out-of-stock` | 名称后面的红底白字「缺货」标签（5.3 节） |
+| `.low` | 库存少于 5 时把数字标红（5.3 节） |
+| `.empty` | 列表为空时的灰色提示（5.3 节） |
 
 ## 正文
 
@@ -219,6 +248,15 @@ export default App
 | `useState<Product[]>(initialProducts)` | 尖括号是泛型参数，明确 state 的类型。初始值是空数组 `[]` 时必须写，否则 TypeScript 推断不出元素类型 |
 | `onClick={() => handleDelete(p.id)}` | 第 4 章说过不能写 `onClick={handleDelete(p.id)}`。要传参数时包一层箭头函数，点击时才执行 |
 | `p.id === id ? {...} : p` | 三元表达式：是要改的那行就生成新对象，不是就原样返回 |
+
+用具体数据走一遍。原数组 `products` 有 5 个产品，id 依次是 1、2、3、4、5：
+
+| 操作 | 执行的代码 | 得到的新数组 | 原数组 |
+| --- | --- | --- | --- |
+| 删除耦合剂（id 4） | `products.filter((p) => p.id !== 4)` | 4 个产品：id 1、2、3、5。`filter` 对每个产品问一次「`p.id !== 4` 吗？」，回答 `true` 的留下 | 不变，仍是 5 个 |
+| 探头保护套（id 5）入库 | `products.map((p) => (p.id === 5 ? { ...p, stock: p.stock + 1 } : p))` | 5 个产品，前 4 个就是原来那 4 个对象；第 5 个是新对象 `{ id: 5, ..., stock: 1 }` | 不变，第 5 个的 `stock` 仍是 0 |
+
+所以「不可变」不是说数据不能变，而是**每次变化都产生一份新的**，旧的那份保持原样。React 拿新旧两份一比，发现不是同一个数组，就知道要重新渲染。
 
 #### 改坏一处试试
 

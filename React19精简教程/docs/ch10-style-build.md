@@ -126,7 +126,46 @@ export function ProductTable({ products, onDelete, onRestock }: ProductTableProp
 }
 ```
 
-表格的样式搬走后，打开 `src/index.css`，删掉 `.product-table`、`.product-table th, .product-table td`、`.out-of-stock`、`.low` 这四段（第 5 章加的），把第二行注释改成 `/* 全局样式：整个页面通用的基础样式。只属于某一个组件的样式，放到它自己的 .module.css 里 */`。完整文件见仓库 `code/ch10/price-list/src/index.css`。
+表格的样式搬走后，`src/index.css` 里第 5 章加的 `.product-table`、`.product-table th, .product-table td`、`.out-of-stock`、`.low` 这四段就用不到了。用下面的内容整个替换 `src/index.css`，只留全局样式：
+
+```css
+/* src/index.css */
+/* 全局样式：整个页面通用的基础样式。只属于某一个组件的样式，放到它自己的 .module.css 里 */
+body {
+  margin: 24px;
+  font-family: system-ui, 'Microsoft YaHei', sans-serif;
+}
+
+.subtitle {
+  color: #666;
+}
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 16px;
+  margin-bottom: 12px;
+  max-width: 360px;
+}
+
+.panel {
+  border-left: 4px solid #3b82f6;
+  padding-left: 12px;
+  margin-bottom: 16px;
+}
+
+.empty {
+  color: #999;
+}
+
+.product-form label { display: block; margin: 6px 0; }
+.error { display: block; color: #dc2626; font-size: 14px; }
+.success { color: #16a34a; }
+.filter-bar { display: block; margin-bottom: 8px; }
+.nav { margin-bottom: 12px; }
+```
+
+现在这个文件里留下的，都是多个组件共用或整个页面通用的样式：`.card`（第 9 章详情页的卡片）、`.error`（列表页、详情页、表单都用）等。
 
 #### 🔍 拆解运行结果
 
@@ -338,6 +377,7 @@ createRoot(document.getElementById('root')!).render(
 | 部署到子路径后页面空白，控制台里 JS、CSS 都是 404 | 没设置 `base`，`index.html` 里引用的是 `/assets/...`，而文件在 `/price-list/assets/...` | `vite.config.ts` 里设置 `base: '/price-list/'`，重新打包 |
 | 设置了 `base`，页面显示「页面不存在」或「加载失败」 | 代码里还写着根路径：路由没加 `basename`，`fetch` 写的是 `'/products.json'` | 都改用 `import.meta.env.BASE_URL` |
 | 某个组件的样式突然没了，`tsc` 也不报错 | CSS Modules 的类名拼错，`styles.xxx` 取到 `undefined` | 对照 `.module.css` 检查拼写 |
+| 重新部署后，用户看到的还是旧页面 | 服务器或中间的代理把 `index.html` 也长期缓存了，浏览器一直用旧的 `index.html`，它引用的还是旧的 JS 文件名 | 让 `index.html` 不缓存；`assets/` 下的文件名带内容哈希，可以长期缓存。具体配置方法因服务器而异（⚠️ 未实机验证） |
 
 ## 🎯 动手练习
 
@@ -447,6 +487,123 @@ export default defineConfig({
 }
 ```
 
-`ProductForm.tsx` 里的改动：import 区加 `import styles from './ProductForm.module.css'`；`className="product-form"` 改成 `className={styles.form}`；三处 `className="error"` 改成 `className={styles.error}`；`className="success"` 改成 `className={styles.success}`。完整文件见仓库 `code/ch10/answers/src/components/ProductForm.tsx`。
+`ProductForm.tsx` 里的改动：import 区加 `import styles from './ProductForm.module.css'`；`className="product-form"` 改成 `className={styles.form}`；三处 `className="error"` 改成 `className={styles.error}`；`className="success"` 改成 `className={styles.success}`。完整文件：
 
-`index.css` 里删掉 `.product-form label` 和 `.success` 两行，保留 `.error`。完整文件见仓库 `code/ch10/answers/src/index.css`。
+```tsx
+// src/components/ProductForm.tsx
+// 练习 2：类名改用 CSS Module
+import { useState } from 'react'
+import type { ChangeEvent, SubmitEvent } from 'react'
+import type { Product } from '../types.ts'
+import styles from './ProductForm.module.css'
+
+type ProductFormProps = {
+  // 保存成功时把新产品交给父组件。表单不知道、也不关心父组件怎么存
+  onAdd: (product: Product) => void
+}
+
+export function ProductForm({ onAdd }: ProductFormProps) {
+  // 每个输入框对应一个 state。输入框里的内容永远是字符串，单价也先按字符串存
+  const [code, setCode] = useState('')
+  const [name, setName] = useState('')
+  const [category, setCategory] = useState('探头')
+  const [price, setPrice] = useState('')
+  // 保存成功后显示的提示
+  const [message, setMessage] = useState('')
+  // 点过一次「保存」才显示错误，免得一打开页面就满屏红字
+  const [triedSubmit, setTriedSubmit] = useState(false)
+
+  // 派生值：每次渲染都从 state 现算，不另存 state，所以永远和输入框一致
+  const priceNumber = Number(price)
+  const codeError = code.trim() === '' ? '请填写编号' : ''
+  const nameError = name.trim() === '' ? '请填写名称' : ''
+  // Number('abc') 是 NaN，NaN > 0 不成立，所以「不是数字」和「小于等于 0」一起拦住
+  const priceError = price.trim() === '' ? '请填写单价' : priceNumber > 0 ? '' : '单价必须是大于 0 的数字'
+  const isValid = codeError === '' && nameError === '' && priceError === ''
+
+  // 单独写成函数时，参数类型要写明：input 元素上的变化事件
+  function handlePriceChange(e: ChangeEvent<HTMLInputElement>) {
+    setPrice(e.target.value)
+  }
+
+  function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+    // 阻止浏览器默认的「提交表单 = 刷新整页」，改由我们自己处理
+    e.preventDefault()
+    setTriedSubmit(true)
+    if (!isValid) {
+      setMessage('')
+      return
+    }
+    // 新产品还没入库，库存为 0；id 先用当前时间的毫秒数，保证不重复
+    const product: Product = { id: Date.now(), code: code.trim(), name: name.trim(), category, price: priceNumber, stock: 0 }
+    onAdd(product)
+    setMessage(`已录入：${product.name}，单价 ${product.price.toLocaleString()} 元`)
+    // 清空输入框，并收起错误提示
+    setCode('')
+    setName('')
+    setPrice('')
+    setTriedSubmit(false)
+  }
+
+  return (
+    <form className={styles.form} onSubmit={handleSubmit}>
+      <h2>录入新产品</h2>
+      {/* value 来自 state，onChange 把用户输入写回 state：输入框完全由 React 控制 */}
+      <label>编号 <input value={code} onChange={(e) => setCode(e.target.value)} /></label>
+      {triedSubmit && codeError && <span className={styles.error}>{codeError}</span>}
+      <label>名称 <input value={name} onChange={(e) => setName(e.target.value)} /></label>
+      {triedSubmit && nameError && <span className={styles.error}>{nameError}</span>}
+      <label>
+        分类{' '}
+        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <option value="探头">探头</option>
+          <option value="主机">主机</option>
+          <option value="耗材">耗材</option>
+        </select>
+      </label>
+      <label>单价 <input value={price} onChange={handlePriceChange} /></label>
+      {triedSubmit && priceError && <span className={styles.error}>{priceError}</span>}
+      {/* type="submit"：点击或在输入框里按回车都会触发表单的 onSubmit */}
+      <button type="submit">保存</button>
+      {message && <p className={styles.success}>{message}</p>}
+    </form>
+  )
+}
+```
+
+`index.css` 里删掉 `.product-form label` 和 `.success` 两行，保留 `.error`：
+
+```css
+/* src/index.css */
+/* 全局样式：整个页面通用的基础样式。只属于某一个组件的样式，放到它自己的 .module.css 里 */
+body {
+  margin: 24px;
+  font-family: system-ui, 'Microsoft YaHei', sans-serif;
+}
+
+.subtitle {
+  color: #666;
+}
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 16px;
+  margin-bottom: 12px;
+  max-width: 360px;
+}
+
+.panel {
+  border-left: 4px solid #3b82f6;
+  padding-left: 12px;
+  margin-bottom: 16px;
+}
+
+.empty {
+  color: #999;
+}
+
+.error { display: block; color: #dc2626; font-size: 14px; }
+.filter-bar { display: block; margin-bottom: 8px; }
+.nav { margin-bottom: 12px; }
+```

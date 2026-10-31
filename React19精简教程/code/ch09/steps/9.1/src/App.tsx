@@ -11,11 +11,11 @@ function App() {
   return (
     <main>
       <PageHeader />
-      {/* 路由表：从上往下找第一条与当前地址匹配的 path，显示它的 element */}
+      {/* 路由表：React Router 找出与当前地址最匹配的那条 path，显示它的 element */}
       <Routes>
         <Route path="/" element={<ListPage />} />
         <Route path="/about" element={<AboutPage />} />
-        {/* * 匹配任何地址，放在最后兜底 */}
+        {/* * 匹配任何地址，但只有别的路由都对不上时才会用它，相当于兜底 */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <PageFooter />

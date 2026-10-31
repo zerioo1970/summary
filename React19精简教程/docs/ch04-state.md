@@ -51,11 +51,36 @@ export function QuantityPicker({ price }: QuantityPickerProps) {
 }
 ```
 
-把它放进卡片：在 `ProductCard.tsx` 的 `import type { Product } ...` 下一行加 `import { QuantityPicker } from './QuantityPicker.tsx'`，在库存那段 `</p>` 后面加两行：
+把它放进卡片：用下面的内容整个替换 `src/components/ProductCard.tsx`（和第 3 章相比只多了两处：第 4 行的 `import`，以及库存下面的 `<QuantityPicker />`）。这个文件本章后面不再改。
 
 ```tsx
+// src/components/ProductCard.tsx
+// import type：只导入类型，翻译成 JavaScript 时整行会被去掉
+import type { Product } from '../types.ts'
+import { QuantityPicker } from './QuantityPicker.tsx'
+
+type ProductCardProps = {
+  // 传一个完整的产品对象，以后 Product 加字段时这里不用改
+  product: Product
+  // 问号表示可选：不传时用下面参数里写的默认值 '台'
+  unit?: string
+}
+
+export function ProductCard({ product, unit = '台' }: ProductCardProps) {
+  return (
+    <div className="card">
+      {/* 卡片放进 Panel 后，Panel 的标题是 h2，卡片标题降一级用 h3 */}
+      <h3>{product.name}</h3>
+      <p>编号：{product.code}</p>
+      <p>单价：{product.price.toLocaleString()} 元</p>
+      <p>
+        库存：{product.stock} {unit}
+      </p>
       {/* 每张卡片里的 QuantityPicker 各有一份自己的 state */}
       <QuantityPicker price={product.price} />
+    </div>
+  )
+}
 ```
 
 `{' '}` 是插入一个空格。JSX 会去掉标签之间的换行和空白，要空格就得显式写。
@@ -213,6 +238,7 @@ export function QuantityPicker({ price }: QuantityPickerProps) {
 | --- | --- |
 | `MouseEvent<HTMLButtonElement>` | React 的鼠标事件类型，尖括号里是事件发生在哪种元素上。从 `'react'` 导入，不是浏览器自带的同名类型 |
 | `e.shiftKey` | 点击时是否按住了 Shift。写了类型后，输入 `e.` VS Code 会列出所有可用的字段 |
+| `e.shiftKey ? 10 : 1` | 三元表达式（conditional operator）：`条件 ? 成立时的值 : 不成立时的值`。它是一个表达式，有结果值，所以能直接赋给 `step`，后面几章也会大量写在 JSX 的花括号里 |
 | `type="button"` | 按钮默认类型是 `submit`，放进表单里会提交表单。不是提交按钮就写明 `type="button"`，第 6 章会用到这一点 |
 
 常用事件和类型对照（后面几章会用到）：
@@ -321,9 +347,21 @@ export function QuantityPicker({ price }: QuantityPickerProps) {
 | 点「+」只多 2 行 | 只有第一张卡片的 state 变了，只有它重新渲染。另外两张卡片没有执行 |
 | 点「+2」一次加 2 | 见下面的对比 |
 
+`` console.log(`QuantityPicker 渲染，quantity = ${quantity}`) `` 用的是模板字符串（template literal）：用反引号 `` ` `` 包起来的字符串，里面的 `${...}` 会被替换成表达式的值。和用 `+` 拼接 `'quantity = ' + quantity` 效果一样，写起来更直观。
+
 **为什么「+2」要用更新函数？** 先试错误写法：把 `handleAddTwo` 里的两行改成 `setQuantity(quantity + 1)`，点一次「+2」，实测数量只从 0 变成 **1**。
 
 一次渲染里的 `quantity` 是个固定值（像一张快照）。点击时 `quantity` 是 0，两行都是 `setQuantity(0 + 1)`，相当于把 1 设置了两次。React 要等事件处理函数执行完，才统一重新渲染。
+
+`(q) => q + 1` 是箭头函数（arrow function），是写函数的简短方式：箭头左边是参数，右边是返回值。下面三种写法完全等价：
+
+| 写法 | 说明 |
+| --- | --- |
+| `function (q) { return q + 1 }` | 普通的匿名函数 |
+| `(q) => { return q + 1 }` | 箭头函数，函数体用花括号时要写 `return` |
+| `(q) => q + 1` | 函数体只有一个表达式时，可以省掉花括号和 `return` |
+
+没有参数时写 `() => ...`，例如踩坑警告里的 `onClick={() => setQuantity(0)}`。React 代码里到处是箭头函数，后面几章不再重复解释。
 
 写成 `setQuantity((q) => q + 1)` 时，传的是「怎么从旧值算新值」。React 依次执行：0 → 1 → 2。规则：**新值依赖旧值，并且同一次操作里要改多次时，用更新函数**。只改一次的 `setQuantity(quantity + step)` 两种写法结果相同。
 
@@ -419,14 +457,38 @@ Uncaught Error: Too many re-renders. React limits the number of renders to preve
 
 思路：上限通过 prop 从卡片传进来；是否到达上限由 `quantity` 和 `max` 算出来，不另存 state。Shift 加 10 和更新函数里都用 `Math.min` 截到上限。
 
-`ProductCard.tsx` 里把原来那行改成：
+`ProductCard.tsx` 只改了 `<QuantityPicker />` 那一行，把库存作为上限传进去：
 
 ```tsx
+// src/components/ProductCard.tsx
+// import type：只导入类型，翻译成 JavaScript 时整行会被去掉
+import type { Product } from '../types.ts'
+import { QuantityPicker } from './QuantityPicker.tsx'
+
+type ProductCardProps = {
+  // 传一个完整的产品对象，以后 Product 加字段时这里不用改
+  product: Product
+  // 问号表示可选：不传时用下面参数里写的默认值 '台'
+  unit?: string
+}
+
+export function ProductCard({ product, unit = '台' }: ProductCardProps) {
+  return (
+    <div className="card">
+      {/* 卡片放进 Panel 后，Panel 的标题是 h2，卡片标题降一级用 h3 */}
+      <h3>{product.name}</h3>
+      <p>编号：{product.code}</p>
+      <p>单价：{product.price.toLocaleString()} 元</p>
+      <p>
+        库存：{product.stock} {unit}
+      </p>
+      {/* 每张卡片里的 QuantityPicker 各有一份自己的 state */}
       {/* 练习 1：把库存作为上限传进去 */}
       <QuantityPicker price={product.price} max={product.stock} />
+    </div>
+  )
+}
 ```
-
-（完整文件见仓库 `code/ch04/answers/src/components/ProductCard.tsx`。）
 
 ### 练习 2
 

@@ -32,20 +32,88 @@ graph TB
 
 #### 💻 最小可运行代码
 
-在 `src/App.tsx` 里做两处修改：
-
-1. 第一行 import 改成 `import { useEffect, useState } from 'react'`。
-2. 在 `const [products, setProducts] = ...` 这一行下面加：
+用下面的内容整个替换 `src/App.tsx`。和第 6 章相比改了两处：第一行 import 多了 `useEffect`；`const [products, setProducts] = ...` 下面多了一段 `useEffect(...)`。
 
 ```tsx
+// src/App.tsx（7.1 版本，7.2 节会再改）
+import { useEffect, useState } from 'react'
+import type { Product } from './types.ts'
+import { initialProducts } from './data.ts'
+import { PageHeader } from './components/PageHeader.tsx'
+import { PageFooter } from './components/PageFooter.tsx'
+import { ProductForm } from './components/ProductForm.tsx'
+
+function App() {
+  // 尖括号里写明 state 的类型：Product 数组
+  const [products, setProducts] = useState<Product[]>(initialProducts)
+
   // 副作用：修改浏览器标签页标题。React 先把页面画好，然后执行这个函数
   useEffect(() => {
     console.log('effect 执行：更新标题')
     document.title = `产品价格清单（${products.length} 种）`
   })
+
+  function handleDelete(id: number) {
+    // filter 返回一个新数组，原数组不动
+    setProducts(products.filter((p) => p.id !== id))
+  }
+
+  function handleRestock(id: number) {
+    // map 返回新数组；要改的那一行用 { ...p, stock: 新值 } 生成新对象，其余行原样保留
+    setProducts(products.map((p) => (p.id === id ? { ...p, stock: p.stock + 1 } : p)))
+  }
+
+  return (
+    <main>
+      <PageHeader />
+      <p>共 {products.length} 种产品</p>
+      {/* 条件 ? A : B：二选一。列表空了显示提示，否则显示表格 */}
+      {products.length === 0 ? (
+        <p className="empty">暂无产品</p>
+      ) : (
+        <table className="product-table">
+          <thead>
+            <tr>
+              <th>编号</th>
+              <th>名称</th>
+              <th>单价（元）</th>
+              <th>库存</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((p) => (
+              <tr key={p.id}>
+                <td>{p.code}</td>
+                <td>
+                  {p.name}
+                  {/* 条件 && A：条件成立才显示 A，否则什么都不显示 */}
+                  {p.stock === 0 && <span className="out-of-stock">缺货</span>}
+                </td>
+                <td>{p.price.toLocaleString()}</td>
+                {/* 库存少于 5 用红色提醒：三元表达式也可以用在属性上 */}
+                <td className={p.stock < 5 ? 'low' : undefined}>{p.stock}</td>
+                <td>
+                  {/* 要把 p.id 传进去，所以包一层箭头函数，点击时才执行 */}
+                  <button type="button" onClick={() => handleRestock(p.id)}>入库 +1</button>{' '}
+                  <button type="button" onClick={() => handleDelete(p.id)}>删除</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {/* 第 6 章：表单先独立工作，第 8 章再把录入的产品加进上面的表格 */}
+      <ProductForm />
+      <PageFooter />
+    </main>
+  )
+}
+
+export default App
 ```
 
-完整文件见仓库 `code/ch07/steps/7.1/src/App.tsx`。
+`useEffect` 的参数是一个函数（这里写成箭头函数 `() => { ... }`）。React 不会马上执行它，而是记下来，等这次渲染的结果显示到页面上之后再调用。
 
 #### 🔍 拆解运行结果
 
@@ -90,14 +158,87 @@ graph TB
 
 #### 💻 最小可运行代码
 
-把 7.1 那段 effect 的结尾 `})` 改成：
+用下面的内容整个替换 `src/App.tsx`。和 7.1 相比只改了 effect 的结尾：`})` 变成了 `}, [products.length])`，前面加了一行注释。
 
 ```tsx
+// src/App.tsx（7.2 版本，7.3 节会再改）
+import { useEffect, useState } from 'react'
+import type { Product } from './types.ts'
+import { initialProducts } from './data.ts'
+import { PageHeader } from './components/PageHeader.tsx'
+import { PageFooter } from './components/PageFooter.tsx'
+import { ProductForm } from './components/ProductForm.tsx'
+
+function App() {
+  // 尖括号里写明 state 的类型：Product 数组
+  const [products, setProducts] = useState<Product[]>(initialProducts)
+
+  // 副作用：修改浏览器标签页标题。React 先把页面画好，然后执行这个函数
+  useEffect(() => {
+    console.log('effect 执行：更新标题')
+    document.title = `产品价格清单（${products.length} 种）`
     // 依赖数组：只有 products.length 变了，才再次执行
   }, [products.length])
-```
 
-完整文件见仓库 `code/ch07/steps/7.2/src/App.tsx`。
+  function handleDelete(id: number) {
+    // filter 返回一个新数组，原数组不动
+    setProducts(products.filter((p) => p.id !== id))
+  }
+
+  function handleRestock(id: number) {
+    // map 返回新数组；要改的那一行用 { ...p, stock: 新值 } 生成新对象，其余行原样保留
+    setProducts(products.map((p) => (p.id === id ? { ...p, stock: p.stock + 1 } : p)))
+  }
+
+  return (
+    <main>
+      <PageHeader />
+      <p>共 {products.length} 种产品</p>
+      {/* 条件 ? A : B：二选一。列表空了显示提示，否则显示表格 */}
+      {products.length === 0 ? (
+        <p className="empty">暂无产品</p>
+      ) : (
+        <table className="product-table">
+          <thead>
+            <tr>
+              <th>编号</th>
+              <th>名称</th>
+              <th>单价（元）</th>
+              <th>库存</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((p) => (
+              <tr key={p.id}>
+                <td>{p.code}</td>
+                <td>
+                  {p.name}
+                  {/* 条件 && A：条件成立才显示 A，否则什么都不显示 */}
+                  {p.stock === 0 && <span className="out-of-stock">缺货</span>}
+                </td>
+                <td>{p.price.toLocaleString()}</td>
+                {/* 库存少于 5 用红色提醒：三元表达式也可以用在属性上 */}
+                <td className={p.stock < 5 ? 'low' : undefined}>{p.stock}</td>
+                <td>
+                  {/* 要把 p.id 传进去，所以包一层箭头函数，点击时才执行 */}
+                  <button type="button" onClick={() => handleRestock(p.id)}>入库 +1</button>{' '}
+                  <button type="button" onClick={() => handleDelete(p.id)}>删除</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {/* 第 6 章：表单先独立工作，第 8 章再把录入的产品加进上面的表格 */}
+      <ProductForm />
+      <PageFooter />
+    </main>
+  )
+}
+
+export default App
+```
 
 #### 🔍 拆解运行结果
 
@@ -133,6 +274,41 @@ graph TB
     B --> D["status: success<br/>products 有数据"]
     C --> E["status: error<br/>message 有原因"]
 ```
+
+#### 先认识 fetch 和 async/await
+
+加载数据要用到三样 JavaScript 自带的东西。它们不是 React 的概念，但本节代码离不开，先讲清楚。
+
+**fetch**：浏览器自带的函数，向一个地址发 HTTP 请求。`fetch('/products.json')` 就是 GET 这个地址。
+
+**Promise 和 await**：网络请求需要时间，`fetch` 不会停在那里等结果，而是马上返回一个 Promise（「承诺」，表示一个将来才有的结果）。在 Promise 前面写 `await`，代码就会在这一行「暂停」，等结果回来再往下执行，写起来像是按顺序执行的。`await` 只能写在 `async` 函数里：
+
+```ts
+// 示意代码，不用放进项目
+async function load() {
+  const response = await fetch('/products.json') // 等服务器响应
+  const products = await response.json() // 等把响应内容解析成数组
+  console.log(products.length)
+}
+```
+
+「暂停」只暂停这个 `async` 函数，页面并不会卡住。实测在浏览器控制台里依次执行「打印 1 → 发 `fetch`（不 await）并在回来后打印 3 → 打印 2」，输出顺序是：
+
+```text
+1 开始 | 2 fetch 之后的下一行 | 3 响应回来了
+```
+
+`fetch` 后面的代码先跑完了，响应到了才执行打印 3 的那一段。这就是为什么组件函数里不能「等数据」：React 要求组件函数马上返回 JSX，所以先显示「加载中…」，数据回来后再用 `setState` 触发重新渲染。
+
+**Response**：`await fetch(...)` 得到一个 Response（响应）对象，常用的几样：
+
+| 写法 | 含义 | 实测（开发服务器） |
+| --- | --- | --- |
+| `response.status` | HTTP 状态码 | `products.json` 是 `200` |
+| `response.ok` | 状态码在 200–299 之间时为 `true` | `true` |
+| `await response.json()` | 把响应内容按 JSON 解析成对象或数组 | 得到 5 个产品的数组 |
+
+**try / catch**：`await` 等到的如果是失败（比如网络断了，或者 `json()` 解析不了），会抛出错误。用 `try { ... } catch (err) { ... }` 接住，在 `catch` 里把错误显示给用户。实测请求一个连不上的地址，抛出的是 `TypeError: Failed to fetch`。注意：服务器返回 404、500 这类状态码时 `fetch` **不会**抛错，只是 `response.ok` 为 `false`，所以下面的代码要自己检查 `ok`，不对就 `throw new Error(...)` 主动抛出。
 
 #### 💻 最小可运行代码
 

@@ -63,7 +63,18 @@ graph TB
 npm create vite@latest price-list -- --template react-ts --no-eslint --no-immediate
 ```
 
-`price-list` 是项目文件夹名；`--` 表示后面的参数交给 create-vite；`--template react-ts` 选 React + TypeScript 模板；`--no-eslint` 用模板默认的代码检查工具 Oxlint；`--no-immediate` 建完先不自动安装和启动，下面一步步手动做。
+这条命令的意思是「下载并运行 create-vite 这个建项目工具」。各部分的含义：
+
+| 部分 | 含义 |
+| --- | --- |
+| `npm create vite@latest` | 运行最新版的 create-vite。`npm create xxx` 是 npm 约定的写法，实际执行的是 `create-xxx` 这个包 |
+| `price-list` | 项目文件夹名，也是项目名。会在当前目录下新建 `price-list` 文件夹 |
+| `--` | 分隔符：它后面的参数交给 create-vite，而不是给 npm 自己 |
+| `--template react-ts` | 用 React + TypeScript 模板。只写 `react` 得到的是纯 JavaScript 版本，本教程不用 |
+| `--no-eslint` | 代码检查工具用模板默认的 Oxlint，不再弹出选择 |
+| `--no-immediate` | 建完先不自动安装依赖和启动，下面一步一步手动做，每一步都看得清楚 |
+
+不加后面这些参数也可以，create-vite 会一步步提问让你选，选项和上表一一对应。
 
 第一次执行时 npm 可能先问是否安装 create-vite（`Need to install the following packages: ... Ok to proceed? (y)`），输入 `y` 回车。看到下面这段就建好了：
 
@@ -79,15 +90,36 @@ npm create vite@latest price-list -- --template react-ts --no-eslint --no-immedi
 
 接着用 VS Code 打开这个文件夹：菜单「文件 → 打开文件夹」，选 `D:\react-study\price-list`。如果弹出「是否信任此文件夹中的文件的作者」，选「是，我信任此作者」。
 
-然后打开 VS Code 自带的终端：菜单「终端 → 新建终端」，当前目录就是项目文件夹（⚠️ VS Code 菜单与弹窗文字未实机验证）。依次执行：
+然后打开 VS Code 自带的终端：菜单「终端 → 新建终端」。窗口下方出现一个命令行面板，它的当前目录就是项目文件夹，后面的命令都在这里执行，不用再切到 PowerShell 窗口。
+
+> ⚠️ VS Code 菜单与弹窗文字未实机验证。
+
+先安装依赖库：
 
 ```powershell
 # 在 D:\react-study\price-list 目录执行（VS Code 终端）
 npm install
-npm run dev
 ```
 
-`npm install` 下载依赖库，实测输出 `added 28 packages ... found 0 vulnerabilities`（Windows 上数量可能略有不同，没有 `ERR!` 就行）。`npm run dev` 启动开发服务器。
+实测输出：
+
+```text
+added 28 packages, and audited 29 packages in 2s
+
+9 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+```
+
+`npm install` 读取 `package.json` 里列出的依赖（React、Vite、TypeScript 等），从 npm 仓库下载到项目的 `node_modules` 文件夹，同时生成 `package-lock.json` 记下每个包的精确版本。`added 28 packages` 是下载的包数量，Windows 上可能略有不同；`funding` 那两行是开源项目求赞助的提示，可以忽略；最后一行没有 `ERR!` 就说明成功了。
+
+每个项目只需要在第一次、或者 `package.json` 里的依赖有变化时执行 `npm install`。然后启动开发服务器：
+
+```powershell
+# 在 D:\react-study\price-list 目录执行
+npm run dev
+```
 
 #### 🔍 拆解运行结果
 
@@ -315,15 +347,47 @@ WebSocket 是浏览器和服务器之间一条一直保持连接的通道，服�
 
 这一步是配置，不算新概念，但后面每一章都依赖它。
 
-TypeScript 的严格模式（`strict`）要求每个变量和参数都有明确的类型，不允许悄悄变成 `any`（「任意类型，不检查」）。本教程全程开启严格模式、禁止 `any`。TypeScript 7.0 默认已开启，但模板配置里没写出来，显式写上，换版本也不会变。打开 `tsconfig.app.json`，在 `/* Linting */` 这一行下面插入 `"strict": true,`，其他行不动。改完这一段是：
+TypeScript 的严格模式（`strict`）要求每个变量和参数都有明确的类型，不允许悄悄变成 `any`（「任意类型，不检查」）。本教程全程开启严格模式、禁止 `any`。TypeScript 7.0 默认已开启，但模板配置里没写出来，显式写上，换版本也不会变。打开 `tsconfig.app.json`，在 `/* Linting */` 这一行下面插入 `"strict": true,`，其他行不动。改完的完整文件：
 
 ```json
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "esnext",
+    "types": ["vite/client"],
+    "allowArbitraryExtensions": true,
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"]
+}
 ```
 
-完整文件见仓库 `code/ch01/price-list/tsconfig.app.json`。
+这个文件里几项和日常写代码关系最大的设置：
+
+| 设置 | 作用 |
+| --- | --- |
+| `"strict": true` | 打开全部严格检查：参数必须有类型、可能为 `null` 的值使用前必须判断等 |
+| `"noUnusedLocals"` / `"noUnusedParameters"` | 声明了却没用的变量、参数会报错。后面几章的「改坏一处」会经常看到它 |
+| `"jsx": "react-jsx"` | 允许在 `.tsx` 文件里写 JSX |
+| `"include": ["src"]` | 只检查 `src` 文件夹里的代码 |
+| `"noEmit": true` | TypeScript 只做检查、不输出文件，翻译和打包交给 Vite |
 
 要知道一件事：**Vite 开发服务器只负责翻译，不检查类型。** 实测时我在 `App.tsx` 里写了 `const price: number = '1280'`（把字符串赋给数字），浏览器照样显示了 `1280`，终端也没有报错。类型错误只在两个地方出现：
 

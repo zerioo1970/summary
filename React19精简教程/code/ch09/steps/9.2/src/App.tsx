@@ -15,11 +15,11 @@ function App() {
         {/* Link 改地址但不刷新页面；React Router 发现地址变了，换掉下面 Routes 里显示的页面 */}
         <Link to="/">产品清单</Link> | <Link to="/about">关于</Link>
       </nav>
-      {/* 路由表：从上往下找第一条与当前地址匹配的 path，显示它的 element */}
+      {/* 路由表：React Router 找出与当前地址最匹配的那条 path，显示它的 element */}
       <Routes>
         <Route path="/" element={<ListPage />} />
         <Route path="/about" element={<AboutPage />} />
-        {/* * 匹配任何地址，放在最后兜底 */}
+        {/* * 匹配任何地址，但只有别的路由都对不上时才会用它，相当于兜底 */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <PageFooter />
