@@ -9,12 +9,11 @@ export type ProductState =
   | { status: 'success'; product: Product }
 
 export function useProduct(id: string | undefined) {
-  const [state, setState] = useState<ProductState>({ status: 'loading' })
+  // 记下「这份结果是哪个 id 的」。还没有结果时是 null
+  const [loaded, setLoaded] = useState<{ id: string | undefined; state: ProductState } | null>(null)
 
   useEffect(() => {
     let ignore = false
-    // 换了 id 先回到「加载中」，否则会短暂显示上一个产品
-    setState({ status: 'loading' })
 
     async function load() {
       try {
@@ -26,11 +25,11 @@ export function useProduct(id: string | undefined) {
         }
         const product: Product = await response.json()
         if (!ignore) {
-          setState({ status: 'success', product })
+          setLoaded({ id, state: { status: 'success', product } })
         }
       } catch (err) {
         if (!ignore) {
-          setState({ status: 'error', message: err instanceof Error ? err.message : String(err) })
+          setLoaded({ id, state: { status: 'error', message: err instanceof Error ? err.message : String(err) } })
         }
       }
     }
@@ -41,5 +40,7 @@ export function useProduct(id: string | undefined) {
     }
   }, [id])
 
-  return state
+  // 派生出当前状态：还没有结果，或者结果属于上一个 id（刚从 /products/1 换到 /products/2），都算「加载中」
+  // 这样就不用在 effect 里先 setState 成 loading，少一次多余的渲染
+  return loaded !== null && loaded.id === id ? loaded.state : { status: 'loading' as const }
 }

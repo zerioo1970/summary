@@ -747,6 +747,8 @@ TypeScript 为什么没发现？`vite-env.d.ts` 里的声明是你对 TypeScript
 
 思路：和 `useProducts` 一样的写法，只是地址里带上 `id`，并把 `id` 放进依赖数组，`id` 变了就重新请求。`response.ok` 为 `false` 时先读出服务器返回的 `{ message }`，再用它抛错。
 
+还有一个细节：`id` 变了以后，旧结果属于上一个产品，不能继续显示。这里不在 effect 一开始 `setState` 成「加载中」（`npm run lint` 会警告 `set-state-in-effect`），而是记下「结果属于哪个 id」，最后一行用它**算出**当前状态：结果的 id 和当前 id 不同，就当作「加载中」。`'loading' as const` 让 TypeScript 把它当作固定值 `'loading'`，而不是任意字符串。
+
 ```ts
 // src/hooks/useProduct.ts
 // 练习 1：只加载一个产品。id 来自地址栏，所以 id 要写进依赖数组：从 /products/1 换到 /products/2 时重新加载
@@ -759,12 +761,11 @@ export type ProductState =
   | { status: 'success'; product: Product }
 
 export function useProduct(id: string | undefined) {
-  const [state, setState] = useState<ProductState>({ status: 'loading' })
+  // 记下「这份结果是哪个 id 的」。还没有结果时是 null
+  const [loaded, setLoaded] = useState<{ id: string | undefined; state: ProductState } | null>(null)
 
   useEffect(() => {
     let ignore = false
-    // 换了 id 先回到「加载中」，否则会短暂显示上一个产品
-    setState({ status: 'loading' })
 
     async function load() {
       try {
@@ -776,11 +777,11 @@ export function useProduct(id: string | undefined) {
         }
         const product: Product = await response.json()
         if (!ignore) {
-          setState({ status: 'success', product })
+          setLoaded({ id, state: { status: 'success', product } })
         }
       } catch (err) {
         if (!ignore) {
-          setState({ status: 'error', message: err instanceof Error ? err.message : String(err) })
+          setLoaded({ id, state: { status: 'error', message: err instanceof Error ? err.message : String(err) } })
         }
       }
     }
@@ -791,7 +792,9 @@ export function useProduct(id: string | undefined) {
     }
   }, [id])
 
-  return state
+  // 派生出当前状态：还没有结果，或者结果属于上一个 id（刚从 /products/1 换到 /products/2），都算「加载中」
+  // 这样就不用在 effect 里先 setState 成 loading，少一次多余的渲染
+  return loaded !== null && loaded.id === id ? loaded.state : { status: 'loading' as const }
 }
 ```
 
