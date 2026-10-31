@@ -1,0 +1,52 @@
+/* src/index.css */
+/* 全局样式先保持最少，第 10 章再整理 */
+body {
+  margin: 24px;
+  font-family: system-ui, 'Microsoft YaHei', sans-serif;
+}
+
+.subtitle {
+  color: #666;
+}
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 16px;
+  margin-bottom: 12px;
+  max-width: 360px;
+}
+
+.panel {
+  border-left: 4px solid #3b82f6;
+  padding-left: 12px;
+  margin-bottom: 16px;
+}
+
+.product-table {
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.product-table th,
+.product-table td {
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+}
+
+.out-of-stock {
+  margin-left: 6px;
+  padding: 0 6px;
+  color: #fff;
+  background: #dc2626;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.low {
+  color: #dc2626;
+}
+
+.empty {
+  color: #999;
+}
