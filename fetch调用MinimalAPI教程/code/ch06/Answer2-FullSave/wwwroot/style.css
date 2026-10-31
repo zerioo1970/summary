@@ -1,0 +1,31 @@
+/* code/ch06/Answer2-FullSave/wwwroot/style.css */
+
+/* ===== 电脑和手机都生效的基础样式 ===== */
+body { font-family: sans-serif; margin: 16px; }
+.err { color: red; }
+table { border-collapse: collapse; }
+th, td { border: 1px solid #999; padding: 4px 8px; }
+
+/* ===== 只在屏幕宽度 ≤ 600px 时生效：手机竖屏 ===== */
+@media (max-width: 600px) {
+  /* 输入框占满一行，手指好点；box-sizing 让 padding 算在 100% 以内，不会撑出屏幕 */
+  input { width: 100%; box-sizing: border-box; padding: 8px; }
+  /* 字号不小于 16px：iPhone 上小于 16px 的输入框一获得焦点，页面会自动放大 */
+  input, button { font-size: 16px; }
+  /* 按钮做高一点，手指按得准 */
+  button { padding: 10px 16px; }
+  /* 只让「保存」占满一行；写成 button 会让卡片里的编辑、删除也变成整行 */
+  button[type="submit"] { width: 100%; }
+
+  /* 表格改成卡片：每一行一个方块，每个单元格占一行 */
+  thead { display: none; }
+  table, tbody, tr, td { display: block; }
+  tr { border: 1px solid #999; margin-bottom: 12px; padding: 8px; }
+  td { border: none; padding: 4px 0; }
+
+  /* 表头藏起来了，在每个单元格前面补上列名。第几个 td 就是第几列 */
+  td:nth-child(1)::before { content: "Id："; color: #666; }
+  td:nth-child(2)::before { content: "编码："; color: #666; }
+  td:nth-child(3)::before { content: "名称："; color: #666; }
+  td:nth-child(4)::before { content: "价格："; color: #666; }
+}

@@ -1,0 +1,37 @@
+<!-- code/ch03/Answer1-NameLength/wwwroot/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>产品列表</title>
+  <style>
+    .err { color: red; }
+  </style>
+</head>
+<body>
+  <h1>产品列表</h1>
+
+  <h2>新增产品</h2>
+  <form id="addForm">
+    <p>编码：<input id="code"> <span class="err" id="err-code"></span></p>
+    <p>名称：<input id="name"> <span class="err" id="err-name"></span></p>
+    <p>价格：<input id="price" type="number" step="0.01"> <span class="err" id="err-price"></span></p>
+    <!-- type="submit"：点它或在输入框里按回车，都会触发表单的 submit 事件 -->
+    <button type="submit">保存</button>
+  </form>
+
+  <h2>列表</h2>
+  <p>
+    名称包含：<input id="keyword">
+    <button id="btnSearch">查询</button>
+  </p>
+  <p id="msg"></p>
+  <table border="1">
+    <thead>
+      <tr><th>Id</th><th>编码</th><th>名称</th><th>价格</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <script src="app.js"></script>
+</body>
+</html>
