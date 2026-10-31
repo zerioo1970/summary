@@ -359,7 +359,7 @@ for (const button of document.querySelectorAll('#rows button')) {
 
 ## 下一章
 
-本教程到此结束：查询、新增、修改、删除和错误处理，日常页面需要的操作都有了。数据要落到 SQL Server，把 `products` 换成 ADO.NET 或 Dapper 查询即可，前端代码不用改。
+用户要在手机上用这个页面：第 6 章讲手机适配，以及怎样用手机打开电脑上运行的网站。
 
 ---
 
