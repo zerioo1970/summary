@@ -409,7 +409,7 @@ createRoot(document.getElementById('root')!).render(
 
 ## 下一章
 
-本教程到此结束。你已经能用 React 19 + TypeScript 完成一个带列表、表单、取数、路由的前端，并打包部署。下一步可以把 `products.json` 换成真实的后端接口。
+数据还来自静态文件 `products.json`，只能看不能存。第 11 章启动一个本地模拟接口，前端改为从接口加载数据。
 
 ---
 
