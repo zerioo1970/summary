@@ -1,0 +1,100 @@
+// src/api.ts
+// 所有「写」接口集中放在这里。页面和 Hook 只调用这些函数，不直接拼地址、写请求头
+import type { Product, User } from './types.ts'
+
+// 新增、修改时提交的内容：Product 去掉 id。id 由服务器分配，前端不能自己定
+export type ProductInput = Omit<Product, 'id'>
+
+const BASE = import.meta.env.VITE_API_BASE
+
+// 接口失败时抛出的错误。比普通 Error 多带两样东西：HTTP 状态码，以及逐个字段的校验错误（每个字段一句话）
+export class ApiError extends Error {
+  status: number
+  // 例如 { code: '编号 P-001 已存在' }。没有字段错误时是空对象
+  fieldErrors: Record<string, string>
+
+  constructor(message: string, status: number, fieldErrors: Record<string, string>) {
+    // super(...) 调用父类 Error 的构造函数，设置 message
+    super(message)
+    this.status = status
+    this.fieldErrors = fieldErrors
+  }
+}
+
+// ASP.NET Core 返回错误时用的 ProblemDetails 格式（RFC 9457 标准）。
+// 404、409、401 时有 title 和 detail；校验失败时多一个 errors，每个字段对应一个字符串数组
+type ProblemDetails = {
+  title?: string
+  status?: number
+  detail?: string
+  errors?: Record<string, string[]>
+}
+
+// 把失败的响应转换成 ApiError
+async function toApiError(response: Response): Promise<ApiError> {
+  try {
+    const body: ProblemDetails = await response.json()
+    // 每个字段可能有多条错误，表单里一个字段只显示一行，用「；」连起来
+    const fieldErrors: Record<string, string> = {}
+    for (const [field, messages] of Object.entries(body.errors ?? {})) {
+      fieldErrors[field] = messages.join('；')
+    }
+    // detail 是具体原因（「产品 99 不存在」），没有时退回 title（「校验失败」「Not Found」）
+    return new ApiError(body.detail ?? body.title ?? `服务器返回 ${response.status}`, response.status, fieldErrors)
+  } catch {
+    // 响应内容不是 JSON（例如代理返回的 502、后端的异常页），只能用状态码
+    return new ApiError(`服务器返回 ${response.status}`, response.status, {})
+  }
+}
+
+export async function createProduct(input: ProductInput): Promise<Product> {
+  const response = await fetch(`${BASE}/products`, {
+    // 默认是 GET，新增要写明 POST
+    method: 'POST',
+    // 告诉服务器：请求体是 JSON。不写的话很多后端不知道怎么解析，会拒绝
+    headers: { 'Content-Type': 'application/json' },
+    // 请求体只能是字符串，把对象转成 JSON 文本
+    body: JSON.stringify(input),
+  })
+  if (!response.ok) {
+    throw await toApiError(response)
+  }
+  // 服务器返回保存后的产品，带上了它分配的 id
+  const saved: Product = await response.json()
+  return saved
+}
+
+export async function updateProduct(id: number, input: ProductInput): Promise<Product> {
+  const response = await fetch(`${BASE}/products/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
+  if (!response.ok) {
+    throw await toApiError(response)
+  }
+  const saved: Product = await response.json()
+  return saved
+}
+
+export async function deleteProduct(id: number): Promise<void> {
+  const response = await fetch(`${BASE}/products/${id}`, { method: 'DELETE' })
+  if (!response.ok) {
+    throw await toApiError(response)
+  }
+  // 删除成功返回 204，没有内容，不要调用 response.json()
+}
+
+// 登录：用户名密码正确时返回用户信息（不含密码）；错误时服务器返回 401，这里抛出 ApiError
+export async function login(username: string, password: string): Promise<User> {
+  const response = await fetch(`${BASE}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  })
+  if (!response.ok) {
+    throw await toApiError(response)
+  }
+  const user: User = await response.json()
+  return user
+}

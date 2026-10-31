@@ -1,6 +1,7 @@
 # React 19 精简教程：日常开发够用的基本功
 
 > 版本基线：`react 19.3.x` + `react-dom 19.3.x` ｜ `vite 8.3.x`（`react-ts` 模板，create-vite 9.3.3）｜ `typescript 7.0.x`（`strict` 开启，禁止 `any`）｜ `@types/react 19.3.x` ｜ `react-router 8.5.1`（第 9 章起）｜ Node.js 24 LTS（≥ 22.22）｜ VS Code
+> 第 15 章后端：.NET 10 SDK（实测 10.0.403）+ C# 14 + ASP.NET Core Minimal API ｜ Visual Studio 2026 或命令行 `dotnet`
 > 版本于 2026-10-30 用 `npm create vite@latest -- --template react-ts` 实际生成项目核对；全部代码在 Node.js 24.22.2 上实测。
 >
 > 篇幅：讲清楚、全面、连贯优先，单章正文不受 400 行限制（规范 6.1，2026-10-30 确认）；每章新概念仍 ≤ 3 个。代码一律给完整文件，不用「见仓库」代替。
@@ -17,10 +18,10 @@
 
 全书用一个**产品价格清单**小应用贯穿：从一个静态页面开始，每章加一点功能，最后得到带列表、筛选、新增、详情页、数据加载的完整前端，并打包成可部署的静态文件。
 
-第 1–10 章的数据来自项目里的 `public/products.json`；第 11–14 章换成项目自带的本地模拟接口（`mock-server/server.ts`，只用 Node.js 自带功能），**都不需要安装后端或数据库**。
+第 1–10 章的数据来自项目里的 `public/products.json`；第 11–14 章换成项目自带的本地模拟接口（`mock-server/server.ts`，只用 Node.js 自带功能），不需要安装后端或数据库；第 15 章用 .NET 10 Minimal API 写真正的后端（数据放内存，仍不需要数据库）。
 
 **最短路径**：第 1–7 章 ≈ 6 小时，做出能加载数据、删除、入库、录入新产品的单页清单。
-**完整路径**：14 章 ≈ 12 小时，按每天 2 小时约 6–7 天。第 11–14 章学完，能做出连接接口、能增删改查、带登录的页面。
+**完整路径**：15 章 ≈ 13.5 小时，按每天 2 小时约 7 天。第 11–14 章学完，能做出连接接口、能增删改查、带登录的页面；第 15 章换成 ASP.NET Core Minimal API 后端，前后端合成一个网站。
 
 ---
 
@@ -41,7 +42,8 @@
 | 第 11 章 连接接口：开发代理、跨域与环境变量 | ✅ |
 | 第 12 章 保存数据：新增、删除、修改写回接口 | ✅ |
 | 第 13 章 编辑产品：表单初始值、保存后跳转、后端校验错误 | ✅ |
-| **第 14 章 登录用户：Context 共享数据与调试工具** | ✅ |
+| 第 14 章 登录用户：Context 共享数据与调试工具 | ✅ |
+| **第 15 章 换成真实后端：ASP.NET Core Minimal API** | ✅ |
 
 ---
 
@@ -113,6 +115,12 @@
 登录后各页面都能取到当前用户，按角色显示删除按钮；用 React DevTools 查看组件状态。
 新概念：Context（`createContext` / `useContext`）· 按登录状态和角色显示界面 · React DevTools
 
+### 第六部分 真实后端（1 章，约 80 分钟）
+
+**[第 15 章 换成真实后端：ASP.NET Core Minimal API](docs/ch15-minimal-api.md)**（80 分钟）
+用 .NET 10 Minimal API 写出和模拟接口相同的 6 个接口；前端只改代理端口和 `api.ts`；打包进后端 `wwwroot`，前后端合成一个网站。
+新概念：Minimal API 接口与 ProblemDetails 错误格式 · 前端对接新的错误格式 · 同站点部署（`wwwroot` + 页面回退）
+
 ---
 
 ## 有意不讲的内容
@@ -139,6 +147,7 @@ React19精简教程/
         ├── price-list/        # 本章结束时的完整项目（不含练习答案、不含 node_modules）
         ├── steps/N.N/         # 本章中间步骤的文件（正文里标着「N.N 版本」的代码）
         └── answers/           # 练习参考答案，目录结构与项目相同
+        （第 15 章另有 PriceApi/：后端 Minimal API 项目，和 price-list 并排）
 ```
 
 每章的 `price-list` 都能直接运行：进入该目录执行 `npm install`，再执行 `npm run dev`。正文里所有带文件路径注释的代码块，都和这里的文件逐字一致。
@@ -149,4 +158,4 @@ React19精简教程/
 
 - 每章的代码都通过了 `tsc -b`（strict）、`vite build` 和 `oxlint`；页面行为、控制台报错、错误遮罩文字是在 Vite 开发服务器 + 无头 Chromium 中实际操作得到的。实测环境是 Linux，命令和输出与 Windows 相同，只有路径写法不同。
 - 无法实测、正文已标注「⚠️ 未实机验证」的部分：Windows 下 Node.js / VS Code 的安装界面和菜单文字、PowerShell 执行策略报错、IIS 的 `web.config`（URL Rewrite）配置和反向代理、React DevTools 浏览器扩展的界面操作。
-- 第 11–14 章的接口行为（状态码、返回内容、报错文字）都是启动模拟接口后实际请求得到的。
+- 第 11–14 章的接口行为（状态码、返回内容、报错文字）都是启动模拟接口后实际请求得到的；第 15 章的后端在 .NET 10.0.403 上用 `dotnet run` 实测，Visual Studio 2026 的界面操作未实机验证。

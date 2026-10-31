@@ -708,7 +708,7 @@ Download the React DevTools for a better development experience: https://react.d
 
 ## 下一章
 
-本教程到此结束。你已经能做出一个连接接口、能增删改查、带登录的前端页面。下一步可以把模拟接口换成真实后端，或者学习 README「有意不讲的内容」里列出的工具。
+后端一直是模拟接口。第 15 章换成 ASP.NET Core Minimal API，并把前端打包进后端，合成一个网站。
 
 ---
 
