@@ -16,7 +16,7 @@ function renderRows(products) {
     }
     const ops = document.createElement('td');
     // 这里可以用 innerHTML：拼进去的只有后端给的数字 id，没有用户输入的文字
-    // data-action、data-id 给 4.4 节的统一点击处理用
+    // data-action、data-id 给文件末尾的统一点击处理用
     ops.innerHTML =
       `<button data-action="edit" data-id="${p.id}">编辑</button> ` +
       `<button data-action="delete" data-id="${p.id}">删除</button>`;
