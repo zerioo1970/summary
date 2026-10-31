@@ -16,7 +16,7 @@ inclusion: auto
 4. **每个概念必须给反例**（什么时候不该用），这是必填项。
 5. **代码完整可运行**，禁 `...` 省略，首行注释写文件路径，长代码落盘 `code/chNN/`；未实机验证须标注。
 6. **类比分场景**：前端 / React / TS **禁用** C#、WebForm 类比；Python / ML / LangChain **可以**用 C#、SQL 类比。
-7. **前端一律 TypeScript**，strict 开启，**禁 `any`**。后端示例用 Spring Boot 3.5 + MyBatis-Flex + SQL Server + Gradle。**例外（规范 6.1）**：用户明确指定栈的独立教程可按该栈单独写（已登记：`Dapper教程/`、`EFCore教程/`、`企业微信添加成员教程/`、`企业微信网页登录教程/` 用 .NET 10 + C#（后者前端 React 19 + TS），可用 ADO.NET 正式对照；`fetch调用MinimalAPI教程/` 后端 .NET 10 Minimal API、前端**允许纯 JS**（原生 HTML + fetch，无打包））。`React19精简教程/` 不受单章 400 行限制（讲清楚、详细、连贯优先，2026-10-30 确认）。
+7. **前端一律 TypeScript**，strict 开启，**禁 `any`**。后端示例用 Spring Boot 3.5 + MyBatis-Flex + SQL Server + Gradle。**例外（规范 6.1）**：用户明确指定栈的独立教程可按该栈单独写（已登记：`Dapper教程/`、`EFCore教程/`、`企业微信添加成员教程/`、`企业微信网页登录教程/` 用 .NET 10 + C#（后者前端 React 19 + TS），可用 ADO.NET 正式对照；`fetch调用MinimalAPI教程/` 后端 .NET 10 Minimal API、前端**允许纯 JS**（原生 HTML + fetch，无打包））。`React19精简教程/` 不受单章 400 行限制（讲清楚、详细、连贯优先，2026-10-30 确认），第 15 章后端用 .NET 10 Minimal API（2026-10-31 确认）。
 8. **禁数学推导**，只用均值/标准差/百分比/差分/相关性/概率直觉，用具体数值代替符号。
 9. **Mermaid ≤ 2 列节点**、`graph TB`、标签每行 ≤ 20 中文字用 `<br/>` 换行、禁带 direction 的 subgraph 左右对照。
 10. **参考答案放文件最末**，`---` + 提示注释 + 30 空行隔离，正文不提前透露。
