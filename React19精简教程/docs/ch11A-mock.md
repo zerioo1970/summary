@@ -282,7 +282,7 @@ Node.js 24 可以直接运行 `.ts` 文件：它在运行前把类型标注去�
 | `POST /api/products` | 新增产品（第 12A 章） | 201 + 新产品（带服务器分配的 id） | 400 `{ "message": "校验失败", "errors": { ... } }` |
 | `PUT /api/products/3` | 修改产品（第 13A 章） | 200 + 修改后的产品 | 400 / 404 |
 | `DELETE /api/products/3` | 删除产品（第 12A 章） | 204，没有内容 | 409：还有库存的产品不能删 |
-| `POST /api/login` | 登录（第 14 章） | 200 + 用户信息 | 401 `{ "message": "用户名或密码错误" }` |
+| `POST /api/login` | 登录（第 14A 章） | 200 + 用户信息 | 401 `{ "message": "用户名或密码错误" }` |
 
 `POST`、`PUT` 请求必须在请求头里写明 `Content-Type: application/json`，否则返回 415（第 12A、12C 章会看到）。
 

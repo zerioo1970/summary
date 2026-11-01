@@ -71,7 +71,9 @@
 | 第 13A 章 编辑页：用已有数据做表单的初始值 | ✅ |
 | 第 13B 章 保存后跳转：useNavigate | ✅ |
 | 第 13C 章 把后端校验错误显示到对应的输入框 | ✅ |
-| 第 14 章 登录用户：Context 共享数据与调试工具 | ✅ |
+| 第 14A 章 Context：跨层级共享「当前用户」 | ✅ |
+| 第 14B 章 按登录状态和角色显示界面 | ✅ |
+| 第 14C 章 React DevTools：看组件、props 和 state | ✅ |
 | **第 15 章 换成真实后端：ASP.NET Core Minimal API** | ✅ |
 
 ---
@@ -282,9 +284,19 @@
 「编号重复」显示在编号输入框下面。
 新概念：后端字段错误映射到表单
 
-**[第 14 章 登录用户：Context 共享数据与调试工具](docs/ch14-auth-context.md)**（60 分钟）
-登录后各页面都能取到当前用户，按角色显示删除按钮；用 React DevTools 查看组件状态。
-新概念：Context（`createContext` / `useContext`）· 按登录状态和角色显示界面 · React DevTools
+第 14 章拆成 3 个小章，每个小章只讲一个技术点：
+
+**[第 14A 章 Context：跨层级共享「当前用户」](docs/ch14A-context.md)**（35 分钟）
+做出登录，所有页面都能取到当前用户。
+新概念：Context（`createContext` / `useContext`）
+
+**[第 14B 章 按登录状态和角色显示界面](docs/ch14B-roles.md)**（25 分钟）
+没登录不能录入，只有管理员能看到删除按钮。
+新概念：按登录状态和角色显示界面
+
+**[第 14C 章 React DevTools：看组件、props 和 state](docs/ch14C-devtools.md)**（20 分钟）
+不加 console.log 也能看清组件此刻的状态。
+新概念：React DevTools
 
 ### 第六部分 真实后端（1 章，约 80 分钟）
 

@@ -8,8 +8,8 @@
 
 ## 开始之前
 
-- 前面你已经会了：开发代理和 `.env`（第 11C、11D 章）、`api.ts` 写请求（第 12A–12C 章）、`ApiError` 和字段错误（第 13C 章）、登录与 Context（第 14 章）。
-- 起点代码：仓库 `code/ch14/price-list`（不含练习答案）。
+- 前面你已经会了：开发代理和 `.env`（第 11C、11D 章）、`api.ts` 写请求（第 12A–12C 章）、`ApiError` 和字段错误（第 13C 章）、登录与 Context（第 14A–14C 章）。
+- 起点代码：仓库 `code/ch14C/price-list`（不含练习答案）。
 - 需要 .NET 10 SDK。安装 Visual Studio 2026 时勾选「ASP.NET 和 Web 开发」工作负载会一起装上；也可以单独从 `https://dotnet.microsoft.com/download` 下载 .NET 10 SDK。在 PowerShell 里执行 `dotnet --version`，显示 `10.0.xxx` 就可以了（实测 10.0.403）。⚠️ Windows 安装过程未实机验证。
 - 本章不再需要 `npm run mock`，把那个终端关掉。`mock-server` 文件夹可以留着不管。
 - 预计耗时：80 分钟。
@@ -373,7 +373,7 @@ export default defineConfig({
 })
 ```
 
-**② 错误格式。** 用下面的内容整个替换 `src/api.ts`。和第 14 章相比：多了 `ProblemDetails` 类型；`toApiError` 改成读 `detail` / `title`，并把 `errors` 的数组连成一句话。其余函数不变。
+**② 错误格式。** 用下面的内容整个替换 `src/api.ts`。和第 14C 章相比：多了 `ProblemDetails` 类型；`toApiError` 改成读 `detail` / `title`，并把 `errors` 的数组连成一句话。其余函数不变。
 
 ```ts
 // src/api.ts
@@ -545,7 +545,7 @@ npm run dev
 
 #### 🔍 拆解运行结果
 
-打开 `http://localhost:5173/`，实测和第 14 章的使用体验完全一样，只是请求都到了 Minimal API（终端 1 里能看到每个请求）：
+打开 `http://localhost:5173/`，实测和第 14C 章的使用体验完全一样，只是请求都到了 Minimal API（终端 1 里能看到每个请求）：
 
 | 操作 | 页面 | 请求和状态码 |
 | --- | --- | --- |
@@ -563,7 +563,7 @@ npm run dev
 
 #### 改坏一处试试
 
-**① 用回第 14 章的 `api.ts`。** 实测：编号重复时，编号下面**照样显示**「编号 P-001 已存在」；但删除凸阵探头时，只显示「删除失败：服务器返回 409」，原因丢了。
+**① 用回第 14C 章的 `api.ts`。** 实测：编号重复时，编号下面**照样显示**「编号 P-001 已存在」；但删除凸阵探头时，只显示「删除失败：服务器返回 409」，原因丢了。
 
 第一种情况是碰巧对了：旧代码把 `["编号 P-001 已存在"]` 这个数组当成字符串直接放进页面，只有一个元素的数组显示出来恰好就是那句话。如果一个字段有两条错误，就会变成两句话直接连在一起，中间没有分隔。第二种情况旧代码找的是 `message`，ProblemDetails 里没有这个字段，只能退回状态码。只有读对字段，错误才显示得可靠。改回本章的 `api.ts`。
 

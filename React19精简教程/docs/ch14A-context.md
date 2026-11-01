@@ -1,19 +1,23 @@
-# 第 14 章 登录用户：Context 共享数据与调试工具
+# 第 14A 章 Context：跨层级共享「当前用户」
 
 ## 这一章解决什么问题
 
-系统要知道「现在是谁在用」：页头显示当前用户的名字，没登录不能录入产品，只有管理员能看到「删除」按钮。「当前用户」页头要用、列表页要用、表格也要用，它们之间隔着好几层组件。按第 8B 章的状态提升，就得从 `App` 一层层用 props 传下去，每一层都要加 prop，中间的组件自己根本用不到它。本章用 Context 解决这个问题，再介绍排查这类问题最常用的工具 React DevTools。
+系统要知道「现在是谁在用」：页头显示当前用户的名字，没登录不能录入产品，只有管理员能看到「删除」按钮。「当前用户」页头要用、列表页要用、表格也要用，它们之间隔着好几层组件。按第 8B 章的状态提升，就得从 `App` 一层层用 props 传下去，每一层都要加 prop，中间的组件自己根本用不到它。
+
+第 14 章分三步：本章用 Context 做出登录，让任何组件都能取到当前用户；第 14B 章按登录状态和角色显示界面；第 14C 章介绍排查这类问题最常用的工具 React DevTools。
+
+本章只讲一个技术点：**Context**。
 
 ## 开始之前
 
-- 上一章你已经会了：编辑页、`useNavigate`、把后端字段错误显示到输入框下面。
-- 起点代码：仓库 `code/ch13C/price-list`（不含练习答案）。两个终端分别运行 `npm run dev` 和 `npm run mock`。
-- 模拟接口里有两个测试账号：`admin / 123456`（管理员），`zhangsan / 123456`（销售）。
-- 预计耗时：60 分钟。
+- 上一章你已经会了：编辑页、`useNavigate`、把后端的字段错误显示到输入框。
+- 起点代码：仓库 `code/ch13C/price-list`（不含练习答案）。两个终端分别运行开发服务器和 `npm run mock`。
+- 模拟接口里有两个用户：`admin` / `123456`（系统管理员，角色 admin）、`zhangsan` / `123456`（张三，角色 sales）。
+- 预计耗时：35 分钟。
 
 ## 正文
 
-### 14.1 Context：跨层级共享数据
+### 14A.1 Context 是什么
 
 **白话定义**：Context（上下文）是 React 提供的一种「广播」方式：在组件树的某一层放一个提供者（provider），给它一个值；它里面**任何一层**的组件都可以用 `useContext` 直接取到这个值，中间的组件不用传 props。值变了，所有用到它的组件都会重新渲染。
 
@@ -391,7 +395,7 @@ export function PageHeader() {
 
 #### 🔍 拆解运行结果
 
-实测（这一节还没改表格，所以删除按钮暂时谁都能看到）：
+实测（本章还没改表格，所以删除按钮暂时谁都能看到）：
 
 | 操作 | 结果 |
 | --- | --- |
@@ -401,7 +405,7 @@ export function PageHeader() {
 | 点「关于」 | 页头仍然是「张三（销售） 退出」：换了页面，`AuthProvider` 没有被移除，用户还在 |
 | 按 `F5` 刷新 | 页头变回「登录」 |
 
-刷新后为什么丢了？`user` 是 `AuthProvider` 里的 state，只存在于浏览器内存，刷新页面整个应用重新启动，state 回到初始值 `null`。练习 2 解决。
+刷新后为什么丢了？`user` 是 `AuthProvider` 里的 state，只存在于浏览器内存，刷新页面整个应用重新启动，state 回到初始值 `null`。练习 1 解决。
 
 `LoginPage` 拿到 `login` 函数时，没有任何组件给它传 props：它和 `AuthProvider` 之间隔着 `App`、`Routes`，`useAuth()` 直接取到了。
 
@@ -425,271 +429,18 @@ error TS2322: Type 'AuthValue | null' is not assignable to type 'AuthValue'.
 
 每次实验后改回。
 
-### 14.2 按登录状态和角色显示界面
-
-**白话定义**：有了 Context 里的 `user`，任何组件都可以按「有没有登录」「是什么角色」决定显示什么，写法就是第 5C 章的条件渲染。
-
-**业务场景**：没登录时不显示录入表单，提示「登录后才能录入新产品」；销售登录后能录入、能编辑，但看不到「删除」；管理员能看到「删除」。
-
-**反例（什么时候不该用）**：**不要以为在界面上藏起按钮，就做好了权限控制。** 按钮藏起来了，接口还在。懂一点技术的人可以在浏览器控制台里直接调用接口（下面「改坏一处」会实测）。前端按角色显示界面，只是为了**好用**（不让用户看到点了也没用的按钮）；真正的权限必须由**后端**在每个接口里检查：请求来自谁、他有没有这个权限。
-
-#### 🖼 图解
-
-```mermaid
-graph TB
-    A["useAuth() 取到 user"] --> B["user 为 null<br/>不显示表单、不显示删除"]
-    A --> C["user.role 是 sales<br/>显示表单、不显示删除"]
-    A --> D["user.role 是 admin<br/>表单和删除都显示"]
-```
-
-#### 💻 最小可运行代码
-
-用下面的内容整个替换 `src/components/ProductTable.tsx`。和第 13C 章相比：多了 `useAuth` 的 import 和调用；「删除」按钮外面包了 `{isAdmin && (...)}`。
-
-```tsx
-// src/components/ProductTable.tsx
-// 只负责显示表格。数据从 props 来；点了按钮不自己改数据，而是调用父组件给的函数「通知」它
-import { Link } from 'react-router'
-import type { Product } from '../types.ts'
-import { useAuth } from '../auth/AuthContext.ts'
-// 导入 CSS Module 得到一个对象：键是你写的类名，值是打包后真正使用的类名
-import styles from './ProductTable.module.css'
-
-type ProductTableProps = {
-  products: Product[]
-  // 回调 props：类型写清楚「调用时传什么参数、返回什么」。void 表示不关心返回值
-  onDelete: (id: number) => void
-  onRestock: (id: number) => void
-}
-
-export function ProductTable({ products, onDelete, onRestock }: ProductTableProps) {
-  // 直接从 Context 取当前用户，ListPage 不用为了它多传一个 prop
-  const { user } = useAuth()
-  // 可选链：没登录时 user 是 null，user?.role 得到 undefined，不会报错
-  const isAdmin = user?.role === 'admin'
-
-  if (products.length === 0) {
-    return <p className="empty">暂无产品</p>
-  }
-
-  return (
-    <table className={styles.table}>
-      <thead>
-        <tr>
-          <th>编号</th>
-          <th>名称</th>
-          <th>单价（元）</th>
-          <th>库存</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        {products.map((p) => (
-          <tr key={p.id}>
-            <td>{p.code}</td>
-            <td>
-              {/* 点产品名进入详情页，地址形如 /products/3 */}
-              <Link to={`/products/${p.id}`}>{p.name}</Link>
-              {p.stock === 0 && <span className={styles.outOfStock}>缺货</span>}
-            </td>
-            <td>{p.price.toLocaleString()}</td>
-            <td className={p.stock < 5 ? styles.low : undefined}>{p.stock}</td>
-            <td>
-              <button type="button" onClick={() => onRestock(p.id)}>入库 +1</button>{' '}
-              {/* 只有管理员看得到删除按钮。注意：这只是界面上藏起来，真正的权限要靠后端检查 */}
-              {isAdmin && (
-                <>
-                  <button type="button" onClick={() => onDelete(p.id)}>删除</button>{' '}
-                </>
-              )}
-              {/* 编辑是换一个页面，所以用 Link，不是按钮 */}
-              <Link to={`/products/${p.id}/edit`}>编辑</Link>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )
-}
-```
-
-用下面的内容整个替换 `src/pages/ListPage.tsx`。和第 13C 章相比：多了 `useAuth` 的 import 和 `const { user } = useAuth()`；表单改成登录后才显示。
-
-```tsx
-// src/pages/ListPage.tsx
-// 产品列表页：第 8C 章 App 的内容原样搬过来，去掉页头页脚（它们留在 App 里，所有页面共用）
-import { useEffect, useState } from 'react'
-import type { ReactNode } from 'react'
-import { useProducts } from '../hooks/useProducts.ts'
-import { FilterBar } from '../components/FilterBar.tsx'
-import { ProductTable } from '../components/ProductTable.tsx'
-import { ProductForm } from '../components/ProductForm.tsx'
-import { useAuth } from '../auth/AuthContext.ts'
-
-export function ListPage() {
-  // 加载和增删改的细节都在 useProducts 里，列表页只拿结果
-  const { state, addProduct, deleteProduct, restockProduct } = useProducts()
-  // 登录后才能录入新产品
-  const { user } = useAuth()
-  // 状态提升：搜索框和表格都要用 keyword，所以放在它们共同的父组件 App 里
-  const [keyword, setKeyword] = useState('')
-  // 删除、入库失败时显示的原因（例如「还有库存，不能删除」）
-  const [actionError, setActionError] = useState('')
-
-  // 表格只负责报告「点了哪一行」，调用接口、处理失败在这里做
-  async function handleDelete(id: number) {
-    setActionError('')
-    try {
-      await deleteProduct(id)
-    } catch (err) {
-      setActionError(`删除失败：${err instanceof Error ? err.message : String(err)}`)
-    }
-  }
-
-  async function handleRestock(id: number) {
-    setActionError('')
-    try {
-      await restockProduct(id)
-    } catch (err) {
-      setActionError(`入库失败：${err instanceof Error ? err.message : String(err)}`)
-    }
-  }
-
-  const count = state.status === 'success' ? state.products.length : 0
-
-  useEffect(() => {
-    document.title = `产品价格清单（${count} 种）`
-  }, [count])
-
-  let content: ReactNode
-  if (state.status === 'loading') {
-    content = <p>加载中…</p>
-  } else if (state.status === 'error') {
-    content = <p className="error">加载失败：{state.message}</p>
-  } else {
-    // 筛选结果是派生值：由 products 和 keyword 现算，不另存 state
-    const k = keyword.trim().toLowerCase()
-    const visible = state.products.filter(
-      (p) => p.name.toLowerCase().includes(k) || p.code.toLowerCase().includes(k),
-    )
-    // 传的是上面包了一层错误处理的函数
-    content = <ProductTable products={visible} onDelete={handleDelete} onRestock={handleRestock} />
-  }
-
-  return (
-    <section>
-      <p>共 {count} 种产品</p>
-      {/* 把值和「修改它的函数」一起交给搜索框 */}
-      <FilterBar keyword={keyword} onKeywordChange={setKeyword} />
-      {actionError && <p className="error">{actionError}</p>}
-      {content}
-      {user ? <ProductForm onSubmit={addProduct} /> : <p className="empty">登录后才能录入新产品</p>}
-    </section>
-  )
-}
-```
-
-`ProductTable` 自己调用 `useAuth()`，`ListPage` 没有为它多传一个 prop。这就是 Context 省掉的那一层传递。
-
-#### 🔍 拆解运行结果
-
-实测：
-
-| 状态 | 页头 | 删除按钮 | 录入表单 |
-| --- | --- | --- | --- |
-| 未登录 | 登录 | 0 个 | 显示「登录后才能录入新产品」 |
-| 张三（销售） | 张三（销售） 退出 | 0 个 | 显示 |
-| 点「退出」 | 登录 | 0 个 | 不显示 |
-| 系统管理员（管理员） | 系统管理员（管理员） 退出 | 每行一个 | 显示 |
-
-`user?.role === 'admin'` 用了第 12C 章练习 1 里的可选链：没登录时 `user` 是 `null`，`user?.role` 得到 `undefined`，比较结果是 `false`，不会报错。
-
-#### 改坏一处试试
-
-**① 角色名写错。** 把 `'admin'` 写成 `'administrator'`，报：
-
-```text
-error TS2367: This comparison appears to be unintentional because the types '"admin" | "sales" | undefined' and '"administrator"' have no overlap.
-```
-
-`User` 类型里把 `role` 写成了两个固定值的联合，拼错角色名在写代码时就会发现。如果写成 `role: string`，这个错误就漏过去了。
-
-**② 绕过界面直接调接口。** 以张三（销售）登录，页面上没有删除按钮。按 `F12` 打开控制台，输入下面这行回车：
-
-```js
-await fetch('/api/products/5', { method: 'DELETE' }).then((r) => r.status)
-```
-
-实测返回 `204`，回到产品清单，「探头保护套」已经被删掉了。本教程的模拟接口没有做权限检查，所以谁都能删。真实系统里，后端要在删除接口里检查当前用户是不是管理员，不是就返回 403（Forbidden，禁止访问）。这需要登录时由后端发一个凭证（令牌 token 或 Cookie 会话），之后每个请求都带上它，后端据此认出是谁。这部分属于后端和安全设计，本教程不展开。做完实验重启模拟接口恢复数据。
-
-### 14.3 React DevTools：看组件、props 和 state
-
-> ⚠️ 本节的浏览器扩展安装和界面操作未实机验证（实测环境是无头浏览器，不能安装扩展）。面板名称和按钮位置以你安装的版本为准。
-
-**白话定义**：React DevTools（React 开发者工具）是 React 官方提供的浏览器扩展。装好后，`F12` 开发者工具里会多出「⚛ Components」面板：以组件树的形式显示页面，选中一个组件，就能看到它此刻的 props、state、用到的 Context 值，还能直接修改它们看效果。
-
-**业务场景**：页面上「删除按钮怎么没出来」。在 Components 面板选中 `ProductTable`，看它用到的 Context 里 `user` 是不是 `null`、`role` 是什么；选中 `ListPage`，看 `keyword`、`actionError` 这些 state 的当前值。不用到处加 `console.log`。
-
-**反例（什么时候不该用）**：看**请求**有没有发出去、服务器返回了什么，不用 React DevTools，用浏览器自带的「网络（Network）」面板（第 7、11 章用过）。React DevTools 只管 React 组件本身。
-
-#### 🖼 图解
-
-```mermaid
-graph TB
-    A["F12 → Components 面板<br/>组件树"] --> B["选中 ProductTable"]
-    B --> C["右侧显示 props：<br/>products、onDelete…"]
-    B --> D["右侧显示 hooks：<br/>用到的 Context 值等"]
-```
-
-#### 💻 安装与使用
-
-1. 在 Chrome 或 Edge 的扩展商店搜索「React Developer Tools」，安装 React 官方（Meta）发布的那个。
-2. 打开 `http://localhost:5173/`，按 `F12`。开发者工具的标签页里多了「⚛ Components」和「⚛ Profiler」。没看到的话，点标签栏右边的 `»` 找一找，或者关掉开发者工具重新打开。
-3. 点「⚛ Components」。左边是组件树：`App`、`AuthProvider`、`PageHeader`、`ListPage`、`ProductTable`……和你写的组件一一对应。
-4. 点选 `ListPage`，右边能看到它的 hooks：`useProducts` 里的 state（加载状态和产品列表）、`keyword`、`actionError` 等。
-5. 在搜索框里输入几个字，看右边 `keyword` 的值跟着变；点「入库 +1」，看产品列表里那一行的 `stock` 跟着变。
-
-还有一个顺手的用法：左上角有个「选择元素」的图标，点它，再点页面上的某个按钮，组件树会跳到渲染这个按钮的组件。接手别人的代码、不知道某块界面是哪个文件写的时，这个功能很有用。
-
-#### 🔍 你会看到什么
-
-第 1 章开始，控制台里一直有一行提示：
-
-```text
-Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-```
-
-这行就是 React 在开发模式下建议你安装这个扩展。装好后这行提示消失（⚠️ 未实机验证）。
-
-#### 改坏一处试试
-
-在 Components 面板里选中 `AuthProvider`，找到它的 state（值是 `null` 或者当前用户对象），双击把它改成别的值（⚠️ 未实机验证：能否直接编辑对象类型的 state，取决于扩展版本）。页头和删除按钮会立刻跟着变化，但刷新页面后恢复，第二个终端里也不会有任何请求：这里改的只是浏览器内存里的 state。这再次说明，前端看到的「我是管理员」完全可以被用户自己改掉，权限只能由后端判断。
-
 ## ⚠️ 踩坑警告
 
 | 现象 | 原因 | 怎么改 |
 | --- | --- | --- |
 | 页面空白，控制台 `useAuth 必须在 AuthProvider 里面使用` | 用了 `useAuth()` 的组件不在 `AuthProvider` 里面 | 在 `main.tsx` 里用 `<AuthProvider>` 包住 `<App />` |
 | `npm run lint` 警告 `only-export-components` | 一个 `.tsx` 文件里同时导出了组件和非组件（Context、Hook） | 拆成两个文件：Context 和 Hook 放 `.ts`，组件放 `.tsx` |
-| 刷新页面后要重新登录 | 当前用户只存在内存里的 state | 登录后存进 `localStorage`，启动时读出来（练习 2）；真实系统通常由后端用 Cookie 会话或令牌保持登录 |
-| 藏起了删除按钮，数据还是被销售删掉了 | 前端隐藏只是界面效果，接口本身没有权限检查 | 后端在每个接口里检查当前用户的权限 |
+| 刷新页面后要重新登录 | 当前用户只存在内存里的 state | 登录后存进 `localStorage`，启动时读出来（练习 1）；真实系统通常由后端用 Cookie 会话或令牌保持登录 |
 | 网上的代码写 `<AuthContext.Provider value={...}>` | React 19 之前的写法 | 两种写法效果相同，React 19 可以直接写 `<AuthContext value={...}>` |
 
 ## 🎯 动手练习
 
-**练习 1：编辑页要求登录**
-
-没登录时直接打开 `/products/3/edit`，不显示表单，显示「请先登录再编辑产品。」和「去登录」链接。
-
-验收标准：
-
-- 未登录打开 `/products/3/edit`：只看到提示和链接，没有表单。
-- 点「去登录」登录后，再打开这个地址，表单正常显示编号 H-001。
-- 在编辑页点页头的「退出」，表单立刻消失，换成提示。
-
-提示：判断 `user` 后提前 `return` 时，要写在所有 Hook（`useParams`、`useProduct`、`useNavigate`、`useAuth`）调用**之后**，原因见第 4A 章踩坑警告。
-
-**练习 2：刷新后保持登录**
+**练习 1：刷新后保持登录**
 
 登录成功后把用户信息存进浏览器的 `localStorage`，页面打开时读出来作为初始值；退出时删掉。
 
@@ -700,15 +451,24 @@ Download the React DevTools for a better development experience: https://react.d
 
 提示：`localStorage.setItem('键', '字符串')` 保存，`localStorage.getItem('键')` 读取（没有时返回 `null`），`localStorage.removeItem('键')` 删除。只能存字符串，对象要用 `JSON.stringify` / `JSON.parse` 转换。
 
+**练习 2：页脚也显示当前用户**
+
+页脚的更新日期下面加一行「当前用户：张三」，没登录时显示「当前用户：未登录」。不给 `PageFooter` 加任何 prop。
+
+验收标准：
+
+- 未登录时页脚显示「当前用户：未登录」；用 zhangsan 登录后变成「当前用户：张三」。
+- `App.tsx` 里的 `<PageFooter />` 没有改动。
+
 卡住了看文末参考答案。
 
 ## 📌 一句话总结
 
-全局数据放 Context，用 useAuth 随处取；界面按角色显示，权限必须后端检查。
+提供者放最外层，任何组件用 useAuth 直接取当前用户，不用层层传 props。
 
 ## 下一章
 
-后端一直是模拟接口。第 15 章换成 ASP.NET Core Minimal API，并把前端打包进后端，合成一个网站。
+现在谁登录、谁没登录，看到的界面都一样。第 14B 章按登录状态和角色显示界面：没登录不能录入，只有管理员能删除。
 
 ---
 
@@ -744,70 +504,16 @@ Download the React DevTools for a better development experience: https://react.d
 
 
 
+
 ## 参考答案
 
 ### 练习 1
-
-思路：编辑页自己 `useAuth()` 取当前用户，没登录就提前返回提示。所有 Hook 都在 `if` 前面调用，保证每次渲染调用的 Hook 数量和顺序都一样。退出时 Context 的值变了，编辑页重新渲染，走进 `if` 分支。
-
-```tsx
-// src/pages/ProductEditPage.tsx
-// 练习 1 之后的版本：没登录时不显示表单
-// 编辑页：地址 /products/3/edit。先加载这个产品，加载完再显示表单；保存成功后回到列表
-import { Link, useNavigate, useParams } from 'react-router'
-import { useProduct } from '../hooks/useProduct.ts'
-import { ProductForm } from '../components/ProductForm.tsx'
-import { useAuth } from '../auth/AuthContext.ts'
-import * as api from '../api.ts'
-import type { ProductInput } from '../api.ts'
-
-export function ProductEditPage() {
-  const { id } = useParams()
-  const state = useProduct(id)
-  // useNavigate 返回一个函数，调用它就跳转到指定地址，效果和点 Link 一样
-  const navigate = useNavigate()
-  const { user } = useAuth()
-
-  async function handleSubmit(input: ProductInput) {
-    // 失败时 updateProduct 抛出 ApiError，这里不接住，交给表单显示
-    const saved = await api.updateProduct(Number(id), input)
-    navigate('/')
-    return saved
-  }
-
-  // 练习 1：没登录就提前返回。注意要写在所有 Hook 调用之后（第 4A 章：Hook 不能写在 return 后面）
-  if (!user) {
-    return (
-      <section>
-        <p className="error">请先登录再编辑产品。</p>
-        <p>
-          <Link to="/login">去登录</Link>
-        </p>
-      </section>
-    )
-  }
-
-  return (
-    <section>
-      <p>
-        <Link to="/">← 返回列表</Link>
-      </p>
-      {state.status === 'loading' && <p>加载中…</p>}
-      {state.status === 'error' && <p className="error">加载失败：{state.message}</p>}
-      {/* 加载成功后才显示表单：表单的 useState 只在第一次显示时读取 initial，必须那时数据已经到了 */}
-      {state.status === 'success' && <ProductForm title="编辑产品" initial={state.product} onSubmit={handleSubmit} />}
-    </section>
-  )
-}
-```
-
-### 练习 2
 
 思路：只改 `AuthProvider`。`useState(loadSavedUser)` 传的是**函数本身**（没有括号），React 只在第一次显示时调用它取初始值；如果写成 `useState(loadSavedUser())`，每次渲染都会去读一遍 `localStorage`，虽然结果一样但白白浪费。
 
 ```tsx
 // src/auth/AuthProvider.tsx
-// 练习 2 之后的版本：登录状态存进 localStorage，刷新页面不丢
+// 练习 1 之后的版本：登录状态存进 localStorage，刷新页面不丢
 // 提供者组件：自己保管「当前用户」这个 state，通过 AuthContext 提供给里面的所有组件
 import { useState } from 'react'
 import type { ReactNode } from 'react'
@@ -859,3 +565,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
 实测：admin 登录后 `localStorage` 里存着 `{"username":"admin","name":"系统管理员","role":"admin"}`，刷新后仍是登录状态；退出后这一项被删除，刷新后回到「登录」。
 
 注意：`localStorage` 里的内容用户可以在开发者工具里随意修改，比如把 `role` 改成 `admin`。这再次说明前端的「我是谁」不可信，权限必须由后端判断。
+
+### 练习 2
+
+思路：`PageFooter` 在 `AuthProvider` 里面，直接 `useAuth()` 就能取到 `user`，不需要任何人传给它。
+
+```tsx
+// src/components/PageFooter.tsx
+// 练习 2：页脚也显示当前用户。PageFooter 没有任何 props，直接从 Context 里取
+import { useAuth } from '../auth/AuthContext.ts'
+
+export function PageFooter() {
+  const updatedAt = '2026-10-30'
+  const { user } = useAuth()
+  return (
+    <footer>
+      数据更新日期：{updatedAt}
+      {/* 三元表达式：登录了显示名字，没登录显示「未登录」 */}
+      <p>当前用户：{user ? user.name : '未登录'}</p>
+    </footer>
+  )
+}
+```
+
+实测：未登录时页脚是「当前用户：未登录」，用 zhangsan 登录后是「当前用户：张三」。
