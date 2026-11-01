@@ -7,7 +7,7 @@
 ## 开始之前
 
 - 上一章你已经会了：`useState`、事件处理函数及其类型、更新函数 `setX((x) => ...)`。
-- 起点代码：仓库 `code/ch04/price-list`。本章把卡片换成表格，`Panel`、`ProductCard`、`QuantityPicker` 这几个文件先不用，保留着（第 9 章的详情页还会用 `ProductCard`）。
+- 起点代码：仓库 `code/ch04C/price-list`。本章把卡片换成表格，`Panel`、`ProductCard`、`QuantityPicker` 这几个文件先不用，保留着（第 9 章的详情页还会用 `ProductCard`）。
 - 在 `D:\react-study\price-list` 执行 `npm run dev`。预计耗时：50 分钟。
 
 先新建数据文件 `src/data.ts`：
@@ -246,7 +246,7 @@ export default App
 | 代码 | 说明 |
 | --- | --- |
 | `useState<Product[]>(initialProducts)` | 尖括号是泛型参数，明确 state 的类型。初始值是空数组 `[]` 时必须写，否则 TypeScript 推断不出元素类型 |
-| `onClick={() => handleDelete(p.id)}` | 第 4 章说过不能写 `onClick={handleDelete(p.id)}`。要传参数时包一层箭头函数，点击时才执行 |
+| `onClick={() => handleDelete(p.id)}` | 第 4B 章说过不能写 `onClick={handleDelete(p.id)}`。要传参数时包一层箭头函数，点击时才执行 |
 | `p.id === id ? {...} : p` | 三元表达式：是要改的那行就生成新对象，不是就原样返回 |
 
 用具体数据走一遍。原数组 `products` 有 5 个产品，id 依次是 1、2、3、4、5：

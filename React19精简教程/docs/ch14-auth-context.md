@@ -687,7 +687,7 @@ Download the React DevTools for a better development experience: https://react.d
 - 点「去登录」登录后，再打开这个地址，表单正常显示编号 H-001。
 - 在编辑页点页头的「退出」，表单立刻消失，换成提示。
 
-提示：判断 `user` 后提前 `return` 时，要写在所有 Hook（`useParams`、`useProduct`、`useNavigate`、`useAuth`）调用**之后**，原因见第 4 章踩坑警告。
+提示：判断 `user` 后提前 `return` 时，要写在所有 Hook（`useParams`、`useProduct`、`useNavigate`、`useAuth`）调用**之后**，原因见第 4A 章踩坑警告。
 
 **练习 2：刷新后保持登录**
 
@@ -775,7 +775,7 @@ export function ProductEditPage() {
     return saved
   }
 
-  // 练习 1：没登录就提前返回。注意要写在所有 Hook 调用之后（第 4 章：Hook 不能写在 return 后面）
+  // 练习 1：没登录就提前返回。注意要写在所有 Hook 调用之后（第 4A 章：Hook 不能写在 return 后面）
   if (!user) {
     return (
       <section>

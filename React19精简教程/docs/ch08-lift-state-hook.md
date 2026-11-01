@@ -17,7 +17,7 @@
 
 **业务场景**：把表格拆成 `ProductTable` 组件后，「删除」按钮在表格里，产品数据在 `App` 里。`App` 传 `onDelete` 给表格，表格里点删除时调用 `onDelete(p.id)`。表单也一样：保存成功时调用 `onAdd(product)`。
 
-**反例（什么时候不该用）**：子组件自己用、别人不关心的数据，不要为了「统一管理」都提到父组件再用回调改。比如第 4 章 `QuantityPicker` 的询价数量，只有卡片自己用，就留在它自己的 state 里。
+**反例（什么时候不该用）**：子组件自己用、别人不关心的数据，不要为了「统一管理」都提到父组件再用回调改。比如第 4A 章 `QuantityPicker` 的询价数量，只有卡片自己用，就留在它自己的 state 里。
 
 #### 🖼 图解
 
@@ -461,7 +461,7 @@ export default App
 
 #### 改坏一处试试
 
-写成 `onKeywordChange={setKeyword('')}`，报 `TS2322: Type 'void' is not assignable to type '(keyword: string) => void'.` 和第 4 章一样：要传函数本身，不是调用结果。
+写成 `onKeywordChange={setKeyword('')}`，报 `TS2322: Type 'void' is not assignable to type '(keyword: string) => void'.` 和第 4B 章一样：要传函数本身，不是调用结果。
 
 ### 8.3 自定义 Hook
 

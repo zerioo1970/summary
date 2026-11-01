@@ -239,7 +239,7 @@ src/components/Panel.tsx(11,32): error TS6133: 'children' is declared but its va
 
 ## 下一章
 
-现在页面还是死的，只能看不能操作。第 4 章让按钮点了能改数字，页面跟着变。
+现在页面还是死的，只能看不能操作。第 4A 章让按钮点了能改数字，页面跟着变。
 
 ---
 

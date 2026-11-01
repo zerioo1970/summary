@@ -434,7 +434,7 @@ export function ProductTable({ products, onDelete, onRestock }: ProductTableProp
 
 | 操作 | 结果 |
 | --- | --- |
-| 列表里点「凸阵探头 C5-2」 | 地址变成 `/products/1`，先「加载中…」，约 1 秒后显示第 4 章的产品卡片（含询价数量） |
+| 列表里点「凸阵探头 C5-2」 | 地址变成 `/products/1`，先「加载中…」，约 1 秒后显示第 4A 章的产品卡片（含询价数量） |
 | 点「← 返回列表」或浏览器「后退」 | 回到列表 |
 | 直接打开 `/products/2` 或在详情页按 `F5` | 显示线阵探头 L12-5 |
 | 打开 `/products/99` | 「找不到编号为 99 的产品」 |

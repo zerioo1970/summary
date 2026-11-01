@@ -22,7 +22,7 @@ export function ProductEditPage() {
     return saved
   }
 
-  // 练习 1：没登录就提前返回。注意要写在所有 Hook 调用之后（第 4 章：Hook 不能写在 return 后面）
+  // 练习 1：没登录就提前返回。注意要写在所有 Hook 调用之后（第 4A 章：Hook 不能写在 return 后面）
   if (!user) {
     return (
       <section>
