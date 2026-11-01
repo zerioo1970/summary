@@ -7,7 +7,7 @@
 ## 开始之前
 
 - 上一章你已经会了：受控输入框、表单提交、派生值。
-- 起点代码：仓库 `code/ch06/price-list`。在 `D:\react-study\price-list` 执行 `npm run dev`。
+- 起点代码：仓库 `code/ch06C/price-list`。在 `D:\react-study\price-list` 执行 `npm run dev`。
 - 本章要用浏览器开发者工具的「控制台」和「网络（Network）」两个标签。
 - 预计耗时：60 分钟。
 
@@ -32,7 +32,7 @@ graph TB
 
 #### 💻 最小可运行代码
 
-用下面的内容整个替换 `src/App.tsx`。和第 6 章相比改了两处：第一行 import 多了 `useEffect`；`const [products, setProducts] = ...` 下面多了一段 `useEffect(...)`。
+用下面的内容整个替换 `src/App.tsx`。和第 6C 章相比改了两处：第一行 import 多了 `useEffect`；`const [products, setProducts] = ...` 下面多了一段 `useEffect(...)`。
 
 ```tsx
 // src/App.tsx（7.1 版本，7.2 节会再改）

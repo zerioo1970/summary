@@ -84,7 +84,7 @@ export function ProductTable({ products, onDelete, onRestock }: ProductTableProp
 }
 ```
 
-**② 改 `src/components/ProductForm.tsx`**。用下面的内容整个替换。和第 6 章相比改了两处：`export function ProductForm` 上面多了 `ProductFormProps` 类型，函数改成接收 `{ onAdd }`；`handleSubmit` 里原来的 `console.log('新产品', product)` 换成了 `onAdd(product)`。
+**② 改 `src/components/ProductForm.tsx`**。用下面的内容整个替换。和第 6C 章相比改了两处：`export function ProductForm` 上面多了 `ProductFormProps` 类型，函数改成接收 `{ onAdd }`；`handleSubmit` 里原来的 `console.log('新产品', product)` 换成了 `onAdd(product)`。
 
 ```tsx
 // src/components/ProductForm.tsx

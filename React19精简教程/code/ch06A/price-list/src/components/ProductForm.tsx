@@ -1,4 +1,4 @@
-// src/components/ProductForm.tsx（6.1 版本，6.2 节会再改）
+// src/components/ProductForm.tsx
 import { useState } from 'react'
 import type { ChangeEvent } from 'react'
 

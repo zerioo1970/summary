@@ -86,15 +86,15 @@ export function QuantityPicker({ price }: QuantityPickerProps) {
 | `e.shiftKey` | 点击时是否按住了 Shift。写了类型后，输入 `e.` VS Code 会列出所有可用的字段，比如 `ctrlKey`、`altKey` |
 | `e.shiftKey ? 10 : 1` | 三元表达式（conditional operator）：`条件 ? 成立时的值 : 不成立时的值`。它是一个表达式，有结果值，所以能直接赋给 `step`，后面几章也会大量写在 JSX 的花括号里 |
 | `onClick={handleAdd}` | 交给 React 的是**函数本身**。React 在用户点击时才调用它，并把事件对象作为参数传进去 |
-| `type="button"` | 按钮默认类型是 `submit`，放进表单里会提交表单。不是提交按钮就写明 `type="button"`，第 6 章会用到这一点 |
+| `type="button"` | 按钮默认类型是 `submit`，放进表单里会提交表单。不是提交按钮就写明 `type="button"`，第 6A 章会用到这一点 |
 
 常用事件和类型对照（后面几章会用到）：
 
 | JSX 属性 | 何时触发 | 处理函数的参数类型 |
 | --- | --- | --- |
 | `onClick` | 点击 | `MouseEvent<HTMLButtonElement>` |
-| `onChange` | 输入框内容变化 | `ChangeEvent<HTMLInputElement>`（第 6 章） |
-| `onSubmit` | 表单提交 | `SubmitEvent<HTMLFormElement>`（第 6 章） |
+| `onChange` | 输入框内容变化 | `ChangeEvent<HTMLInputElement>`（第 6A 章） |
+| `onSubmit` | 表单提交 | `SubmitEvent<HTMLFormElement>`（第 6B 章） |
 
 ### 4B.3 函数本身和函数调用
 
