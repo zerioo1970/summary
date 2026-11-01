@@ -7,7 +7,7 @@ import { ProductCard } from '../components/ProductCard.tsx'
 export function ProductDetailPage() {
   // 路由表里写的是 :id，这里就按 id 取。地址里的值永远是字符串，也可能没有（undefined）
   const { id } = useParams()
-  // 详情页自己加载一次数据（第 8 章说过：这和列表页那份是两份独立的数据）
+  // 详情页自己加载一次数据（第 8C 章说过：这和列表页那份是两份独立的数据）
   const { state } = useProducts()
 
   if (state.status === 'loading') {

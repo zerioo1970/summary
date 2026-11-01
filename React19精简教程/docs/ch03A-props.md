@@ -129,7 +129,7 @@ export function ProductCard(props: ProductCardProps) {
 }
 ```
 
-还有一条规则：**数据只能从上往下传**。`App` 传给 `ProductCard`，`ProductCard` 不能反过来改 `App` 里的东西。子组件怎么通知父组件，第 8 章讲。
+还有一条规则：**数据只能从上往下传**。`App` 传给 `ProductCard`，`ProductCard` 不能反过来改 `App` 里的东西。子组件怎么通知父组件，第 8A 章讲。
 
 #### 改坏一处试试
 

@@ -7,7 +7,7 @@
 ## 开始之前
 
 - 上一章你已经会了：回调 props、状态提升、自定义 Hook `useProducts`。
-- 起点代码：仓库 `code/ch08/price-list`。预计耗时：50 分钟。
+- 起点代码：仓库 `code/ch08C/price-list`。预计耗时：50 分钟。
 
 安装 React Router（先在终端按 `Ctrl + C` 停掉开发服务器）：
 
@@ -19,7 +19,7 @@ npm run dev
 
 本教程实测版本是 `react-router` 8.5.1，它要求 Node.js ≥ 22.22。React Router 有几种用法，本章用最简单的「声明式」写法（`BrowserRouter` + `Routes` + `Route`）。网上很多教程还在用 v6 的 `react-router-dom` 包，v7 起合并进了 `react-router`，本项目不需要装 `react-router-dom`。
 
-先把列表页从 `App` 里搬出来。新建文件夹 `src/pages`，在里面新建 `ListPage.tsx`：把第 8 章 `App.tsx` 的内容复制过去，然后改 5 处：
+先把列表页从 `App` 里搬出来。新建文件夹 `src/pages`，在里面新建 `ListPage.tsx`：把第 8C 章 `App.tsx` 的内容复制过去，然后改 5 处：
 
 1. 第一行注释改成 `// src/pages/ListPage.tsx`。
 2. import 路径里的 `./` 改成 `../`（文件深了一层），删掉 `PageHeader`、`PageFooter` 两行 import。
@@ -31,7 +31,7 @@ npm run dev
 
 ```tsx
 // src/pages/ListPage.tsx
-// 产品列表页：第 8 章 App 的内容原样搬过来，去掉页头页脚（它们留在 App 里，所有页面共用）
+// 产品列表页：第 8C 章 App 的内容原样搬过来，去掉页头页脚（它们留在 App 里，所有页面共用）
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useProducts } from '../hooks/useProducts.ts'
@@ -195,7 +195,7 @@ export default App
 
 | 地址 | 页头和页脚之间显示 |
 | --- | --- |
-| `http://localhost:5173/` | 产品清单（和第 8 章一样） |
+| `http://localhost:5173/` | 产品清单（和第 8C 章一样） |
 | `http://localhost:5173/about` | 「关于」和那句说明 |
 | `http://localhost:5173/xyz` | 「页面不存在」和「返回产品清单」链接 |
 
@@ -309,7 +309,7 @@ import { ProductCard } from '../components/ProductCard.tsx'
 export function ProductDetailPage() {
   // 路由表里写的是 :id，这里就按 id 取。地址里的值永远是字符串，也可能没有（undefined）
   const { id } = useParams()
-  // 详情页自己加载一次数据（第 8 章说过：这和列表页那份是两份独立的数据）
+  // 详情页自己加载一次数据（第 8C 章说过：这和列表页那份是两份独立的数据）
   const { state } = useProducts()
 
   if (state.status === 'loading') {
@@ -372,7 +372,7 @@ function App() {
 export default App
 ```
 
-最后让表格里的产品名可以点。用下面的内容整个替换 `src/components/ProductTable.tsx`。和第 8 章相比改了两处：顶部多了 `import { Link } from 'react-router'`；名称单元格里的 `{p.name}` 换成了 `<Link>`。
+最后让表格里的产品名可以点。用下面的内容整个替换 `src/components/ProductTable.tsx`。和第 8A 章相比改了两处：顶部多了 `import { Link } from 'react-router'`；名称单元格里的 `{p.name}` 换成了 `<Link>`。
 
 ```tsx
 // src/components/ProductTable.tsx
@@ -455,7 +455,7 @@ TypeScript 发现数字和字符串永远不会相等。改回去。
 
 **② 新录入的产品点进去找不到。** 在列表页录入一个新产品「微凸探头 C8-4」，再点它的名字。实测地址是 `/products/1793378287241`（第 6B 章用 `Date.now()` 生成的 id），页面显示「找不到编号为 1793378287241 的产品」。按「后退」回到列表，显示「共 5 种产品」，刚录入的产品也不见了。
 
-原因有两层：详情页自己调用 `useProducts()`，拿到的是从 `products.json` 新加载的一份，里面没有新产品；离开列表页时 `ListPage` 被移除，它的 state 跟着丢了，回来时又重新加载。练习 1 用第 8 章的状态提升解决。
+原因有两层：详情页自己调用 `useProducts()`，拿到的是从 `products.json` 新加载的一份，里面没有新产品；离开列表页时 `ListPage` 被移除，它的 state 跟着丢了，回来时又重新加载。练习 1 用第 8B 章的状态提升解决。
 
 ## ⚠️ 踩坑警告
 
@@ -539,7 +539,7 @@ Routes 按地址选页面，Link 换页不刷新，:id 参数用 useParams 取�
 
 ### 练习 1
 
-思路：`App` 不会因为换页被移除，在它里面调用一次 `useProducts()`，数据就一直在，两个页面通过 props 拿到的是同一份。这就是第 8 章的状态提升，只是这次共同父组件是 `App`。
+思路：`App` 不会因为换页被移除，在它里面调用一次 `useProducts()`，数据就一直在，两个页面通过 props 拿到的是同一份。这就是第 8B 章的状态提升，只是这次共同父组件是 `App`。
 
 ```tsx
 // src/App.tsx

@@ -1,5 +1,5 @@
 // src/pages/ListPage.tsx（12.1 版本：和第 11 章相同，12.3 节会再改）
-// 产品列表页：第 8 章 App 的内容原样搬过来，去掉页头页脚（它们留在 App 里，所有页面共用）
+// 产品列表页：第 8C 章 App 的内容原样搬过来，去掉页头页脚（它们留在 App 里，所有页面共用）
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useProducts } from '../hooks/useProducts.ts'

@@ -113,7 +113,7 @@ function App() {
           </tbody>
         </table>
       )}
-      {/* 第 6 章：表单先独立工作，第 8 章再把录入的产品加进上面的表格 */}
+      {/* 第 6 章：表单先独立工作，第 8A 章再把录入的产品加进上面的表格 */}
       <ProductForm />
       <PageFooter />
     </main>
@@ -298,7 +298,7 @@ function App() {
           </tbody>
         </table>
       )}
-      {/* 第 6 章：表单先独立工作，第 8 章再把录入的产品加进上面的表格 */}
+      {/* 第 6 章：表单先独立工作，第 8A 章再把录入的产品加进上面的表格 */}
       <ProductForm />
       <PageFooter />
     </main>

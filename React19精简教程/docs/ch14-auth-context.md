@@ -2,7 +2,7 @@
 
 ## 这一章解决什么问题
 
-系统要知道「现在是谁在用」：页头显示当前用户的名字，没登录不能录入产品，只有管理员能看到「删除」按钮。「当前用户」页头要用、列表页要用、表格也要用，它们之间隔着好几层组件。按第 8 章的状态提升，就得从 `App` 一层层用 props 传下去，每一层都要加 prop，中间的组件自己根本用不到它。本章用 Context 解决这个问题，再介绍排查这类问题最常用的工具 React DevTools。
+系统要知道「现在是谁在用」：页头显示当前用户的名字，没登录不能录入产品，只有管理员能看到「删除」按钮。「当前用户」页头要用、列表页要用、表格也要用，它们之间隔着好几层组件。按第 8B 章的状态提升，就得从 `App` 一层层用 props 传下去，每一层都要加 prop，中间的组件自己根本用不到它。本章用 Context 解决这个问题，再介绍排查这类问题最常用的工具 React DevTools。
 
 ## 开始之前
 
@@ -189,7 +189,7 @@ export function useAuth(): AuthValue {
 | --- | --- |
 | `createContext<AuthValue \| null>(null)` | 创建一个 Context，尖括号里写它装的值的类型。参数是默认值，组件**不在**提供者里面时取到的就是它 |
 | `useContext(AuthContext)` | 取出离自己最近的那个提供者给的值 |
-| `useAuth()` | 包了一层自定义 Hook（第 8 章）：其他组件只要写 `useAuth()`，不用每次都 import `AuthContext` 再判断 `null` |
+| `useAuth()` | 包了一层自定义 Hook（第 8C 章）：其他组件只要写 `useAuth()`，不用每次都 import `AuthContext` 再判断 `null` |
 
 **④ 提供者组件。** 在 `src/auth` 里新建 `AuthProvider.tsx`：
 
@@ -517,7 +517,7 @@ export function ProductTable({ products, onDelete, onRestock }: ProductTableProp
 
 ```tsx
 // src/pages/ListPage.tsx
-// 产品列表页：第 8 章 App 的内容原样搬过来，去掉页头页脚（它们留在 App 里，所有页面共用）
+// 产品列表页：第 8C 章 App 的内容原样搬过来，去掉页头页脚（它们留在 App 里，所有页面共用）
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useProducts } from '../hooks/useProducts.ts'
