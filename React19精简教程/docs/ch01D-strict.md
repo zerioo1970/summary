@@ -193,7 +193,7 @@ src/App.tsx(4,9): error TS6133: 'total' is declared but its value is never read.
 
 ## 下一章
 
-页面内容全写在一个 `App` 里会越来越长，第 2 章把它拆成多个组件和文件。
+页面内容全写在一个 `App` 里会越来越长，第 2A 章把它拆成多个组件。
 
 ---
 

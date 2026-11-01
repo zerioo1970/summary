@@ -118,7 +118,7 @@ createRoot(document.getElementById('root')!).render(
 | `index.html` 的 `<script type="module" src="/src/main.tsx">` | 浏览器向开发服务器请求 `main.tsx`，整个应用从这里启动 |
 | `index.html` 的 `<title>` 和 `lang` | 它们在 `#root` 外面，React 管不到，所以标题要在 `index.html` 里改，不是在 `App.tsx` 里改 |
 | `createRoot(...).render(<App />)` | 让 React 接管这个元素，把 `App` 渲染进去。一个应用通常只调用一次 |
-| `function App() { return (...) }` | 组件就是一个返回页面内容的函数。`return` 里像 HTML 的写法叫 JSX，第 2 章细讲 |
+| `function App() { return (...) }` | 组件就是一个返回页面内容的函数。`return` 里像 HTML 的写法叫 JSX，第 2B 章细讲 |
 | `export default App` | 把 `App` 导出，`main.tsx` 才能 `import` 到它 |
 
 浏览器拿到的其实不是你写的 TSX。开发服务器运行时，在浏览器地址栏打开 `http://localhost:5173/src/App.tsx`，能看到 Vite 翻译后的结果，关键部分是：
@@ -157,7 +157,7 @@ TypeScript 知道 `getElementById` 可能找不到元素而返回 `null`。`!` �
 src/main.tsx(7,10): error TS2614: Module '"./App.tsx"' has no exported member 'App'. Did you mean to use 'import App from "./App.tsx"' instead?
 ```
 
-`App.tsx` 用的是 `export default`（默认导出），导入时不加花括号。带花括号的写法对应另一种导出方式，第 2 章讲。改回去。
+`App.tsx` 用的是 `export default`（默认导出），导入时不加花括号。带花括号的写法对应另一种导出方式，第 2C 章讲。改回去。
 
 ## ⚠️ 踩坑警告
 

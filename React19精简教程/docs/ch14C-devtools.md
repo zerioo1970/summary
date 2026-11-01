@@ -95,7 +95,7 @@ React DevTools 看组件的 props、state 和 Context，看请求用网络面板
 
 ## 下一章
 
-后端一直是模拟接口。第 15 章换成 ASP.NET Core Minimal API，并把前端打包进后端，合成一个网站。
+后端一直是模拟接口。第 15A 章换成 ASP.NET Core Minimal API，并把前端打包进后端，合成一个网站。
 
 ---
 
