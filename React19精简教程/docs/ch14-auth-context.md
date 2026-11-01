@@ -7,7 +7,7 @@
 ## 开始之前
 
 - 上一章你已经会了：编辑页、`useNavigate`、把后端字段错误显示到输入框下面。
-- 起点代码：仓库 `code/ch13/price-list`（不含练习答案）。两个终端分别运行 `npm run dev` 和 `npm run mock`。
+- 起点代码：仓库 `code/ch13C/price-list`（不含练习答案）。两个终端分别运行 `npm run dev` 和 `npm run mock`。
 - 模拟接口里有两个测试账号：`admin / 123456`（管理员），`zhangsan / 123456`（销售）。
 - 预计耗时：60 分钟。
 
@@ -444,7 +444,7 @@ graph TB
 
 #### 💻 最小可运行代码
 
-用下面的内容整个替换 `src/components/ProductTable.tsx`。和第 13 章相比：多了 `useAuth` 的 import 和调用；「删除」按钮外面包了 `{isAdmin && (...)}`。
+用下面的内容整个替换 `src/components/ProductTable.tsx`。和第 13C 章相比：多了 `useAuth` 的 import 和调用；「删除」按钮外面包了 `{isAdmin && (...)}`。
 
 ```tsx
 // src/components/ProductTable.tsx
@@ -513,7 +513,7 @@ export function ProductTable({ products, onDelete, onRestock }: ProductTableProp
 }
 ```
 
-用下面的内容整个替换 `src/pages/ListPage.tsx`。和第 13 章相比：多了 `useAuth` 的 import 和 `const { user } = useAuth()`；表单改成登录后才显示。
+用下面的内容整个替换 `src/pages/ListPage.tsx`。和第 13C 章相比：多了 `useAuth` 的 import 和 `const { user } = useAuth()`；表单改成登录后才显示。
 
 ```tsx
 // src/pages/ListPage.tsx

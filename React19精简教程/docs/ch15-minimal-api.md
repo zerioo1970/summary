@@ -8,7 +8,7 @@
 
 ## 开始之前
 
-- 前面你已经会了：开发代理和 `.env`（第 11C、11D 章）、`api.ts` 写请求（第 12A–12C 章）、`ApiError` 和字段错误（第 13 章）、登录与 Context（第 14 章）。
+- 前面你已经会了：开发代理和 `.env`（第 11C、11D 章）、`api.ts` 写请求（第 12A–12C 章）、`ApiError` 和字段错误（第 13C 章）、登录与 Context（第 14 章）。
 - 起点代码：仓库 `code/ch14/price-list`（不含练习答案）。
 - 需要 .NET 10 SDK。安装 Visual Studio 2026 时勾选「ASP.NET 和 Web 开发」工作负载会一起装上；也可以单独从 `https://dotnet.microsoft.com/download` 下载 .NET 10 SDK。在 PowerShell 里执行 `dotnet --version`，显示 `10.0.xxx` 就可以了（实测 10.0.403）。⚠️ Windows 安装过程未实机验证。
 - 本章不再需要 `npm run mock`，把那个终端关掉。`mock-server` 文件夹可以留着不管。
@@ -350,7 +350,7 @@ Microsoft.AspNetCore.Http.BadHttpRequestException: Failed to read parameter "Pro
 graph TB
     A["Minimal API 返回<br/>errors: { code: [编号已存在] }"] --> B["api.ts：toApiError<br/>数组连成一句"]
     B --> C["ApiError.fieldErrors<br/>{ code: 编号已存在 }"]
-    C --> D["表单：和第 13 章一样<br/>显示在编号下面，不用改"]
+    C --> D["表单：和第 13C 章一样<br/>显示在编号下面，不用改"]
 ```
 
 #### 💻 最小可运行代码
@@ -927,7 +927,7 @@ dotnet run
 
 ### 练习 1
 
-思路：在单价的那条判断后面加一个 `else if`。后端返回 `errors.price`，前端第 13 章的 `errorOf('price', ...)` 本来就会显示服务器给的单价错误，所以不用改。这就是把字段错误做成通用机制的好处：后端以后加多少条规则，前端都自动显示。
+思路：在单价的那条判断后面加一个 `else if`。后端返回 `errors.price`，前端第 13C 章的 `errorOf('price', ...)` 本来就会显示服务器给的单价错误，所以不用改。这就是把字段错误做成通用机制的好处：后端以后加多少条规则，前端都自动显示。
 
 ### 练习 2
 
