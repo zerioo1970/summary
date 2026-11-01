@@ -1,4 +1,4 @@
-// src/App.tsx（7.1 版本，7.2 节会再改）
+// src/App.tsx
 import { useEffect, useState } from 'react'
 import type { Product } from './types.ts'
 import { initialProducts } from './data.ts'

@@ -1,5 +1,5 @@
 // src/data.ts
-// 示例数据。第 7 章会把同样的数据搬到 public/products.json，改成从网络加载
+// 示例数据。第 7C 章会把同样的数据搬到 public/products.json，改成从网络加载
 import type { Product } from './types.ts'
 
 export const initialProducts: Product[] = [

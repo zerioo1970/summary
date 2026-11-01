@@ -155,7 +155,7 @@ npm run dev
 | --- | --- | --- |
 | `index.html` | 浏览器最先拿到的页面 | 偶尔 |
 | `src/` | 你写的代码都在这里 | 经常 |
-| `public/` | 原样提供给浏览器的静态文件（图标、第 7 章的 `products.json`） | 偶尔 |
+| `public/` | 原样提供给浏览器的静态文件（图标、第 7C 章的 `products.json`） | 偶尔 |
 | `package.json` | 项目名、依赖库清单、`npm run` 能执行的命令 | 很少 |
 | `package-lock.json` | 依赖库的精确版本记录，由 npm 自动维护 | 不要手改 |
 | `node_modules/` | `npm install` 下载下来的库 | 不要动，也不要提交到 Git |

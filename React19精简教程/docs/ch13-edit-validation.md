@@ -83,7 +83,7 @@ export function useProduct(id: string | undefined) {
 }
 ```
 
-这个 Hook 有一个和第 7 章不同的地方：`id` 变了以后，effect 不先 `setState` 成「加载中」，而是**记下结果属于哪个 id**，最后一行用「结果的 id 是不是当前 id」**算出**当前状态。从 `/products/1/edit` 换到 `/products/2/edit` 时，旧结果的 id 是 `'1'`，和当前的 `'2'` 不一样，就当作「加载中」，不会把产品 1 的数据显示在产品 2 的页面上。这是第 6C 章派生值思路的又一次应用。（如果在 effect 一开始写 `setState({ status: 'loading' })`，`npm run lint` 会警告 `react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders`。）
+这个 Hook 有一个和第 7D 章不同的地方：`id` 变了以后，effect 不先 `setState` 成「加载中」，而是**记下结果属于哪个 id**，最后一行用「结果的 id 是不是当前 id」**算出**当前状态。从 `/products/1/edit` 换到 `/products/2/edit` 时，旧结果的 id 是 `'1'`，和当前的 `'2'` 不一样，就当作「加载中」，不会把产品 1 的数据显示在产品 2 的页面上。这是第 6C 章派生值思路的又一次应用。（如果在 effect 一开始写 `setState({ status: 'loading' })`，`npm run lint` 会警告 `react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders`。）
 
 `'loading' as const` 告诉 TypeScript：这里的 `'loading'` 就是这个固定值，不是任意字符串，这样它才符合 `ProductState` 里的 `{ status: 'loading' }`。
 
@@ -812,7 +812,7 @@ export function ProductForm({ title = '录入新产品', initial, onSubmit }: Pr
 error TS18046: 'err' is of type 'unknown'.
 ```
 
-`catch` 接到的可能是任何东西：`ApiError`、网络断开时 `fetch` 抛出的 `TypeError`，甚至不是错误对象。只有 `instanceof ApiError` 判断成立之后，TypeScript 才允许读 `fieldErrors`。这和第 7 章判别联合的「收窄」是同一个道理。改回去。
+`catch` 接到的可能是任何东西：`ApiError`、网络断开时 `fetch` 抛出的 `TypeError`，甚至不是错误对象。只有 `instanceof ApiError` 判断成立之后，TypeScript 才允许读 `fieldErrors`。这和第 7D 章判别联合的「收窄」是同一个道理。改回去。
 
 ## ⚠️ 踩坑警告
 

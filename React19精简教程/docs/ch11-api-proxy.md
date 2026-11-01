@@ -6,7 +6,7 @@
 
 ## 开始之前
 
-- 前面你已经会了：用 `useEffect` 加载数据、用判别联合表示加载状态（第 7 章），把取数逻辑抽成 `useProducts`（第 8 章），打包和部署（第 10 章）。
+- 前面你已经会了：用 `useEffect` 加载数据、用判别联合表示加载状态（第 7A–7D 章），把取数逻辑抽成 `useProducts`（第 8 章），打包和部署（第 10 章）。
 - 起点代码：仓库 `code/ch10/price-list`（不含练习答案）。
 - 预计耗时：60 分钟。
 
@@ -265,7 +265,7 @@ Node.js 24 可以直接运行 `.ts` 文件：它在运行前把类型标注去�
 两点要知道：
 
 - 数据放在模拟接口的内存里。新增、删除在它运行期间一直有效，**刷新浏览器也还在**；在它的终端按 `Ctrl + C` 停掉再 `npm run mock`，数据恢复成初始的 5 个产品。想从头再来时就这样重启。
-- 每个请求故意延迟 500 毫秒才返回，让「加载中」「保存中」能看清楚。第 7 章在前端代码里加的 1 秒模拟延迟第 10 章已经删了，现在的延迟来自「服务器」，更接近真实情况。
+- 每个请求故意延迟 500 毫秒才返回，让「加载中」「保存中」能看清楚。第 7C 章在前端代码里加的 1 秒模拟延迟第 10 章已经删了，现在的延迟来自「服务器」，更接近真实情况。
 
 ## 正文
 
@@ -661,7 +661,7 @@ error TS2551: Property 'VITE_API_BAS' does not exist on type 'ImportMetaEnv'. Di
 - 「网络」里的请求地址变成了 `http://localhost:5173/undefined/products`。
 - `tsc` **不报错**。
 
-没有 `VITE_` 前缀的变量不会进入前端，`import.meta.env.VITE_API_BASE` 的值是 `undefined`，拼出来的地址就成了 `undefined/products`。这个地址不以 `/api` 开头，不走代理，Vite 返回了 `index.html`（第 7 章见过这句报错）。
+没有 `VITE_` 前缀的变量不会进入前端，`import.meta.env.VITE_API_BASE` 的值是 `undefined`，拼出来的地址就成了 `undefined/products`。这个地址不以 `/api` 开头，不走代理，Vite 返回了 `index.html`（第 7C 章见过这句报错）。
 
 TypeScript 为什么没发现？`vite-env.d.ts` 里的声明是你对 TypeScript 的**承诺**：「这个变量一定存在，是字符串」。TypeScript 只检查代码是否遵守承诺，不会去读 `.env` 文件核对。所以看到地址里出现 `undefined`，先查 `.env`。改回 `VITE_API_BASE=/api`。
 

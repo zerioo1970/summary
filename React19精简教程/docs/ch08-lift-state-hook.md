@@ -7,7 +7,7 @@
 ## 开始之前
 
 - 上一章你已经会了：`useEffect` 和依赖数组、用判别联合表示加载状态。
-- 起点代码：仓库 `code/ch07/price-list`。在 `D:\react-study\price-list` 执行 `npm run dev`。预计耗时：50 分钟。
+- 起点代码：仓库 `code/ch07D/price-list`。在 `D:\react-study\price-list` 执行 `npm run dev`。预计耗时：50 分钟。
 
 ## 正文
 
@@ -32,7 +32,7 @@ graph TB
 
 #### 💻 最小可运行代码
 
-**① 新建 `src/components/ProductTable.tsx`**，把第 7 章 `App` 里的表格搬过来：
+**① 新建 `src/components/ProductTable.tsx`**，把第 7D 章 `App` 里的表格搬过来：
 
 ```tsx
 // src/components/ProductTable.tsx
@@ -166,7 +166,7 @@ export function ProductForm({ onAdd }: ProductFormProps) {
 }
 ```
 
-**③ 改 `src/App.tsx`**。用下面的内容整个替换。和第 7 章相比：
+**③ 改 `src/App.tsx`**。用下面的内容整个替换。和第 7D 章相比：
 
 - import 区多了 `ProductTable`；
 - 多了 `handleAdd` 函数，用 `[...state.products, product]` 把新产品加到数组末尾（第 5B 章表格里「添加」那一行）；
@@ -481,7 +481,7 @@ graph TB
 
 #### 💻 最小可运行代码
 
-新建文件夹 `src/hooks`，在里面新建 `useProducts.ts`（没有 JSX，所以是 `.ts`）。把第 7 章 `App` 里的 `LoadState`、加载 effect、增删改函数搬进来：
+新建文件夹 `src/hooks`，在里面新建 `useProducts.ts`（没有 JSX，所以是 `.ts`）。把第 7D 章 `App` 里的 `LoadState`、加载 effect、增删改函数搬进来：
 
 ```ts
 // src/hooks/useProducts.ts

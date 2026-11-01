@@ -1,4 +1,5 @@
-// src/App.tsx（7.2 版本，7.3 节会再改）
+// src/App.tsx
+// 两个练习都做完后的版本
 import { useEffect, useState } from 'react'
 import type { Product } from './types.ts'
 import { initialProducts } from './data.ts'
@@ -10,12 +11,16 @@ function App() {
   // 尖括号里写明 state 的类型：Product 数组
   const [products, setProducts] = useState<Product[]>(initialProducts)
 
-  // 副作用：修改浏览器标签页标题。React 先把页面画好，然后执行这个函数
+  // 练习 2：组件函数体里的代码在渲染过程中执行
+  console.log('App 渲染中')
+
   useEffect(() => {
-    console.log('effect 执行：更新标题')
-    document.title = `产品价格清单（${products.length} 种）`
-    // 依赖数组：只有 products.length 变了，才再次执行
-  }, [products.length])
+    // 练习 2：effect 里的代码在页面显示之后执行
+    console.log('App 渲染后')
+    // 练习 1：缺货的种数
+    const outOfStock = products.filter((p) => p.stock === 0).length
+    document.title = `产品价格清单（${products.length} 种，缺货 ${outOfStock} 种）`
+  })
 
   function handleDelete(id: number) {
     // filter 返回一个新数组，原数组不动

@@ -184,7 +184,7 @@ export function ProductForm() {
 
 ## 下一章
 
-数据现在写死在 `data.ts` 里。第 7 章改成页面打开时从 `products.json` 加载，并显示「加载中」和「出错了」。
+数据现在写死在 `data.ts` 里。第 7A 章开始改成页面打开时从 `products.json` 加载，并显示「加载中」和「出错了」。
 
 ---
 
