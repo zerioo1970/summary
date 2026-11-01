@@ -7,7 +7,7 @@
 ## 开始之前
 
 - 上一章你已经会了：启动模拟接口、用开发代理连接 `/api`、用 `.env` 配置接口前缀。
-- 起点代码：仓库 `code/ch11/price-list`（不含练习答案）。
+- 起点代码：仓库 `code/ch11D/price-list`（不含练习答案）。
 - 两个终端都要运行：第一个 `npm run dev`，第二个 `npm run mock`。本章会多次「想从头再来」，在第二个终端按 `Ctrl + C` 再 `npm run mock`，数据就恢复成初始的 5 个产品。
 - 预计耗时：70 分钟。
 
@@ -116,7 +116,7 @@ export async function deleteProduct(id: number): Promise<void> {
 | `throw new Error(...)` | 主动抛出错误。调用方用 `try / catch` 接住（12.3 节） |
 | `Promise<void>` | 这个 `async` 函数完成时没有返回值 |
 
-**② 用下面的内容整个替换 `src/hooks/useProducts.ts`。** 加载部分和第 11 章一样；`addProduct`、`deleteProduct`、`restockProduct` 三个函数改成先调用接口、成功后再改 state：
+**② 用下面的内容整个替换 `src/hooks/useProducts.ts`。** 加载部分和第 11D 章一样；`addProduct`、`deleteProduct`、`restockProduct` 三个函数改成先调用接口、成功后再改 state：
 
 ```ts
 // src/hooks/useProducts.ts

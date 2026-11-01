@@ -5,7 +5,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // 开发代理：/api 开头的请求转发给 5080 端口的 Minimal API（第 11 章是 3001 端口的模拟接口）
+    // 开发代理：/api 开头的请求转发给 5080 端口的 Minimal API（第 11A–11D 章是 3001 端口的模拟接口）
     proxy: {
       '/api': 'http://localhost:5080',
     },

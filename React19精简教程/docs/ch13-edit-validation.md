@@ -32,7 +32,7 @@ graph TB
 
 #### 💻 最小可运行代码
 
-**① 加载单个产品的 Hook。** 新建 `src/hooks/useProduct.ts`（如果做了第 11 章练习 1，用下面的内容替换）：
+**① 加载单个产品的 Hook。** 新建 `src/hooks/useProduct.ts`（如果做了第 11C 章练习 1，用下面的内容替换）：
 
 ```ts
 // src/hooks/useProduct.ts
@@ -213,7 +213,7 @@ export function ProductForm({ title = '录入新产品', initial, onSubmit }: Pr
 | `initial?.code` | 可选链：`initial` 是 `undefined` 时整个表达式得到 `undefined`，不会报错 |
 | `?? ''` | 空值合并：左边是 `undefined` 或 `null` 时用右边的值。和 `\|\|` 不同，它不把 `0`、`''` 当成「没有」 |
 | `String(initial.price)` | 数字 15600 转成字符串 `'15600'`，输入框的值只能是字符串 |
-| `title = '录入新产品'` | 解构时的默认值（第 3B 章讲过）：新增页不传 `title`，就用它 |
+| `title = '录入新产品'` | 解构时的默认值（第 3 章讲过）：新增页不传 `title`，就用它 |
 
 **③ 新建编辑页 `src/pages/ProductEditPage.tsx`：**
 

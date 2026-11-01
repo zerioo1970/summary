@@ -8,7 +8,7 @@
 
 ## 开始之前
 
-- 前面你已经会了：开发代理和 `.env`（第 11 章）、`api.ts` 写请求（第 12 章）、`ApiError` 和字段错误（第 13 章）、登录与 Context（第 14 章）。
+- 前面你已经会了：开发代理和 `.env`（第 11C、11D 章）、`api.ts` 写请求（第 12 章）、`ApiError` 和字段错误（第 13 章）、登录与 Context（第 14 章）。
 - 起点代码：仓库 `code/ch14/price-list`（不含练习答案）。
 - 需要 .NET 10 SDK。安装 Visual Studio 2026 时勾选「ASP.NET 和 Web 开发」工作负载会一起装上；也可以单独从 `https://dotnet.microsoft.com/download` 下载 .NET 10 SDK。在 PowerShell 里执行 `dotnet --version`，显示 `10.0.xxx` 就可以了（实测 10.0.403）。⚠️ Windows 安装过程未实机验证。
 - 本章不再需要 `npm run mock`，把那个终端关掉。`mock-server` 文件夹可以留着不管。
@@ -365,7 +365,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // 开发代理：/api 开头的请求转发给 5080 端口的 Minimal API（第 11 章是 3001 端口的模拟接口）
+    // 开发代理：/api 开头的请求转发给 5080 端口的 Minimal API（第 11A–11D 章是 3001 端口的模拟接口）
     proxy: {
       '/api': 'http://localhost:5080',
     },
@@ -567,7 +567,7 @@ npm run dev
 
 第一种情况是碰巧对了：旧代码把 `["编号 P-001 已存在"]` 这个数组当成字符串直接放进页面，只有一个元素的数组显示出来恰好就是那句话。如果一个字段有两条错误，就会变成两句话直接连在一起，中间没有分隔。第二种情况旧代码找的是 `message`，ProblemDetails 里没有这个字段，只能退回状态码。只有读对字段，错误才显示得可靠。改回本章的 `api.ts`。
 
-**② 停掉后端。** 在终端 1 按 `Ctrl + C`，刷新页面。实测「加载失败：服务器返回 502」，和第 11 章停掉模拟接口时一样：前端不知道、也不关心后端用什么技术实现。重新 `dotnet run`。
+**② 停掉后端。** 在终端 1 按 `Ctrl + C`，刷新页面。实测「加载失败：服务器返回 502」，和第 11C 章停掉模拟接口时一样：前端不知道、也不关心后端用什么技术实现。重新 `dotnet run`。
 
 ### 15.3 同站点部署：前端打包进后端的 wwwroot
 
@@ -873,7 +873,7 @@ dotnet run
 
 - 「网络」里的请求地址是 `http://localhost:5080/api/products/3` 这种完整地址，不再是 `localhost:5173/api/...`。
 - 响应头里有 `Access-Control-Allow-Origin: http://localhost:5173`。
-- 编辑、保存都正常，没有第 11 章那样的 `blocked by CORS policy` 报错。
+- 编辑、保存都正常，没有第 11B 章那样的 `blocked by CORS policy` 报错。
 
 提示：前端新建 `.env.development`，只在 `npm run dev` 时覆盖 `VITE_API_BASE`；后端用 `builder.Services.AddCors(...)` 和 `app.UseCors()`。改了 `.env` 文件后 Vite 会自动重启。
 

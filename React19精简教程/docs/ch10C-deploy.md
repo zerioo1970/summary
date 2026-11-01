@@ -236,7 +236,7 @@ createRoot(document.getElementById('root')!).render(
 
 ## 下一章
 
-数据还来自静态文件 `products.json`，只能看不能存。第 11 章启动一个本地模拟接口，前端改为从接口加载数据。
+数据还来自静态文件 `products.json`，只能看不能存。第 11A 章启动一个本地模拟接口，前端改为从接口加载数据。
 
 ---
 
