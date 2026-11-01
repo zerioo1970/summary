@@ -321,7 +321,7 @@ src/App.tsx(78,55): error TS2322: Type '(p: string) => void' is not assignable t
 | --- | --- | --- |
 | 写成 `onDelete={handleDelete(1)}`，报 `TS2322: Type 'void' is not assignable to type '(id: number) => void'.` | 传的是调用结果，不是函数（第 4B 章） | 传函数本身 `onDelete={handleDelete}`；子组件里要带参数时写 `() => onDelete(p.id)` |
 | 子组件里改了 props 里的数组（如 `products.splice(...)`），页面不更新或乱掉 | 数据归父组件所有，子组件改的是父组件的原数组，React 不知道数据变了 | 子组件只调用回调（`onDelete(id)`），由父组件生成新数组 |
-| 新增的产品刷新后就没了 | 数据只在浏览器内存的 state 里，`products.json` 是只读的静态文件 | 正常现象。要持久保存，需要后端接口把数据写进数据库（第 12 章） |
+| 新增的产品刷新后就没了 | 数据只在浏览器内存的 state 里，`products.json` 是只读的静态文件 | 正常现象。要持久保存，需要后端接口把数据写进数据库（第 12A 章） |
 
 ## 🎯 动手练习
 

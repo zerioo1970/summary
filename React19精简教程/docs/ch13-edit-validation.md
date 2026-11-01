@@ -2,12 +2,12 @@
 
 ## 这一章解决什么问题
 
-第 12 章只能「库存加 1」，名称写错了、价格调整了都没法改。本章做一个编辑页：从列表点「编辑」进入，表单里已经填好这个产品原来的值，改完保存后自动回到列表。还有一类错误只有服务器知道，比如「编号和别的产品重复了」，这类错误要显示在对应的输入框下面，而不是笼统地显示「保存失败」。
+第 12A–12C 章只能「库存加 1」，名称写错了、价格调整了都没法改。本章做一个编辑页：从列表点「编辑」进入，表单里已经填好这个产品原来的值，改完保存后自动回到列表。还有一类错误只有服务器知道，比如「编号和别的产品重复了」，这类错误要显示在对应的输入框下面，而不是笼统地显示「保存失败」。
 
 ## 开始之前
 
 - 上一章你已经会了：在 `api.ts` 里写 POST / PUT / DELETE；`await` 之后用更新函数改 state；用 `submitting` 和 `try / catch / finally` 处理保存中和失败。
-- 起点代码：仓库 `code/ch12/price-list`（不含练习答案）。两个终端分别运行 `npm run dev` 和 `npm run mock`。
+- 起点代码：仓库 `code/ch12C/price-list`（不含练习答案）。两个终端分别运行 `npm run dev` 和 `npm run mock`。
 - 预计耗时：60 分钟。
 
 ## 正文
@@ -87,7 +87,7 @@ export function useProduct(id: string | undefined) {
 
 `'loading' as const` 告诉 TypeScript：这里的 `'loading'` 就是这个固定值，不是任意字符串，这样它才符合 `ProductState` 里的 `{ status: 'loading' }`。
 
-**② 让表单支持编辑。** 用下面的内容整个替换 `src/components/ProductForm.tsx`。和第 12 章相比：
+**② 让表单支持编辑。** 用下面的内容整个替换 `src/components/ProductForm.tsx`。和第 12C 章相比：
 
 - props 改了：多了可选的 `title` 和 `initial`；`onAdd` 改名为 `onSubmit`，因为它现在可能是新增也可能是修改；
 - 四个 `useState` 的初始值改成「有 `initial` 用原值，没有就为空」；
@@ -249,7 +249,7 @@ export function ProductEditPage() {
 }
 ```
 
-这一节先用第 12 章的 `api.ts`，不用改。
+这一节先用第 12A 章的 `api.ts`，不用改。
 
 **④ 加路由、加入口。** 用下面的内容整个替换 `src/App.tsx`，在路由表里加了 `/products/:id/edit`：
 
@@ -522,7 +522,7 @@ export function ProductEditPage() {
 
 进入凸阵探头的编辑页，把编号改成 P-002（和线阵探头重复）保存。实测：页面**立刻**跳回列表，第二个终端里那次 `PUT` 返回的是 400，修改并没有保存，页面上却没有任何提示。
 
-没有 `await`，`navigate('/')` 在请求发出后马上执行，不等结果。用户以为保存成功了。改回 `await`。第 12 章说的规则在这里同样适用：调用返回 Promise 的函数，前面写 `await`。
+没有 `await`，`navigate('/')` 在请求发出后马上执行，不等结果。用户以为保存成功了。改回 `await`。第 12C 章说的规则在这里同样适用：调用返回 Promise 的函数，前面写 `await`。
 
 ### 13.3 把后端校验错误显示到对应的输入框
 
@@ -544,7 +544,7 @@ graph TB
 
 #### 💻 最小可运行代码
 
-**① 用下面的内容整个替换 `src/api.ts`。** 和第 12 章相比：原来的 `failMessage` 只返回一句文字，换成了 `toApiError`，返回一个 `ApiError` 对象，里面带着状态码和逐个字段的错误；三处 `throw new Error(await failMessage(response))` 换成了 `throw await toApiError(response)`。
+**① 用下面的内容整个替换 `src/api.ts`。** 和第 12A 章相比：原来的 `failMessage` 只返回一句文字，换成了 `toApiError`，返回一个 `ApiError` 对象，里面带着状态码和逐个字段的错误；三处 `throw new Error(await failMessage(response))` 换成了 `throw await toApiError(response)`。
 
 ```ts
 // src/api.ts

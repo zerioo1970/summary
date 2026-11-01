@@ -602,7 +602,7 @@ export function ListPage() {
 | 点「退出」 | 登录 | 0 个 | 不显示 |
 | 系统管理员（管理员） | 系统管理员（管理员） 退出 | 每行一个 | 显示 |
 
-`user?.role === 'admin'` 用了第 12 章练习里的可选链：没登录时 `user` 是 `null`，`user?.role` 得到 `undefined`，比较结果是 `false`，不会报错。
+`user?.role === 'admin'` 用了第 12C 章练习 1 里的可选链：没登录时 `user` 是 `null`，`user?.role` 得到 `undefined`，比较结果是 `false`，不会报错。
 
 #### 改坏一处试试
 

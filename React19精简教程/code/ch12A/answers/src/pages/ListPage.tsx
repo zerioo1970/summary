@@ -1,4 +1,5 @@
-// src/pages/ListPage.tsx（12.1 版本：和第 11 章相同，12.3 节会再改）
+// src/pages/ListPage.tsx
+// 练习 1 做完后的版本
 // 产品列表页：第 8C 章 App 的内容原样搬过来，去掉页头页脚（它们留在 App 里，所有页面共用）
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
@@ -9,7 +10,7 @@ import { ProductForm } from '../components/ProductForm.tsx'
 
 export function ListPage() {
   // 加载和增删改的细节都在 useProducts 里，列表页只拿结果
-  const { state, addProduct, deleteProduct, restockProduct } = useProducts()
+  const { state, addProduct, deleteProduct, restockProduct, shipProduct } = useProducts()
   // 状态提升：搜索框和表格都要用 keyword，所以放在它们共同的父组件 App 里
   const [keyword, setKeyword] = useState('')
 
@@ -31,7 +32,10 @@ export function ListPage() {
       (p) => p.name.toLowerCase().includes(k) || p.code.toLowerCase().includes(k),
     )
     // 把 useProducts 给的函数直接作为回调传下去
-    content = <ProductTable products={visible} onDelete={deleteProduct} onRestock={restockProduct} />
+    // 练习 1：多传一个出库函数
+    content = (
+      <ProductTable products={visible} onDelete={deleteProduct} onRestock={restockProduct} onShip={shipProduct} />
+    )
   }
 
   return (

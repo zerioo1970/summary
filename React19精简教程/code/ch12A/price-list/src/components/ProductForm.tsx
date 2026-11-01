@@ -1,4 +1,4 @@
-// src/components/ProductForm.tsx（12.1 版本，12.3 节会再改）
+// src/components/ProductForm.tsx
 import { useState } from 'react'
 import type { ChangeEvent, SubmitEvent } from 'react'
 import type { Product } from '../types.ts'
