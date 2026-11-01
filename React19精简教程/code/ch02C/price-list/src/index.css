@@ -1,0 +1,18 @@
+/* src/index.css */
+/* 全局样式先保持最少，第 10 章再整理 */
+body {
+  margin: 24px;
+  font-family: system-ui, 'Microsoft YaHei', sans-serif;
+}
+
+.subtitle {
+  color: #666;
+}
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 16px;
+  margin-bottom: 12px;
+  max-width: 360px;
+}

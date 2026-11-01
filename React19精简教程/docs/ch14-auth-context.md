@@ -228,7 +228,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
 `AuthProvider` 是一个普通组件：它有自己的 `user` state，把 `user`、`login`、`logout` 打包成一个对象交给 `<AuthContext value={...}>`。`login` 成功后 `setUser`，`AuthProvider` 重新渲染，Context 的值变了，所有用到 `useAuth()` 的组件跟着更新。
 
-为什么 Context 和提供者分成两个文件？`AuthContext.ts` 导出的是 Context 和 Hook，`AuthProvider.tsx` 只导出一个组件。如果放在同一个 `.tsx` 文件里，`npm run lint` 会警告 `react(only-export-components): Fast refresh only works when a file only exports components.`：一个文件里既有组件又有别的导出时，第 1 章的热更新没法只替换组件，会退回整页刷新。
+为什么 Context 和提供者分成两个文件？`AuthContext.ts` 导出的是 Context 和 Hook，`AuthProvider.tsx` 只导出一个组件。如果放在同一个 `.tsx` 文件里，`npm run lint` 会警告 `react(only-export-components): Fast refresh only works when a file only exports components.`：一个文件里既有组件又有别的导出时，第 1C 章的热更新没法只替换组件，会退回整页刷新。
 
 **⑤ 放到最外层。** 用下面的内容整个替换 `src/main.tsx`，在 `BrowserRouter` 里面、`App` 外面包了 `AuthProvider`：
 

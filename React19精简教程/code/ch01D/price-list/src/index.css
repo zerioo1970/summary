@@ -1,0 +1,6 @@
+/* src/index.css */
+/* 模板自带的样式很多，先换成最少的几行，样式在第 10 章再讲 */
+body {
+  margin: 24px;
+  font-family: system-ui, 'Microsoft YaHei', sans-serif;
+}

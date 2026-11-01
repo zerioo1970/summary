@@ -9,7 +9,7 @@
 ## 开始之前
 
 - 上一章你已经会了：写函数组件、JSX 规则、用 `export` / `import` 拆分文件。
-- 起点代码：仓库 `code/ch02/price-list`（不含练习答案）。在 `D:\react-study\price-list` 执行 `npm run dev`，浏览器打开 `http://localhost:5173/`。
+- 起点代码：仓库 `code/ch02C/price-list`（不含练习答案）。在 `D:\react-study\price-list` 执行 `npm run dev`，浏览器打开 `http://localhost:5173/`。
 - 预计耗时：20 分钟。
 
 ## 正文

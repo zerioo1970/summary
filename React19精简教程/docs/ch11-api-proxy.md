@@ -245,7 +245,7 @@ npm run mock
 模拟接口已启动：http://localhost:3001/api/products
 ```
 
-Node.js 24 可以直接运行 `.ts` 文件：它在运行前把类型标注去掉，剩下的就是 JavaScript（实测 Node.js 24.22.2）。如果你看到 `Unknown file extension ".ts"`，说明 Node.js 版本太旧，按第 1 章装最新的 LTS 版（⚠️ 这条报错未实机验证）。
+Node.js 24 可以直接运行 `.ts` 文件：它在运行前把类型标注去掉，剩下的就是 JavaScript（实测 Node.js 24.22.2）。如果你看到 `Unknown file extension ".ts"`，说明 Node.js 版本太旧，按第 1A 章装最新的 LTS 版（⚠️ 这条报错未实机验证）。
 
 在浏览器地址栏打开 `http://localhost:3001/api/products`，能看到 5 个产品的 JSON，和 `products.json` 的内容一样。终端里同时多出一行 `12:41:38 AM GET /api/products`：模拟接口把收到的每个请求都打印出来，后面几章靠它确认「前端到底发了什么请求」。
 
@@ -429,7 +429,7 @@ export default defineConfig({
 })
 ```
 
-保存后 Vite 会自动重启（终端显示 `vite.config.ts changed, restarting server...`，第 1 章见过）。再用下面的内容整个替换 `src/hooks/useProducts.ts`，`fetch` 里只写路径：
+保存后 Vite 会自动重启（终端显示 `vite.config.ts changed, restarting server...`，第 1A 章见过）。再用下面的内容整个替换 `src/hooks/useProducts.ts`，`fetch` 里只写路径：
 
 ```ts
 // src/hooks/useProducts.ts（11.2 版本，11.3 节会再改）

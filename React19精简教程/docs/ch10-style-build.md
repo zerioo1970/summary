@@ -259,7 +259,7 @@ dist/assets/index-DMpE_-Fa.js   262.96 kB │ gzip: 83.59 kB
 
 #### 改坏一处试试
 
-在资源管理器里双击 `dist\index.html`。页面是空白的，控制台报 `Access to script at 'file:///assets/index-....js' from origin 'null' has been blocked by CORS policy`。和第 1 章一样，打包后的文件也必须通过 Web 服务器（`http://`）访问，不能直接双击打开。
+在资源管理器里双击 `dist\index.html`。页面是空白的，控制台报 `Access to script at 'file:///assets/index-....js' from origin 'null' has been blocked by CORS policy`。和第 1A 章一样，打包后的文件也必须通过 Web 服务器（`http://`）访问，不能直接双击打开。
 
 ### 10.3 dist 目录与部署
 
