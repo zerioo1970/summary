@@ -1,0 +1,31 @@
+// src/components/ProductCard.tsx
+// 练习 2 做完后的版本
+// import type：只导入类型，翻译成 JavaScript 时整行会被去掉
+import type { Product } from '../types.ts'
+import { QuantityPicker } from './QuantityPicker.tsx'
+
+type ProductCardProps = {
+  // 传一个完整的产品对象，以后 Product 加字段时这里不用改
+  product: Product
+  // 问号表示可选：不传时用下面参数里写的默认值 '台'
+  unit?: string
+}
+
+export function ProductCard({ product, unit = '台' }: ProductCardProps) {
+  // 练习 2：观察卡片本身什么时候重新渲染
+  console.log(`ProductCard 渲染：${product.name}`)
+
+  return (
+    <div className="card">
+      {/* 卡片放进 Panel 后，Panel 的标题是 h2，卡片标题降一级用 h3 */}
+      <h3>{product.name}</h3>
+      <p>编号：{product.code}</p>
+      <p>单价：{product.price.toLocaleString()} 元</p>
+      <p>
+        库存：{product.stock} {unit}
+      </p>
+      {/* 每张卡片里的 QuantityPicker 各有一份自己的 state */}
+      <QuantityPicker price={product.price} />
+    </div>
+  )
+}
