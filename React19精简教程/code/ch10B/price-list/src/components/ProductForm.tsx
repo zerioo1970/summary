@@ -1,9 +1,7 @@
 // src/components/ProductForm.tsx
-// 练习 2：类名改用 CSS Module
 import { useState } from 'react'
 import type { ChangeEvent, SubmitEvent } from 'react'
 import type { Product } from '../types.ts'
-import styles from './ProductForm.module.css'
 
 type ProductFormProps = {
   // 保存成功时把新产品交给父组件。表单不知道、也不关心父组件怎么存
@@ -54,13 +52,13 @@ export function ProductForm({ onAdd }: ProductFormProps) {
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
+    <form className="product-form" onSubmit={handleSubmit}>
       <h2>录入新产品</h2>
       {/* value 来自 state，onChange 把用户输入写回 state：输入框完全由 React 控制 */}
       <label>编号 <input value={code} onChange={(e) => setCode(e.target.value)} /></label>
-      {triedSubmit && codeError && <span className={styles.error}>{codeError}</span>}
+      {triedSubmit && codeError && <span className="error">{codeError}</span>}
       <label>名称 <input value={name} onChange={(e) => setName(e.target.value)} /></label>
-      {triedSubmit && nameError && <span className={styles.error}>{nameError}</span>}
+      {triedSubmit && nameError && <span className="error">{nameError}</span>}
       <label>
         分类{' '}
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
@@ -70,10 +68,10 @@ export function ProductForm({ onAdd }: ProductFormProps) {
         </select>
       </label>
       <label>单价 <input value={price} onChange={handlePriceChange} /></label>
-      {triedSubmit && priceError && <span className={styles.error}>{priceError}</span>}
+      {triedSubmit && priceError && <span className="error">{priceError}</span>}
       {/* type="submit"：点击或在输入框里按回车都会触发表单的 onSubmit */}
       <button type="submit">保存</button>
-      {message && <p className={styles.success}>{message}</p>}
+      {message && <p className="success">{message}</p>}
     </form>
   )
 }

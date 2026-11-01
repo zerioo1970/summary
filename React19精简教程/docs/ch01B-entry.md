@@ -39,7 +39,7 @@ graph TB
 模板的欢迎页内容很多，先换成最简单的。四步：
 
 1. 用下面的内容整个替换 `src/App.tsx`。
-2. 用下面的内容整个替换 `src/index.css`（模板样式很多，先只留几行，样式第 10 章讲）。
+2. 用下面的内容整个替换 `src/index.css`（模板样式很多，先只留几行，样式第 10A 章讲）。
 3. 删除不再用的文件：`src/App.css`、`src/assets` 文件夹、`public/icons.svg`（在 VS Code 左侧文件列表里右键 →「删除」）。**一定先做第 1 步再删**，原因见踩坑警告第 1 条。
 4. 用下面的内容整个替换 `index.html`，把浏览器标签页的标题改成「产品价格清单」，页面语言改成简体中文。
 
@@ -61,7 +61,7 @@ export default App
 
 ```css
 /* src/index.css */
-/* 模板自带的样式很多，先换成最少的几行，样式在第 10 章再讲 */
+/* 模板自带的样式很多，先换成最少的几行，样式在第 10A 章再讲 */
 body {
   margin: 24px;
   font-family: system-ui, 'Microsoft YaHei', sans-serif;

@@ -120,7 +120,7 @@ src/App.tsx(22,18): error TS17008: JSX element 'br' has no corresponding closing
 | 现象 | 原因 | 怎么改 |
 | --- | --- | --- |
 | 从旧页面复制 `<label for="kw">搜索</label>`，报 `Property 'for' does not exist on type ... Did you mean 'htmlFor'?` | `for` 是 JavaScript 的关键字，JSX 里改名为 `htmlFor` | 写成 `htmlFor="kw"` |
-| 复制 `<p style="color: gray">`，报 `TS2559: Type 'string' has no properties in common with type 'Properties<string \| number, string & {}>'.` | JSX 里的 `style` 要写成对象，不是字符串 | 写成 `style={{ color: 'gray' }}`（外层花括号表示「这里是表达式」，内层是对象）。样式第 10 章细讲，日常优先用 `className` |
+| 复制 `<p style="color: gray">`，报 `TS2559: Type 'string' has no properties in common with type 'Properties<string \| number, string & {}>'.` | JSX 里的 `style` 要写成对象，不是字符串 | 写成 `style={{ color: 'gray' }}`（外层花括号表示「这里是表达式」，内层是对象）。样式第 10A 章细讲，日常优先用 `className` |
 | `<br>`、`<img>`、`<input>` 报 `TS17008 ... has no corresponding closing tag` | JSX 要求所有标签闭合 | 写成 `<br />`、`<img ... />`、`<input ... />` |
 | 花括号里的计算结果显示成一长串小数，比如 `14463.999999999998` | 小数在计算机里有误差，花括号直接把数字原样显示 | 显示金额前用 `toLocaleString()` 或 `toFixed(2)` 格式化 |
 

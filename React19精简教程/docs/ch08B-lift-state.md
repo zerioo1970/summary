@@ -60,7 +60,7 @@ export function FilterBar({ keyword, onKeywordChange }: FilterBarProps) {
 
 ```css
 /* src/index.css */
-/* 全局样式先保持最少，第 10 章再整理 */
+/* 全局样式先保持最少，第 10A 章再整理 */
 body {
   margin: 24px;
   font-family: system-ui, 'Microsoft YaHei', sans-serif;

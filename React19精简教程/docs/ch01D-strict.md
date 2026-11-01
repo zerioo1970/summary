@@ -122,7 +122,7 @@ src/App.tsx(4,9): error TS2322: Type 'string' is not assignable to type 'number'
 | `TS2322` | 错误编号，搜索这个编号能找到很多解释 |
 | `Type 'string' is not assignable to type 'number'` | 字符串不能赋给数字类型 |
 
-把那两行删掉，再执行一次 `npm run build`，输出以 `✓ built in ...ms` 结尾并生成 `dist` 文件夹（第 10 章再用，现在可以删掉）。
+把那两行删掉，再执行一次 `npm run build`，输出以 `✓ built in ...ms` 结尾并生成 `dist` 文件夹（第 10B 章再用，现在可以删掉）。
 
 所以写代码时要留意编辑器里的红色波浪线，不要只看浏览器能不能跑。
 

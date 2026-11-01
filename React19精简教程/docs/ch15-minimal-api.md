@@ -766,7 +766,7 @@ record User(string Username, string Password, string Name, string Role);
 | `app.UseDefaultFiles()` | 访问 `/` 时改为找 `wwwroot/index.html` |
 | `app.UseStaticFiles()` | `wwwroot` 里有这个文件就直接返回（JS、CSS、图标） |
 | `app.Map("/api/{**rest}", ...)` | 所有没登记过的 `/api/...` 地址返回 404 ProblemDetails。`{**rest}` 匹配后面任意长的路径 |
-| `app.MapFallbackToFile("index.html")` | 前面都没匹配上的地址（`/products/2`、`/login`）返回 `index.html`，相当于第 10 章 IIS `web.config` 里的回退规则 |
+| `app.MapFallbackToFile("index.html")` | 前面都没匹配上的地址（`/products/2`、`/login`）返回 `index.html`，相当于第 10C 章 IIS `web.config` 里的回退规则 |
 
 为什么要单独处理 `/api/...`？没有那一行时，实测访问 `/api/nothing` 返回的是 `index.html`，状态码 200。前端请求一个写错的接口地址，拿到的却是一个网页，`response.json()` 报 `Unexpected token '<'`（第 7C 章见过），很难看出是地址写错了。加上这一行后，实测返回 404 和 `{"title":"Not Found","status":404,"detail":"没有这个接口：/api/nothing"}`。
 
@@ -805,7 +805,7 @@ record User(string Username, string Password, string Name, string Role);
 
 `--outDir ../PriceApi/wwwroot` 让打包结果直接写进并排的后端项目里；输出目录在项目外面时，Vite 默认不敢清空它，`--emptyOutDir` 表示允许先清空，免得旧文件越积越多。
 
-再删掉 `public/web.config`。它是第 10 章给「IIS 直接托管静态文件」写的回退规则，现在回退由 `MapFallbackToFile` 负责；而 ASP.NET Core 程序部署到 IIS 时，发布工具会生成自己的 `web.config`，两者会冲突（⚠️ IIS 部署未实机验证）。
+再删掉 `public/web.config`。它是第 10C 章给「IIS 直接托管静态文件」写的回退规则，现在回退由 `MapFallbackToFile` 负责；而 ASP.NET Core 程序部署到 IIS 时，发布工具会生成自己的 `web.config`，两者会冲突（⚠️ IIS 部署未实机验证）。
 
 **③ 打包并运行。** 先在终端 2 按 `Ctrl + C` 停掉 `npm run dev`，然后：
 
@@ -836,7 +836,7 @@ dotnet run
 
 把 `app.MapFallbackToFile("index.html");` 注释掉，重新 `dotnet run`。实测打开 `http://localhost:5080/` 正常，但直接打开或刷新 `http://localhost:5080/products/2` 返回 **404**。
 
-和第 10 章 `npx serve dist` 不加 `-s` 时一样：服务器上没有 `/products/2` 这个文件，又没有回退规则。在应用里点链接跳转不受影响（`Link` 不请求服务器），只有刷新、直接输入地址、收藏夹打开时才出问题，所以很容易漏测。改回去。
+和第 10C 章 `npx serve dist` 不加 `-s` 时一样：服务器上没有 `/products/2` 这个文件，又没有回退规则。在应用里点链接跳转不受影响（`Link` 不请求服务器），只有刷新、直接输入地址、收藏夹打开时才出问题，所以很容易漏测。改回去。
 
 ## ⚠️ 踩坑警告
 
