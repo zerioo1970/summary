@@ -2,7 +2,7 @@
 
 ## 这一章解决什么问题
 
-`App` 里加载数据的 effect、增删改函数和页面结构混在一起，已经一百多行。第 9 章的产品详情页也要加载 `products.json`，难道把这一大段再复制一遍？本章把「state + effect + 修改函数」这一整套逻辑抽成一个函数 `useProducts()`，哪个组件要用就调用一次。
+`App` 里加载数据的 effect、增删改函数和页面结构混在一起，已经一百多行。第 9C 章的产品详情页也要加载 `products.json`，难道把这一大段再复制一遍？本章把「state + effect + 修改函数」这一整套逻辑抽成一个函数 `useProducts()`，哪个组件要用就调用一次。
 
 本章只讲一个技术点：**自定义 Hook**。
 
@@ -18,7 +18,7 @@
 
 **白话定义**：自定义 Hook（custom hook）是一个名字以 `use` 开头、内部调用了其他 Hook 的普通函数。它把一段「state + effect + 修改函数」打包起来，组件调用它就得到这套逻辑。
 
-**业务场景**：第 9 章的产品详情页也要加载 `products.json`。把加载和增删改的代码从 `App` 里抽成 `useProducts()`，列表页、详情页各调用一次就行，`App` 也只剩页面结构。
+**业务场景**：第 9C 章的产品详情页也要加载 `products.json`。把加载和增删改的代码从 `App` 里抽成 `useProducts()`，列表页、详情页各调用一次就行，`App` 也只剩页面结构。
 
 **反例（什么时候不该用）**：自定义 Hook 共享的是**逻辑**，不是**数据**。两个组件各调用一次 `useProducts()`，就是两份独立的 state、两次请求，一边删了产品另一边不会变（下面「改坏一处」实测）。要多个组件看到同一份数据，用第 8B 章的状态提升。另外，不包含任何 Hook 的工具函数（比如格式化金额）写成普通函数，不要加 `use` 前缀。
 
@@ -167,7 +167,7 @@ export default App
 
 | 原来在 `App` 里的代码 | 现在在哪 | 名字变化 |
 | --- | --- | --- |
-| `type LoadState = ...` | `useProducts.ts`，并加了 `export`，第 9 章别的文件要用 | 不变 |
+| `type LoadState = ...` | `useProducts.ts`，并加了 `export`，第 9C 章别的文件要用 | 不变 |
 | `useState<LoadState>` 和加载数据的 `useEffect` | `useProducts.ts` | 不变 |
 | `handleAdd`、`handleDelete`、`handleRestock` | `useProducts.ts` | 改成 `addProduct`、`deleteProduct`、`restockProduct`：它们现在是「数据的操作」，不再是某个页面的事件处理 |
 | `keyword`、筛选、标题 `useEffect`、JSX | 留在 `App` | 不变 |
@@ -228,7 +228,7 @@ export default App
 
 ## 下一章
 
-所有内容都挤在一个页面上。第 9 章加路由，点产品名进入详情页，地址栏跟着变。
+所有内容都挤在一个页面上。第 9A 章开始加路由，点产品名进入详情页，地址栏跟着变。
 
 ---
 

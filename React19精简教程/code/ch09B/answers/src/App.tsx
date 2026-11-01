@@ -1,6 +1,7 @@
-// src/App.tsx（9.1 版本，9.2 节会再改）
+// src/App.tsx
+// 练习 2 做完后的版本
 // App 变成「外框」：页头、导航、页脚所有页面共用，中间按地址显示不同的页面
-import { Route, Routes } from 'react-router'
+import { NavLink, Route, Routes } from 'react-router'
 import { PageHeader } from './components/PageHeader.tsx'
 import { PageFooter } from './components/PageFooter.tsx'
 import { ListPage } from './pages/ListPage.tsx'
@@ -11,6 +12,10 @@ function App() {
   return (
     <main>
       <PageHeader />
+      <nav className="nav">
+        {/* 练习 2：NavLink 和 Link 一样不刷新页面；地址匹配时会自动加上 class="active" */}
+        <NavLink to="/">产品清单</NavLink> | <NavLink to="/about">关于</NavLink>
+      </nav>
       {/* 路由表：React Router 找出与当前地址最匹配的那条 path，显示它的 element */}
       <Routes>
         <Route path="/" element={<ListPage />} />

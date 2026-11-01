@@ -9,7 +9,7 @@
 ## 开始之前
 
 - 上一章你已经会了：`useState`、事件处理函数及其类型、更新函数 `setX((x) => ...)`、箭头函数。
-- 起点代码：仓库 `code/ch04C/price-list`（不含练习答案）。本章把卡片换成表格，`Panel`、`ProductCard`、`QuantityPicker` 这几个文件先不用，保留着（第 9 章的详情页还会用 `ProductCard`）。
+- 起点代码：仓库 `code/ch04C/price-list`（不含练习答案）。本章把卡片换成表格，`Panel`、`ProductCard`、`QuantityPicker` 这几个文件先不用，保留着（第 9C 章的详情页还会用 `ProductCard`）。
 - 在 `D:\react-study\price-list` 执行 `npm run dev`。
 - 预计耗时：20 分钟。
 

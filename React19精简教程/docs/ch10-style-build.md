@@ -7,7 +7,7 @@
 ## 开始之前
 
 - 上一章你已经会了：路由表、`Link`、URL 参数。
-- 起点代码：仓库 `code/ch09/price-list`（不含练习答案）。在 `D:\react-study\price-list` 执行 `npm run dev`。
+- 起点代码：仓库 `code/ch09C/price-list`（不含练习答案）。在 `D:\react-study\price-list` 执行 `npm run dev`。
 - 预计耗时：40 分钟。
 
 ## 正文
@@ -165,7 +165,7 @@ body {
 .nav { margin-bottom: 12px; }
 ```
 
-现在这个文件里留下的，都是多个组件共用或整个页面通用的样式：`.card`（第 9 章详情页的卡片）、`.error`（列表页、详情页、表单都用）等。
+现在这个文件里留下的，都是多个组件共用或整个页面通用的样式：`.card`（第 9C 章详情页的卡片）、`.error`（列表页、详情页、表单都用）等。
 
 #### 🔍 拆解运行结果
 
@@ -362,7 +362,7 @@ createRoot(document.getElementById('root')!).render(
 
 #### 改坏一处试试
 
-用第 9 章的代码（`fetch` 和 `BrowserRouter` 都没改），同样以 `base: '/price-list/'` 打包，实测：
+用第 9C 章的代码（`fetch` 和 `BrowserRouter` 都没改），同样以 `base: '/price-list/'` 打包，实测：
 
 | 没改的地方 | 现象 |
 | --- | --- |

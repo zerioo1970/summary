@@ -303,7 +303,7 @@ src/App.tsx(93,8): error TS2741: Property 'onKeywordChange' is missing in type '
 
 ## 下一章
 
-`App` 里加载数据、增删改的代码和页面结构混在一起，第 9 章的详情页也要加载产品。第 8C 章把这套逻辑抽成自定义 Hook `useProducts`。
+`App` 里加载数据、增删改的代码和页面结构混在一起，第 9C 章的详情页也要加载产品。第 8C 章把这套逻辑抽成自定义 Hook `useProducts`。
 
 ---
 

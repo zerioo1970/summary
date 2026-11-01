@@ -25,7 +25,7 @@
 | Node.js（LTS 版） | 运行前端工具（Vite、TypeScript 编译器）的环境，自带包管理器 npm | 打开 `https://nodejs.org`，下载 **LTS** 版的 Windows Installer（`.msi`），一路「Next」 |
 | VS Code | 写代码的编辑器 | 打开 `https://code.visualstudio.com`，下载 Windows 版安装。安装时勾选「添加到 PATH」 |
 
-npm（Node Package Manager，Node 的包管理器）负责从网上下载项目要用的库，比如 React。本教程要求 Node.js **≥ 22.22**（第 9 章的 React Router 8 有这个要求），nodejs.org 首页的 LTS 版本（24 或 26）都满足。
+npm（Node Package Manager，Node 的包管理器）负责从网上下载项目要用的库，比如 React。本教程要求 Node.js **≥ 22.22**（第 9A 章的 React Router 8 有这个要求），nodejs.org 首页的 LTS 版本（24 或 26）都满足。
 
 装好后，按 `Win + R`，输入 `powershell` 回车，执行：
 

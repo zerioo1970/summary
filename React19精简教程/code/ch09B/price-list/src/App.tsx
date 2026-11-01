@@ -1,4 +1,4 @@
-// src/App.tsx（9.2 版本，9.3 节会再改）
+// src/App.tsx
 // App 变成「外框」：页头、导航、页脚所有页面共用，中间按地址显示不同的页面
 import { Link, Route, Routes } from 'react-router'
 import { PageHeader } from './components/PageHeader.tsx'
