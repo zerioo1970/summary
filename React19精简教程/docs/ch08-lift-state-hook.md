@@ -169,7 +169,7 @@ export function ProductForm({ onAdd }: ProductFormProps) {
 **③ 改 `src/App.tsx`**。用下面的内容整个替换。和第 7 章相比：
 
 - import 区多了 `ProductTable`；
-- 多了 `handleAdd` 函数，用 `[...state.products, product]` 把新产品加到数组末尾（第 5 章表格里「添加」那一行）；
+- 多了 `handleAdd` 函数，用 `[...state.products, product]` 把新产品加到数组末尾（第 5B 章表格里「添加」那一行）；
 - 原来那一大段 `<table>` 和 `else if (state.products.length === 0)` 分支都删掉了（表格和「暂无产品」已搬进 `ProductTable`），换成一行 `<ProductTable ... />`；
 - `<ProductForm />` 变成 `<ProductForm onAdd={handleAdd} />`。
 
@@ -279,7 +279,7 @@ export default App
 | `onClick={() => onDelete(p.id)}` | 表格里点按钮时，调用父组件给的函数，并告诉它是哪一行 |
 | `onDelete={handleDelete}` | 父组件把自己的处理函数传下去。传的是函数本身，没有括号 |
 | 名字以 `on` / `handle` 开头 | 惯例：回调 props 叫 `onXxx`（「发生了 Xxx 时」），父组件里的处理函数叫 `handleXxx`（「处理 Xxx」） |
-| `[...state.products, product]` | 展开旧数组，末尾加一项，生成新数组。和第 5 章一样，不能用 `push` 改原数组 |
+| `[...state.products, product]` | 展开旧数组，末尾加一项，生成新数组。和第 5B 章一样，不能用 `push` 改原数组 |
 
 整个过程按时间顺序是：用户点「删除」→ 表格调用 `onDelete(5)` → 实际执行的是 `App` 的 `handleDelete(5)` → `setState` 存入新数组 → `App` 重新渲染，把新数组作为 `products` 传给表格 → 表格少了一行。
 

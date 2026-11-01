@@ -789,7 +789,7 @@ export function ProductForm({ title = '录入新产品', initial, onSubmit }: Pr
 }
 ```
 
-`clearServerError` 里先复制一份对象（`{ ...prev }`），再用 `delete next[field]` 删掉一个键，最后返回这份新对象。和第 5 章的数组一样，state 里的对象也不能直接改，要生成新的。
+`clearServerError` 里先复制一份对象（`{ ...prev }`），再用 `delete next[field]` 删掉一个键，最后返回这份新对象。和第 5B 章的数组一样，state 里的对象也不能直接改，要生成新的。
 
 #### 🔍 拆解运行结果
 

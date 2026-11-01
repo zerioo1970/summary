@@ -113,7 +113,7 @@ src/App.tsx(22,18): error TS17008: JSX element 'br' has no corresponding closing
 
 页面能跑不代表写对了，TypeScript 和 React 都在提醒你。改回 `className`。
 
-**④ 花括号里写 `if`。** 把 `<p>库存：{stock} 台</p>` 改成 `<p>库存：{if (stock > 0) { stock }} 台</p>`，遮罩显示 `Unexpected token`，箭头指向 `if`。按条件显示内容用别的写法，第 5 章讲。改回原样。
+**④ 花括号里写 `if`。** 把 `<p>库存：{stock} 台</p>` 改成 `<p>库存：{if (stock > 0) { stock }} 台</p>`，遮罩显示 `Unexpected token`，箭头指向 `if`。按条件显示内容用别的写法，第 5C 章讲。改回原样。
 
 ## ⚠️ 踩坑警告
 

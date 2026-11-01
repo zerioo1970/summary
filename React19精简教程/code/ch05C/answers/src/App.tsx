@@ -6,10 +6,21 @@ import { initialProducts } from './data.ts'
 import { PageHeader } from './components/PageHeader.tsx'
 import { PageFooter } from './components/PageFooter.tsx'
 
+// 练习 2：条件有三种，在 JSX 外面用普通的 if 算好文字，JSX 里只放结果
+function stockStatus(stock: number) {
+  if (stock === 0) {
+    return '缺货'
+  }
+  if (stock < 5) {
+    return '偏少'
+  }
+  return '充足'
+}
+
 function App() {
   // 尖括号里写明 state 的类型：Product 数组
   const [products, setProducts] = useState<Product[]>(initialProducts)
-  // 练习 2：是否只看有货。一个开关就是一个 boolean state
+  // 练习 1：是否只看有货。一个开关就是一个 boolean state
   const [onlyInStock, setOnlyInStock] = useState(false)
 
   function handleDelete(id: number) {
@@ -22,12 +33,7 @@ function App() {
     setProducts(products.map((p) => (p.id === id ? { ...p, stock: p.stock + 1 } : p)))
   }
 
-  // 练习 1：出库和入库写法相同，只是减 1
-  function handleShip(id: number) {
-    setProducts(products.map((p) => (p.id === id ? { ...p, stock: p.stock - 1 } : p)))
-  }
-
-  // 练习 2：要显示的行由 state 算出来，不另存一份「筛选后的数组」
+  // 练习 1：要显示的行由 state 算出来，不另存一份「筛选后的数组」
   const visibleProducts = onlyInStock ? products.filter((p) => p.stock > 0) : products
 
   return (
@@ -50,6 +56,7 @@ function App() {
               <th>名称</th>
               <th>单价（元）</th>
               <th>库存</th>
+              <th>状态</th>
               <th>操作</th>
             </tr>
           </thead>
@@ -65,13 +72,10 @@ function App() {
                 <td>{p.price.toLocaleString()}</td>
                 {/* 库存少于 5 用红色提醒：三元表达式也可以用在属性上 */}
                 <td className={p.stock < 5 ? 'low' : undefined}>{p.stock}</td>
+                <td>{stockStatus(p.stock)}</td>
                 <td>
                   {/* 要把 p.id 传进去，所以包一层箭头函数，点击时才执行 */}
                   <button type="button" onClick={() => handleRestock(p.id)}>入库 +1</button>{' '}
-                  {/* 库存为 0 时不能再出库 */}
-                  <button type="button" onClick={() => handleShip(p.id)} disabled={p.stock === 0}>
-                    出库 −1
-                  </button>{' '}
                   <button type="button" onClick={() => handleDelete(p.id)}>删除</button>
                 </td>
               </tr>

@@ -7,10 +7,10 @@
 ## 开始之前
 
 - 上一章你已经会了：`map` + `key` 渲染列表、不可变更新、条件渲染（`&&` 和 `? :`）。
-- 起点代码：仓库 `code/ch05/price-list`。在 `D:\react-study\price-list` 执行 `npm run dev`。
+- 起点代码：仓库 `code/ch05C/price-list`。在 `D:\react-study\price-list` 执行 `npm run dev`。
 - 预计耗时：50 分钟。
 
-先把表单放到页面上。用下面的内容整个替换 `src/App.tsx`。和第 5 章相比只改了两处：import 区最后多了 `ProductForm` 这一行；`<PageFooter />` 上面多了 `<ProductForm />`。本章后面不再改这个文件。
+先把表单放到页面上。用下面的内容整个替换 `src/App.tsx`。和第 5C 章相比只改了两处：import 区最后多了 `ProductForm` 这一行；`<PageFooter />` 上面多了 `<ProductForm />`。本章后面不再改这个文件。
 
 ```tsx
 // src/App.tsx
@@ -397,7 +397,7 @@ export function ProductForm() {
 
 `handleSubmit` 里直接用了 `isValid`。它是这次渲染时算好的值，和用户看到的错误提示完全一致。
 
-`{triedSubmit && codeError && <span>...}`：三个条件都成立才显示。`codeError` 是空字符串 `''` 时，`&&` 的结果是 `''`，React 显示空字符串等于什么都不显示，不会出现第 5 章那种多出一个 `0` 的问题。
+`{triedSubmit && codeError && <span>...}`：三个条件都成立才显示。`codeError` 是空字符串 `''` 时，`&&` 的结果是 `''`，React 显示空字符串等于什么都不显示，不会出现第 5C 章那种多出一个 `0` 的问题。
 
 #### 改坏一处试试
 

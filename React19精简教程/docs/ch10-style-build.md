@@ -126,7 +126,7 @@ export function ProductTable({ products, onDelete, onRestock }: ProductTableProp
 }
 ```
 
-表格的样式搬走后，`src/index.css` 里第 5 章加的 `.product-table`、`.product-table th, .product-table td`、`.out-of-stock`、`.low` 这四段就用不到了。用下面的内容整个替换 `src/index.css`，只留全局样式：
+表格的样式搬走后，`src/index.css` 里第 5A、5C 章加的 `.product-table`、`.product-table th, .product-table td`、`.out-of-stock`、`.low` 这四段就用不到了。用下面的内容整个替换 `src/index.css`，只留全局样式：
 
 ```css
 /* src/index.css */

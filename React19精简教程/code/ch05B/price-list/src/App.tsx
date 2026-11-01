@@ -1,4 +1,4 @@
-// src/App.tsx（5.2 版本，5.3 节会再改）
+// src/App.tsx
 import { useState } from 'react'
 import type { Product } from './types.ts'
 import { initialProducts } from './data.ts'

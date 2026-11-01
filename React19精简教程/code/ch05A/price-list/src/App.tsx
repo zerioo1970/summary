@@ -1,4 +1,4 @@
-// src/App.tsx（5.1 版本，5.2 节会再改）
+// src/App.tsx
 import { initialProducts } from './data.ts'
 import { PageHeader } from './components/PageHeader.tsx'
 import { PageFooter } from './components/PageFooter.tsx'
