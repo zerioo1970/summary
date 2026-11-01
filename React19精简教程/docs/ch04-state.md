@@ -7,7 +7,7 @@
 ## 开始之前
 
 - 上一章你已经会了：用 props 给组件传数据、用 `type` 声明 props、用 `children` 传一段界面。
-- 起点代码：仓库 `code/ch03/price-list`（不含练习答案）。在 `D:\react-study\price-list` 执行 `npm run dev`。
+- 起点代码：仓库 `code/ch03C/price-list`（不含练习答案）。在 `D:\react-study\price-list` 执行 `npm run dev`。
 - 本章要在浏览器开发者工具的「控制台」里看输出：按 `F12`，切到「控制台（Console）」标签。
 - 预计耗时：50 分钟。
 
@@ -51,7 +51,7 @@ export function QuantityPicker({ price }: QuantityPickerProps) {
 }
 ```
 
-把它放进卡片：用下面的内容整个替换 `src/components/ProductCard.tsx`（和第 3 章相比只多了两处：第 4 行的 `import`，以及库存下面的 `<QuantityPicker />`）。这个文件本章后面不再改。
+把它放进卡片：用下面的内容整个替换 `src/components/ProductCard.tsx`（和第 3C 章相比只多了两处：第 4 行的 `import`，以及库存下面的 `<QuantityPicker />`）。这个文件本章后面不再改。
 
 ```tsx
 // src/components/ProductCard.tsx
@@ -343,7 +343,7 @@ export function QuantityPicker({ price }: QuantityPickerProps) {
 
 | 现象 | 原因 |
 | --- | --- |
-| 3 张卡片打印了 6 行 | 开发模式下 `StrictMode` 会把每次渲染执行两次，用来暴露「渲染时做了不该做的事」（第 3 章改 props 打了两次折就是这样被暴露的）。打包后的正式版本只执行一次 |
+| 3 张卡片打印了 6 行 | 开发模式下 `StrictMode` 会把每次渲染执行两次，用来暴露「渲染时做了不该做的事」（第 3B 章改 props 打了两次折就是这样被暴露的）。打包后的正式版本只执行一次 |
 | 点「+」只多 2 行 | 只有第一张卡片的 state 变了，只有它重新渲染。另外两张卡片没有执行 |
 | 点「+2」一次加 2 | 见下面的对比 |
 

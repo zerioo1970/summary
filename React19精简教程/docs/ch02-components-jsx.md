@@ -51,7 +51,7 @@ export function PageHeader() {
 
 ```tsx
 // src/components/ProductCard.tsx
-// 一张产品卡片。本章数据先写死在组件里，第 3 章改成由外部传入
+// 一张产品卡片。本章数据先写死在组件里，第 3A 章改成由外部传入
 export function ProductCard() {
   const name = '凸阵探头 C5-2'
   const price = 12800
@@ -143,7 +143,7 @@ body {
 | 看到的现象 | 原因 |
 | --- | --- |
 | 卡片出现了两次 | `App` 里写了两次 `<ProductCard />`，React 调用了两次 `ProductCard` 函数 |
-| 两张卡片内容一样 | 数据写死在组件里。第 3 章用 props 让每张卡片显示不同产品 |
+| 两张卡片内容一样 | 数据写死在组件里。第 3A 章用 props 让每张卡片显示不同产品 |
 | `12800` 显示成 `12,800` | `{price.toLocaleString()}` 是一次普通的 JavaScript 方法调用，返回带千分位的字符串 |
 | `PageFooter` 没有 `( )` 包着 | 只有一行 JSX 时可以直接写在 `return` 后面；多行时用括号包起来，避免 `return` 后换行被当成 `return;` |
 
@@ -333,7 +333,7 @@ src/App.tsx(5,10): error TS2459: Module '"./components/PageFooter.tsx"' declares
 
 ## 下一章
 
-两张卡片内容一样。第 3 章用 props 让同一个组件显示不同的产品。
+两张卡片内容一样。第 3A 章用 props 让同一个组件显示不同的产品。
 
 ---
 
@@ -419,7 +419,7 @@ export default App
 
 ```tsx
 // src/components/ProductCard.tsx
-// 一张产品卡片。本章数据先写死在组件里，第 3 章改成由外部传入
+// 一张产品卡片。本章数据先写死在组件里，第 3A 章改成由外部传入
 export function ProductCard() {
   const name = '凸阵探头 C5-2'
   const price = 12800

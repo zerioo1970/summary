@@ -1,5 +1,5 @@
 // src/components/ProductCard.tsx
-// 一张产品卡片。本章数据先写死在组件里，第 3 章改成由外部传入
+// 一张产品卡片。本章数据先写死在组件里，第 3A 章改成由外部传入
 export function ProductCard() {
   const name = '凸阵探头 C5-2'
   const price = 12800
