@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="420" viewBox="0 0 880 420"
+     font-size="13" font-family="'Noto Sans CJK SC','Microsoft YaHei','PingFang SC',sans-serif">
+  <defs>
+    <marker id="s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#a6e3a1"/>
+    </marker>
+  </defs>
+  <rect width="880" height="420" fill="#1e1e2e" rx="10"/>
+  <text x="24" y="36" fill="#cdd6f4" font-size="17" font-weight="bold">图 4　children 与插槽：父组件写的东西落在哪个位置</text>
+
+  <text x="30" y="70" fill="#a6adc8" font-size="12">父组件写的 JSX</text>
+  <text xml:space="preserve" x="30" y="96" fill="#d4d4d4" font-family="monospace">&lt;Card</text>
+  <text xml:space="preserve" x="30" y="120" fill="#d4d4d4" font-family="monospace">  icon={&lt;Star /&gt;}</text>
+  <text xml:space="preserve" x="30" y="144" fill="#d4d4d4" font-family="monospace">  title="写周报"</text>
+  <text xml:space="preserve" x="30" y="168" fill="#d4d4d4" font-family="monospace">  footer={&lt;IconButton /&gt;}</text>
+  <text xml:space="preserve" x="30" y="192" fill="#d4d4d4" font-family="monospace">&gt;</text>
+  <text xml:space="preserve" x="30" y="216" fill="#d4d4d4" font-family="monospace">  今天下班前给我</text>
+  <text xml:space="preserve" x="30" y="240" fill="#d4d4d4" font-family="monospace">&lt;/Card&gt;</text>
+
+  <text x="530" y="70" fill="#a6adc8" font-size="12">渲染出来的卡片</text>
+  <rect x="530" y="80" width="320" height="52" fill="#313244" stroke="#585b70" rx="6"/>
+  <text x="548" y="112" fill="#f9e2af">★</text>
+  <text x="574" y="112" fill="#cdd6f4" font-weight="bold">写周报</text>
+
+  <rect x="530" y="132" width="320" height="120" fill="#292c3c" stroke="#585b70"/>
+  <text x="548" y="176" fill="#cdd6f4">今天下班前给我</text>
+  <text x="548" y="200" fill="#6c7086" font-size="11">↑ children 的位置（标签之间的内容）</text>
+
+  <rect x="530" y="252" width="320" height="48" fill="#313244" stroke="#585b70" rx="6"/>
+  <text x="548" y="282" fill="#a6adc8">[ 删除 ]</text>
+
+  <path d="M 300,114 C 420,110 440,104 526,104" stroke="#a6e3a1" stroke-width="1.6" fill="none" stroke-dasharray="5 4" marker-end="url(#s)"/>
+  <path d="M 300,138 C 420,134 440,112 526,112" stroke="#a6e3a1" stroke-width="1.6" fill="none" stroke-dasharray="5 4" marker-end="url(#s)"/>
+  <path d="M 300,210 C 420,206 440,180 526,176" stroke="#a6e3a1" stroke-width="1.6" fill="none" stroke-dasharray="5 4" marker-end="url(#s)"/>
+  <path d="M 300,162 C 460,158 460,272 526,278" stroke="#a6e3a1" stroke-width="1.6" fill="none" stroke-dasharray="5 4" marker-end="url(#s)"/>
+
+  <text x="24" y="290" fill="#7f849c" font-size="12">插槽（icon / footer）适合「父组件决定长什么样」；</text>
+  <text x="24" y="310" fill="#7f849c" font-size="12">children 适合「主体内容」；两者都是 ReactNode，本质一样。</text>
+  <text x="24" y="340" fill="#7f849c" font-size="12">虚线表示：写在左边的东西，最终出现在右边对应的位置。</text>
+</svg>

@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="696" viewBox="0 0 1180 696" font-size="13" font-family="'DejaVu Sans Mono','Menlo','Consolas','Courier New',monospace,'Noto Sans CJK SC','Microsoft YaHei','PingFang SC'">
+<rect width="1180" height="696" fill="#1e1e2e" rx="10"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#89b4fa"/></marker><marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#9399b2"/></marker></defs>
+<text x="24" y="40" fill="#89b4fa" font-size="17" font-weight="bold">图 2　装配线 —— 渲染时发生，方向：父 -&gt; 子（把函数交下去）</text>
+<rect x="40" y="122" width="500" height="19" fill="#89b4fa" opacity="0.09" rx="3"/>
+<rect x="40" y="182" width="500" height="19" fill="#89b4fa" opacity="0.14" rx="3"/>
+<rect x="40" y="222" width="500" height="19" fill="#89b4fa" opacity="0.14" rx="3"/>
+<rect x="40" y="402" width="500" height="19" fill="#89b4fa" opacity="0.14" rx="3"/>
+<rect x="40" y="542" width="500" height="19" fill="#89b4fa" opacity="0.14" rx="3"/>
+<text xml:space="preserve" x="44" y="76" fill="#585b70" text-anchor="end">1</text>
+<text xml:space="preserve" x="54" y="76" fill="#d4d4d4"><tspan fill="#c586c0">import</tspan> { <tspan fill="#dcdcaa">useState</tspan> } <tspan fill="#c586c0">from</tspan> <tspan fill="#ce9178">&#x27;react&#x27;</tspan>;</text>
+<text xml:space="preserve" x="44" y="96" fill="#585b70" text-anchor="end">2</text>
+<text xml:space="preserve" x="44" y="116" fill="#585b70" text-anchor="end">3</text>
+<text xml:space="preserve" x="54" y="116" fill="#d4d4d4"><tspan fill="#569cd6">type</tspan> <tspan fill="#4ec9b0">TaskCardProps</tspan> = {</text>
+<text xml:space="preserve" x="44" y="136" fill="#585b70" text-anchor="end">4</text>
+<text xml:space="preserve" x="54" y="136" fill="#d4d4d4">  <tspan fill="#ffd479" font-weight="bold">onToggle</tspan>: () =&gt; <tspan fill="#569cd6">void</tspan>;</text>
+<text xml:space="preserve" x="44" y="156" fill="#585b70" text-anchor="end">5</text>
+<text xml:space="preserve" x="54" y="156" fill="#d4d4d4">};</text>
+<text xml:space="preserve" x="44" y="176" fill="#585b70" text-anchor="end">6</text>
+<text xml:space="preserve" x="44" y="196" fill="#585b70" text-anchor="end">7</text>
+<text xml:space="preserve" x="54" y="196" fill="#d4d4d4"><tspan fill="#569cd6">function</tspan> <tspan fill="#4ec9b0">TaskCard</tspan>({ <tspan fill="#ffd479" font-weight="bold">onToggle</tspan> }: <tspan fill="#4ec9b0">TaskCardProps</tspan>) {</text>
+<text xml:space="preserve" x="44" y="216" fill="#585b70" text-anchor="end">8</text>
+<text xml:space="preserve" x="54" y="216" fill="#d4d4d4">  <tspan fill="#c586c0">return</tspan> (</text>
+<text xml:space="preserve" x="44" y="236" fill="#585b70" text-anchor="end">9</text>
+<text xml:space="preserve" x="54" y="236" fill="#d4d4d4">    &lt;button <tspan fill="#569cd6">type</tspan>=<tspan fill="#ce9178">&quot;button&quot;</tspan> onClick={<tspan fill="#ffd479" font-weight="bold">onToggle</tspan>}&gt;</text>
+<text xml:space="preserve" x="44" y="256" fill="#585b70" text-anchor="end">10</text>
+<text xml:space="preserve" x="54" y="256" fill="#d4d4d4">      切换完成</text>
+<text xml:space="preserve" x="44" y="276" fill="#585b70" text-anchor="end">11</text>
+<text xml:space="preserve" x="54" y="276" fill="#d4d4d4">    &lt;/button&gt;</text>
+<text xml:space="preserve" x="44" y="296" fill="#585b70" text-anchor="end">12</text>
+<text xml:space="preserve" x="54" y="296" fill="#d4d4d4">  );</text>
+<text xml:space="preserve" x="44" y="316" fill="#585b70" text-anchor="end">13</text>
+<text xml:space="preserve" x="54" y="316" fill="#d4d4d4">}</text>
+<text xml:space="preserve" x="44" y="336" fill="#585b70" text-anchor="end">14</text>
+<text xml:space="preserve" x="44" y="356" fill="#585b70" text-anchor="end">15</text>
+<text xml:space="preserve" x="54" y="356" fill="#d4d4d4"><tspan fill="#c586c0">export</tspan> <tspan fill="#c586c0">default</tspan> <tspan fill="#569cd6">function</tspan> TaskPanel() {</text>
+<text xml:space="preserve" x="44" y="376" fill="#585b70" text-anchor="end">16</text>
+<text xml:space="preserve" x="54" y="376" fill="#d4d4d4">  <tspan fill="#569cd6">const</tspan> [done, <tspan fill="#dcdcaa">setDone</tspan>] = <tspan fill="#dcdcaa">useState</tspan>(false);</text>
+<text xml:space="preserve" x="44" y="396" fill="#585b70" text-anchor="end">17</text>
+<text xml:space="preserve" x="44" y="416" fill="#585b70" text-anchor="end">18</text>
+<text xml:space="preserve" x="54" y="416" fill="#d4d4d4">  <tspan fill="#569cd6">function</tspan> <tspan fill="#ffd479" font-weight="bold">handleToggle</tspan>(): <tspan fill="#569cd6">void</tspan> {</text>
+<text xml:space="preserve" x="44" y="436" fill="#585b70" text-anchor="end">19</text>
+<text xml:space="preserve" x="54" y="436" fill="#d4d4d4">    <tspan fill="#dcdcaa">setDone</tspan>((d) =&gt; !d);</text>
+<text xml:space="preserve" x="44" y="456" fill="#585b70" text-anchor="end">20</text>
+<text xml:space="preserve" x="54" y="456" fill="#d4d4d4">  }</text>
+<text xml:space="preserve" x="44" y="476" fill="#585b70" text-anchor="end">21</text>
+<text xml:space="preserve" x="44" y="496" fill="#585b70" text-anchor="end">22</text>
+<text xml:space="preserve" x="54" y="496" fill="#d4d4d4">  <tspan fill="#c586c0">return</tspan> (</text>
+<text xml:space="preserve" x="44" y="516" fill="#585b70" text-anchor="end">23</text>
+<text xml:space="preserve" x="54" y="516" fill="#d4d4d4">    &lt;div&gt;</text>
+<text xml:space="preserve" x="44" y="536" fill="#585b70" text-anchor="end">24</text>
+<text xml:space="preserve" x="54" y="536" fill="#d4d4d4">      &lt;p&gt;{done ? <tspan fill="#ce9178">&#x27;已完成&#x27;</tspan> : <tspan fill="#ce9178">&#x27;进行中&#x27;</tspan>}&lt;/p&gt;</text>
+<text xml:space="preserve" x="44" y="556" fill="#585b70" text-anchor="end">25</text>
+<text xml:space="preserve" x="54" y="556" fill="#d4d4d4">      &lt;<tspan fill="#4ec9b0">TaskCard</tspan> <tspan fill="#ffd479" font-weight="bold">onToggle</tspan>={<tspan fill="#ffd479" font-weight="bold">handleToggle</tspan>} /&gt;</text>
+<text xml:space="preserve" x="44" y="576" fill="#585b70" text-anchor="end">26</text>
+<text xml:space="preserve" x="54" y="576" fill="#d4d4d4">    &lt;/div&gt;</text>
+<text xml:space="preserve" x="44" y="596" fill="#585b70" text-anchor="end">27</text>
+<text xml:space="preserve" x="54" y="596" fill="#d4d4d4">  );</text>
+<text xml:space="preserve" x="44" y="616" fill="#585b70" text-anchor="end">28</text>
+<text xml:space="preserve" x="54" y="616" fill="#d4d4d4">}</text>
+<path d="M 560,192 L 560,552" stroke="#89b4fa" stroke-width="2" fill="none"/>
+<path d="M 560,412 L 548,412" stroke="#89b4fa" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<circle cx="560" cy="412" r="3.5" fill="#89b4fa"/>
+<text x="572" y="416" fill="#89b4fa" font-size="13" font-weight="bold">(1)</text>
+<path d="M 560,552 L 548,552" stroke="#89b4fa" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<circle cx="560" cy="552" r="3.5" fill="#89b4fa"/>
+<text x="572" y="556" fill="#89b4fa" font-size="13" font-weight="bold">(2)</text>
+<path d="M 560,192 L 548,192" stroke="#89b4fa" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<circle cx="560" cy="192" r="3.5" fill="#89b4fa"/>
+<text x="572" y="196" fill="#89b4fa" font-size="13" font-weight="bold">(3)</text>
+<path d="M 560,232 L 548,232" stroke="#89b4fa" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<circle cx="560" cy="232" r="3.5" fill="#89b4fa"/>
+<text x="572" y="236" fill="#89b4fa" font-size="13" font-weight="bold">(4)</text>
+<path d="M 600,132 L 548,132" stroke="#9399b2" stroke-width="1.6" stroke-dasharray="5 4" fill="none" marker-end="url(#ahg)"/>
+<text x="608" y="136" fill="#9399b2" font-size="12">契约：只核对名字和形状，不搬运东西</text>
+<text x="54" y="672" fill="#7f849c" font-size="12">装配在每次渲染时完成，此刻没有任何代码被执行 —— 只是把函数交付到位，像把电线牵到开关。</text>
+</svg>

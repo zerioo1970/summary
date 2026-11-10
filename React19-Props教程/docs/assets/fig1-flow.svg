@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="380" viewBox="0 0 760 380"
+     font-size="14" font-family="'Noto Sans CJK SC','Microsoft YaHei','PingFang SC',sans-serif">
+  <defs>
+    <marker id="d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#89b4fa"/>
+    </marker>
+    <marker id="u" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#fab387"/>
+    </marker>
+  </defs>
+  <rect width="760" height="380" fill="#1e1e2e" rx="10"/>
+  <text x="24" y="36" fill="#cdd6f4" font-size="17" font-weight="bold">图 1　props 单向流：数据往下，事件往上</text>
+
+  <rect x="230" y="62" width="300" height="62" fill="#313244" stroke="#89b4fa" stroke-width="1.5" rx="8"/>
+  <text x="380" y="88" fill="#cdd6f4" text-anchor="middle" font-weight="bold">父组件 App</text>
+  <text x="380" y="110" fill="#a6adc8" text-anchor="middle" font-size="12">state 住在这里，它是数据的主人</text>
+
+  <rect x="230" y="266" width="300" height="62" fill="#313244" stroke="#fab387" stroke-width="1.5" rx="8"/>
+  <text x="380" y="292" fill="#cdd6f4" text-anchor="middle" font-weight="bold">子组件 TaskCard</text>
+  <text x="380" y="314" fill="#a6adc8" text-anchor="middle" font-size="12">只能读 props，永远不能改它</text>
+
+  <path d="M 300,124 L 300,266" stroke="#89b4fa" stroke-width="2.5" fill="none" marker-end="url(#d)"/>
+  <text x="286" y="180" fill="#89b4fa" font-size="13" text-anchor="end">props（普通值）</text>
+  <text x="286" y="200" fill="#89b4fa" font-size="12" text-anchor="end">title / days / done</text>
+  <text x="286" y="218" fill="#89b4fa" font-size="12" text-anchor="end">只读，往下流</text>
+
+  <path d="M 460,266 L 460,124" stroke="#fab387" stroke-width="2.5" fill="none" marker-end="url(#u)"/>
+  <text x="474" y="180" fill="#fab387" font-size="13">回调 props（函数）</text>
+  <text x="474" y="200" fill="#fab387" font-size="12">onToggle / onDelete</text>
+  <text x="474" y="218" fill="#fab387" font-size="12">通知，往上走</text>
+
+  <text x="24" y="360" fill="#7f849c" font-size="12">两条通道共用同一个 props 对象：普通值往下送数据，函数往上送消息。</text>
+</svg>
