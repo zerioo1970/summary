@@ -409,3 +409,106 @@ export default function App() {
 
 练习完成后，把 `App.tsx` 恢复为第 93 章的内容（显示 `TaskServerPage`）。`TaskStatusPage.tsx` 可以保留，不影响后续章节。
 
+## 第 115 章：我的收藏
+
+### 思路
+
+1. **只有登录后才能打开**：路由用第 112 章的 `RequireAuth` 包住页面。守卫跳转时记下原来的地址，登录后自动回到 `/favorites`（第 113 章），这部分不用另写代码。
+2. **导航栏中的链接**：在 `AppLayout` 中按 `!checking && user` 决定是否显示“我的收藏”，和用户名、“退出”的写法相同（第 111、114 章）。
+3. **标题**：用 `useAuth()` 读取当前用户，标题和标签页标题用同一个变量 `title`，标签页标题用 React 19 的 `<title>`（第 100 章）。`<title>` 中只能有一段文字，所以先拼好再放进去。
+4. **收藏**：用一个编号数组 `favoriteIds` 记住收藏了哪些商品，和第 60 章记录选中的商品相同。切换时用更新函数，收藏过的用 `filter` 去掉，没收藏的用展开语法加上（第 45、46 章）。
+5. **已收藏件数**：就是 `favoriteIds.length`，现算即可，不另外保存（第 32 章）。
+6. **样式**：复用待办事项页的 `TaskPage.module.css` 中的 `list`、`item`、`title`（第 85 章）。按钮加上 `aria-pressed`，读屏软件能读出它是否处于“已收藏”状态。
+
+### `src/pages/FavoritesPage.tsx`
+
+```tsx
+import { useState } from 'react';
+import { products } from '../data/products';
+import { useAuth } from '../hooks/useAuth';
+import styles from './TaskPage.module.css';
+
+export default function FavoritesPage() {
+  const { user } = useAuth();
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+
+  function handleToggle(productId: number) {
+    setFavoriteIds((current) =>
+      current.includes(productId)
+        ? current.filter((id) => id !== productId)
+        : [...current, productId],
+    );
+  }
+
+  // RequireAuth 保证只有登录后才显示本页，这里只是让 TypeScript 放心
+  if (!user) {
+    return null;
+  }
+
+  const title = user.displayName + ' 的收藏';
+
+  return (
+    <main className="page">
+      <title>{title}</title>
+      <h1>{title}</h1>
+      <p>已收藏 {favoriteIds.length} 件</p>
+      <ul className={styles.list}>
+        {products.map((product) => {
+          const isFavorite = favoriteIds.includes(product.id);
+          return (
+            <li key={product.id} className={styles.item}>
+              <span className={styles.title}>{product.name}</span>
+              <button
+                type="button"
+                aria-pressed={isFavorite}
+                onClick={() => handleToggle(product.id)}
+              >
+                {isFavorite ? '取消收藏' : '收藏'}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </main>
+  );
+}
+```
+
+### `src/App.tsx`（练习期间）
+
+在导入 `FaqPage` 的一行下面加入：
+
+```tsx
+import FavoritesPage from './pages/FavoritesPage';
+```
+
+在布局路由中 `/account` 那条路由的上面加入：
+
+```tsx
+            <Route
+              path="/favorites"
+              element={
+                <RequireAuth>
+                  <FavoritesPage />
+                </RequireAuth>
+              }
+            />
+```
+
+### `src/components/AppLayout.tsx`（练习期间）
+
+在用户名链接的上面加入：
+
+```tsx
+        {!checking && user && <NavLink to="/favorites">我的收藏</NavLink>}
+```
+
+### 对照验收标准
+
+1. 没有登录时 `user` 是 `null`，导航栏不显示链接；`RequireAuth` 把人送去登录页，并在 `state` 中带上 `/favorites`，登录后回到这里。
+2. `title` 由 `user.displayName` 拼出，`<h1>` 和 `<title>` 用的是同一个变量。
+3. `favoriteIds` 中有这件商品的编号时，按钮显示“取消收藏”；件数是数组的长度，随之变化。
+4. 点“退出”后 `user` 变成 `null`，`RequireAuth` 把人送去登录页（第 114 章）。
+5. `npm.cmd run check` 没有错误。
+
+练习完成后，把 `App.tsx` 和 `AppLayout.tsx` 恢复为第 115 章的内容。`FavoritesPage.tsx` 可以保留，不影响后续章节。
