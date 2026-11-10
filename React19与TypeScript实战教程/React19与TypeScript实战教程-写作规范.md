@@ -115,6 +115,8 @@ react-daily-practice/
 - 登录：账号 `admin` 和 `member`，密码都是 `learn1234`。`POST /api/auth/login`、`GET /api/auth/me`、`POST /api/auth/logout`。会话保存在服务内存中，重启服务后需要重新登录。`POST /api/dev/expire-sessions` 让所有会话立即失效（第 115 章）。
 - 上传：`POST /api/account/avatar`（当前用户头像）、`POST /api/people/:id/avatar`（管理员修改人员头像），表单字段名 `avatar`，只接受 PNG、JPEG、WebP，不超过 1MB。
 - 人员：`GET /api/people?page=1&pageSize=5`、`PATCH /api/people/:id`、`POST /api/people/batch-delete`，仅管理员。
+- 商品：`GET /api/products`、`GET /api/products/:id`（共 6 件，带 `description`），公开。
+- 视频：`POST /api/videos`，表单字段名 `video`，只接受 MP4、WebM，不超过 200MB，不需要登录。默认按每秒 2MB 接收，便于观察上传进度（第 130A、130B 章）；`?speed=KB每秒` 改变速度，`?speed=0` 不限速。上传的视频在 `/uploads/文件名` 播放，支持 Range 请求。
 
 需要新的接口时，先修改练习服务并更新附录 B，再写正文。不在正文里让读者改服务器。
 

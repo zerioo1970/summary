@@ -8,10 +8,13 @@
 // 所有 /api 接口都支持两个练习参数：
 //   ?delay=毫秒   改变响应等待时间（默认 500 毫秒，便于看到“加载中”）
 //   ?fail=状态码  直接返回这个错误状态，例如 ?fail=500、?fail=404，用来练习失败处理
+// 上传视频的接口 POST /api/videos 还支持：
+//   ?speed=KB每秒 限制接收速度（默认 2048，即每秒 2MB），在本机也能看清上传进度；?speed=0 不限速
 
 import { createServer } from 'node:http';
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, writeFile, rm } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, rm, stat } from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
 import { dirname, extname, join } from 'node:path';
 import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
@@ -22,6 +25,8 @@ const dataFile = join(dataDir, 'practice-data.json');
 const uploadDir = join(dataDir, 'uploads');
 const port = Number(process.env.API_PORT ?? 3001);
 const defaultDelay = 500;
+const videoMaxSize = 200 * 1024 * 1024;
+const defaultUploadSpeed = 2048;
 const allowedOrigins = ['http://127.0.0.1:5173', 'http://localhost:5173', 'http://127.0.0.1:4173', 'http://localhost:4173'];
 
 // ---------- 初始数据 ----------
@@ -204,6 +209,55 @@ async function readAvatar(request) {
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// 按指定速度读取请求正文。本机上传几乎是瞬间完成的，限速后才能看清进度条的变化
+async function* throttled(request, kbPerSecond) {
+  for await (const chunk of request) {
+    yield chunk;
+    if (kbPerSecond > 0) await wait((chunk.length / (kbPerSecond * 1024)) * 1000);
+  }
+}
+
+// 丢弃还没读完的请求正文，再返回错误；直接断开连接时，浏览器只能看到网络错误，看不到状态码
+function drain(request) {
+  return new Promise((resolve) => {
+    request.on('end', resolve);
+    request.on('error', resolve);
+    request.resume();
+  });
+}
+
+async function readVideo(request, url) {
+  const length = Number(request.headers['content-length'] ?? 0);
+  if (length > videoMaxSize + 1024 * 1024) {
+    await drain(request);
+    throw new HttpError(413, '视频不能超过 200MB', { video: '视频不能超过 200MB' });
+  }
+  const speedParam = url.searchParams.get('speed');
+  const speed = speedParam === null ? defaultUploadSpeed : Math.max(Number(speedParam) || 0, 0);
+  const webRequest = new Request('http://practice.local' + request.url, {
+    method: 'POST',
+    headers: Object.entries(request.headers).filter(([, value]) => typeof value === 'string'),
+    body: Readable.toWeb(Readable.from(throttled(request, speed))),
+    duplex: 'half',
+  });
+  let form;
+  try {
+    form = await webRequest.formData();
+  } catch {
+    if (request.aborted || request.destroyed) throw new HttpError(499, '上传已被取消');
+    throw new HttpError(400, '请用表单格式上传文件');
+  }
+  const file = form.get('video');
+  if (!(file instanceof File)) throw new HttpError(422, '没有收到视频', { video: '请选择一个视频' });
+  const types = { 'video/mp4': '.mp4', 'video/webm': '.webm' };
+  if (!types[file.type]) throw new HttpError(422, '只支持 MP4、WebM 视频', { video: '只支持 MP4、WebM 视频' });
+  if (file.size > videoMaxSize) throw new HttpError(413, '视频不能超过 200MB', { video: '视频不能超过 200MB' });
+  await mkdir(uploadDir, { recursive: true });
+  const fileName = randomUUID() + types[file.type];
+  await writeFile(join(uploadDir, fileName), Buffer.from(await file.arrayBuffer()));
+  return { id: fileName.slice(0, -types[file.type].length), name: file.name, size: file.size, type: file.type, url: '/uploads/' + fileName };
+}
+
 // ---------- 路由 ----------
 
 async function handleApi(request, response, url) {
@@ -317,6 +371,12 @@ async function handleApi(request, response, url) {
     return send(response, 200, publicUser(user, data));
   }
 
+  // 上传视频（公开，不需要登录）：表单字段名 video，只接受 MP4、WebM，不超过 200MB
+  if (method === 'POST' && path === '/api/videos') {
+    const video = await readVideo(request, url);
+    return send(response, 201, video);
+  }
+
   // 人员管理（仅管理员）
   if (method === 'GET' && path === '/api/people') {
     requireAdmin(request);
@@ -365,17 +425,34 @@ async function handleApi(request, response, url) {
   throw new HttpError(404, '没有这个接口：' + method + ' ' + path);
 }
 
-async function serveUpload(response, url) {
+async function serveUpload(request, response, url) {
   const name = url.pathname.slice('/uploads/'.length);
-  if (!/^[0-9a-f-]+\.(png|jpg|webp)$/.test(name)) return send(response, 404, { message: '找不到文件' });
+  if (!/^[0-9a-f-]+\.(png|jpg|webp|mp4|webm)$/.test(name)) return send(response, 404, { message: '找不到文件' });
+  const types = { '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.mp4': 'video/mp4', '.webm': 'video/webm' };
+  const filePath = join(uploadDir, name);
+  let size;
   try {
-    const types = { '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp' };
-    const file = await readFile(join(uploadDir, name));
-    response.writeHead(200, { 'Content-Type': types[extname(name)], 'Cache-Control': 'no-cache' });
-    response.end(file);
+    size = (await stat(filePath)).size;
   } catch {
-    send(response, 404, { message: '找不到文件' });
+    return send(response, 404, { message: '找不到文件' });
   }
+  const headers = { 'Content-Type': types[extname(name)], 'Cache-Control': 'no-cache', 'Accept-Ranges': 'bytes' };
+  // 视频播放时浏览器会按范围分段读取（Range 请求），拖动进度条才能跳到任意位置
+  const range = /^bytes=(\d*)-(\d*)$/.exec(request.headers.range ?? '');
+  if (range && size > 0) {
+    let start = range[1] === '' ? size - Number(range[2]) : Number(range[1]);
+    let end = range[1] !== '' && range[2] !== '' ? Number(range[2]) : size - 1;
+    start = Math.max(0, start);
+    end = Math.min(end, size - 1);
+    if (start > end) {
+      response.writeHead(416, { 'Content-Range': `bytes */${size}` });
+      return response.end();
+    }
+    response.writeHead(206, { ...headers, 'Content-Range': `bytes ${start}-${end}/${size}`, 'Content-Length': end - start + 1 });
+    return createReadStream(filePath, { start, end }).pipe(response);
+  }
+  response.writeHead(200, { ...headers, 'Content-Length': size });
+  createReadStream(filePath).pipe(response);
 }
 
 const server = createServer(async (request, response) => {
@@ -385,7 +462,7 @@ const server = createServer(async (request, response) => {
   response.on('finish', () => console.log(`${request.method} ${request.url} → ${response.statusCode}`));
 
   if (request.method === 'OPTIONS') return send(response, 204);
-  if (request.method === 'GET' && url.pathname.startsWith('/uploads/')) return serveUpload(response, url);
+  if (request.method === 'GET' && url.pathname.startsWith('/uploads/')) return serveUpload(request, response, url);
   if (!url.pathname.startsWith('/api/')) return send(response, 404, { message: '练习服务只提供 /api 和 /uploads 地址' });
 
   try {
