@@ -1,0 +1,75 @@
+# React 19 + Spring Boot 3.5 + SQL Server 全栈 CRUD 实战教程
+
+> 技术栈：**React 19（Vite）** + **Spring Boot 3.5** + **MyBatis-Flex 1.11** + **SQL Server** + **Gradle** + **IntelliJ IDEA 2026**
+>
+> 从零开始做一个前后端分离、可对 SQL Server 进行「增删改查」的完整项目。**本教程已按章拆分，每章一个文件，方便单独阅读与修改。**
+
+---
+
+## 📚 章节目录
+
+| 章 | 文件 | 内容 |
+|----|------|------|
+| 1 | [01-架构与技术选型.md](01-架构与技术选型.md) | 技术选型、架构图、调用链时序图 |
+| 2 | [02-环境准备.md](02-环境准备.md) | JDK / Node / SQL Server / IDEA 版本要求 |
+| 3 | [03-SQLServer建库建表.md](03-SQLServer建库建表.md) | 开启网络、建库建表脚本 |
+| 4 | [04-创建SpringBoot后端.md](04-创建SpringBoot后端.md) | Spring Initializr + 完整 build.gradle |
+| 5 | [05-数据库连接与MyBatisFlex配置.md](05-数据库连接与MyBatisFlex配置.md) | application.yml、连接串、@MapperScan |
+| 6 | [06-后端分层代码.md](06-后端分层代码.md) | Entity → Mapper → Service → Controller |
+| 7 | [07-统一返回-跨域-异常.md](07-统一返回-跨域-异常.md) | Result、CORS、全局异常 |
+| 8 | [08-启动与接口测试.md](08-启动与接口测试.md) | 启动后端、IDEA HTTP Client 测试 |
+| 9 | [09-创建React19前端.md](09-创建React19前端.md) | Vite 创建项目、目录结构 |
+| 10 | [10-封装axios与API层.md](10-封装axios与API层.md) | request.js 拦截器、userApi.js |
+| 11 | [11-React-CRUD页面.md](11-React-CRUD页面.md) | 完整 UserManager 组件 |
+| 12 | [12-前后端联调与数据流.md](12-前后端联调与数据流.md) | 启动顺序、端到端数据流 |
+| 13 | [13-常见问题FAQ.md](13-常见问题FAQ.md) | 8 个高频报错排查 |
+| 附录 A | [附录A-Spring核心概念详解.md](附录A-Spring核心概念详解.md) | Bean / IoC 容器 / 依赖注入 / 动态代理（含跨语言对比）深入讲解 |
+| 附录 B | [附录B-前端概念详解.md](附录B-前端概念详解.md) | 组件 / Hooks / 状态 / 虚拟 DOM / Promise / async-await |
+| 附录 C | [附录C-HTTP与JSON基础.md](附录C-HTTP与JSON基础.md) | HTTP 请求方法 / 状态码 / JSON / 跨域(CORS)原理 |
+| 附录 D | [附录D-数据库与事务.md](附录D-数据库与事务.md) | 事务 / ACID / @Transactional 原理 / 连接池 HikariCP |
+| 附录 E | [附录E-Gradle构建原理.md](附录E-Gradle构建原理.md) | 依赖下载 / implementation vs api / 构建生命周期 |
+| 附录 F | [附录F-注解详解与速查.md](附录F-注解详解与速查.md) | 注解是什么/作用/原理 + 分类速查 + 易混对比 |
+| 附录 G | [附录G-项目部署上线.md](附录G-项目部署上线.md) | 打包 / 生产配置 / Nginx 反代 / Docker 部署 |
+| 附录 H | [附录H-WebForm到SpringBoot概念对照.md](附录H-WebForm到SpringBoot概念对照.md) | ASP.NET WebForm 老手过渡：概念一一对照 |
+| 附录 I | [附录I-大型项目的组织与代码导航.md](附录I-大型项目的组织与代码导航.md) | 按功能分包 / IDE 导航快捷键 / 顺藤摸瓜找文件 |
+| 附录 J | [附录J-代码生成器与多模块协作.md](附录J-代码生成器与多模块协作.md) | 代码生成器一键生成四层 / 多模块相互调用规则 |
+| 附录 K | [附录K-代码生成工具全景与选型.md](附录K-代码生成工具全景与选型.md) | 各类生成工具对比选型 + EasyCode 连SQLServer实操 |
+| 速查 | [术语速查表-Glossary.md](术语速查表-Glossary.md) | 全教程术语一句话解释 + 跳转索引 |
+
+---
+
+## 🗺️ 全流程一图总览
+
+```mermaid
+flowchart LR
+    subgraph 前端["① React 19 前端 (5173)"]
+        direction TB
+        P1["组件 UserManager"] --> P2["userApi.js"] --> P3["request.js<br/>axios"]
+    end
+
+    subgraph 后端["② Spring Boot 3.5 后端 (8080)"]
+        direction TB
+        B1["Controller<br/>@RestController"] --> B2["Service"] --> B3["Mapper<br/>BaseMapper"]
+    end
+
+    DB[("③ SQL Server<br/>demo_db.sys_user")]
+
+    P3 -->|HTTP + JSON| B1
+    B3 -->|"mssql-jdbc"| DB
+
+    style 前端 fill:#e3f2fd
+    style 后端 fill:#e8f5e9
+    style DB fill:#fff3e0
+```
+
+**一条链路**：React 页面 → axios → Spring Boot REST 接口 → Service → MyBatis-Flex Mapper → SQL Server → 原路返回渲染。
+
+---
+
+## ✅ 建议动手顺序
+
+先跑通 **第 3 章数据库** → 再做 **后端(4~8 章)并用 `.http` 单独测通** → 最后接 **前端(9~11 章)**。分段验证，联调几乎不卡壳。
+
+## 🚀 后续可扩展方向
+
+分页查询（MyBatis-Flex `paginate`）、参数校验（`@Valid`）、登录鉴权（Spring Security + JWT）、前端换 Ant Design、Docker 部署等。
