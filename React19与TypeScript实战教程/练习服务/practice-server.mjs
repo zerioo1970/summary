@@ -4,6 +4,7 @@
 // 启动：  node server/practice-server.mjs
 // 重置：  node server/practice-server.mjs --reset
 // 端口：  默认 3001，可用环境变量 API_PORT 修改。
+// 部署：  云主机（如 Render）会提供环境变量 PORT，这时改为监听 0.0.0.0:PORT，外部才能访问。
 //
 // 所有 /api 接口都支持两个练习参数：
 //   ?delay=毫秒   改变响应等待时间（默认 500 毫秒，便于看到“加载中”）
@@ -23,7 +24,9 @@ const serverDir = dirname(fileURLToPath(import.meta.url));
 const dataDir = join(serverDir, 'data');
 const dataFile = join(dataDir, 'practice-data.json');
 const uploadDir = join(dataDir, 'uploads');
-const port = Number(process.env.API_PORT ?? 3001);
+const cloudPort = process.env.PORT;
+const port = Number(cloudPort ?? process.env.API_PORT ?? 3001);
+const host = cloudPort ? '0.0.0.0' : '127.0.0.1';
 const defaultDelay = 500;
 const videoMaxSize = 200 * 1024 * 1024;
 const defaultUploadSpeed = 2048;
@@ -491,8 +494,8 @@ if (process.argv.includes('--reset')) {
   await resetData();
   console.log('练习数据已恢复为初始状态：' + dataFile);
 } else {
-  server.listen(port, '127.0.0.1', () => {
-    console.log(`练习服务已启动：http://127.0.0.1:${port}/api/health`);
+  server.listen(port, host, () => {
+    console.log(`练习服务已启动：http://${host}:${port}/api/health`);
     console.log('按 Ctrl+C 停止。数据文件：' + dataFile);
   });
 }

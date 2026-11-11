@@ -1,0 +1,11 @@
+{
+  "name": "react-daily-practice-server",
+  "private": true,
+  "description": "React 19 + TypeScript 实战教程的配套练习服务，部署到云主机时使用",
+  "scripts": {
+    "start": "node practice-server.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

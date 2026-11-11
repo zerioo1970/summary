@@ -512,3 +512,141 @@ import FavoritesPage from './pages/FavoritesPage';
 5. `npm.cmd run check` 没有错误。
 
 练习完成后，把 `App.tsx` 和 `AppLayout.tsx` 恢复为第 115 章的内容。`FavoritesPage.tsx` 可以保留，不影响后续章节。
+
+## 第 141 章：上线自检
+
+### 思路
+
+1. **只有登录后才能打开**：和第 115 章的“我的收藏”一样，路由用 `RequireAuth` 包住页面（第 112 章），导航链接按 `!checking && user` 显示（第 111 章）。
+2. **三步请求**：直接使用已有的请求函数：`authApi.ts` 中的 `fetchCurrentUser`（第 111 章）、`taskApi.ts` 中的 `createTask` 和 `fetchTasks`（第 92A 章）。三步写在一个异步函数 `runSteps` 中，按顺序 `await`，某一步失败就 `return`，后面的步骤不会执行。
+3. **每完成一步显示一行**：结果保存在数组 state `results` 中，每一步用更新函数追加一项（第 45 章）。`runSteps` 中途多次更新 state，用更新函数才不会读到旧的数组（第 126 章）。
+4. **请求出错**：请求函数在连不上服务器或状态不正常时会抛出错误。`handleStart` 用 `try`/`catch` 接住，把原因作为最后一行显示（第 136 章）；`finally` 中恢复按钮。
+5. **确认任务保存在服务器上**：新增成功后记下服务器返回的任务，重新读取列表后用数组的 `some` 按编号查找：`some` 对每一项调用传入的函数，只要有一项返回 `true`，结果就是 `true`，写法和 `filter` 相同（第 46 章），只是结果是真假而不是新数组。比较编号而不是标题，因为可能已经有同名的任务。
+
+### `src/pages/OnlineCheckPage.tsx`
+
+```tsx
+import { useState } from 'react';
+import { fetchCurrentUser } from '../lib/authApi';
+import { createTask, fetchTasks } from '../lib/taskApi';
+
+type StepResult = {
+  name: string;
+  passed: boolean;
+  message: string;
+};
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : '出现了未知错误。';
+}
+
+export default function OnlineCheckPage() {
+  const [results, setResults] = useState<StepResult[]>([]);
+  const [isRunning, setIsRunning] = useState(false);
+
+  function addResult(result: StepResult) {
+    // 每完成一步就显示一步，用更新函数追加，避免读到旧的 results
+    setResults((current) => [...current, result]);
+  }
+
+  async function runSteps() {
+    // 第 1 步：确认登录。浏览器带上了登录 Cookie，服务器才会返回当前用户
+    const user = await fetchCurrentUser();
+    if (!user) {
+      addResult({ name: '确认登录', passed: false, message: '服务器认为没有登录。' });
+      return;
+    }
+    addResult({ name: '确认登录', passed: true, message: '已登录：' + user.displayName + '。' });
+
+    // 第 2 步：新增一个任务，写入练习服务的数据
+    const saveResult = await createTask({ title: '上线自检' });
+    if (saveResult.status === 'invalid') {
+      addResult({ name: '新增任务', passed: false, message: saveResult.titleError });
+      return;
+    }
+    const newTask = saveResult.task;
+    addResult({ name: '新增任务', passed: true, message: '已新增任务“' + newTask.title + '”。' });
+
+    // 第 3 步：重新读取任务列表，确认刚才的任务确实保存在服务器上
+    const tasks = await fetchTasks();
+    const found = tasks.some((task) => task.id === newTask.id);
+    addResult({
+      name: '重新读取',
+      passed: found,
+      message: found
+        ? '在 ' + tasks.length + ' 个任务中找到了刚才新增的任务。'
+        : '任务列表中没有刚才新增的任务。',
+    });
+  }
+
+  async function handleStart() {
+    setResults([]);
+    setIsRunning(true);
+    try {
+      await runSteps();
+    } catch (error) {
+      // 请求失败时，把原因作为最后一步显示，后面的步骤不再执行
+      addResult({ name: '请求失败', passed: false, message: getErrorMessage(error) });
+    } finally {
+      setIsRunning(false);
+    }
+  }
+
+  return (
+    <main className="page">
+      <title>上线自检</title>
+      <h1>上线自检</h1>
+      <button type="button" disabled={isRunning} onClick={handleStart}>
+        {isRunning ? '正在自检……' : '开始自检'}
+      </button>
+      <ol>
+        {results.map((result) => (
+          <li key={result.name}>
+            {result.passed ? '通过' : '失败'}：{result.name}。{result.message}
+          </li>
+        ))}
+      </ol>
+    </main>
+  );
+}
+```
+
+### `src/App.tsx`（练习期间）
+
+在导入 `NotesPage` 的一行下面加入：
+
+```tsx
+import OnlineCheckPage from './pages/OnlineCheckPage';
+```
+
+在 `/status` 那条路由的下面加入：
+
+```tsx
+            <Route
+              path="/online-check"
+              element={
+                <RequireAuth>
+                  <OnlineCheckPage />
+                </RequireAuth>
+              }
+            />
+```
+
+### `src/components/AppLayout.tsx`（练习期间）
+
+在“运行状态”链接的下面加入：
+
+```tsx
+        {!checking && user && <NavLink to="/online-check">上线自检</NavLink>}
+```
+
+改完后运行 `npm.cmd run build`，把新的 `dist` 拖到 Netlify 上这个网站的“Deploys”页面（第 140 章），再在线上地址中验收。
+
+### 对照验收标准
+
+1. 没有登录时 `user` 是 `null`，导航栏不显示链接；直接打开 `/online-check` 时，Netlify 按改写规则返回 `index.html`（第 140 章），`RequireAuth` 再把人送去登录页，登录后回到这里（第 113 章）。
+2. 登录 Cookie 由 Netlify 转交给练习服务（第 139 章），`fetchCurrentUser` 得到当前用户，第一行显示“成员小王”；新增和重新读取都成功，三行都是“通过”。
+3. 任务保存在 Render 上的练习服务中，刷新“任务管理”页时重新读取，能看到“上线自检”；刷新后 `AuthProvider` 向服务器确认登录状态（第 111 章），导航栏中仍是“成员小王”。
+4. `npm.cmd run check` 没有错误。
+
+练习完成后，把 `App.tsx` 和 `AppLayout.tsx` 恢复为第 141 章的内容。`OnlineCheckPage.tsx` 可以保留，不影响其他页面。
