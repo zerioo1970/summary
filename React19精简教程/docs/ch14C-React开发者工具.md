@@ -22,7 +22,7 @@
 
 **业务场景**：页面上「删除按钮怎么没出来」。在 Components 面板选中 `ProductTable`，看它用到的 Context 里 `user` 是不是 `null`、`role` 是什么；选中 `ListPage`，看 `keyword`、`actionError` 这些 state 的当前值。不用到处加 `console.log`。
 
-**反例（什么时候不该用）**：看**请求**有没有发出去、服务器返回了什么，不用 React DevTools，用浏览器自带的「网络（Network）」面板（第 7C、11B 章用过）。React DevTools 只管 React 组件本身。
+**反例（什么时候不该用）**：看**请求**有没有发出去、服务器返回了什么，不用 React DevTools，用浏览器自带的「网络（Network）」面板（第 7C、11C 章用过）。React DevTools 只管 React 组件本身。
 
 #### 🖼 图解
 

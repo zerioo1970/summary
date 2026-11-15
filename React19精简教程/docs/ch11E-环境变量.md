@@ -1,4 +1,4 @@
-# 第 11D 章 环境变量：接口地址放进配置文件
+# 第 11E 章 环境变量：接口地址放进配置文件
 
 ## 这一章解决什么问题
 
@@ -9,12 +9,12 @@
 ## 开始之前
 
 - 上一章你已经会了：开发代理把 `/api` 转发给模拟接口。
-- 起点代码：仓库 `code/ch11C/price-list`（不含练习答案）。两个终端分别启动开发服务器和模拟接口。
+- 起点代码：仓库 `code/ch11D/price-list`（不含练习答案）。两个终端分别启动开发服务器和模拟接口。
 - 预计耗时：25 分钟。
 
 ## 正文
 
-### 11D.1 环境变量是什么
+### 11E.1 环境变量是什么
 
 **白话定义**：环境变量（environment variable）是放在代码外面的配置。Vite 会读取项目根目录的 `.env` 文件，把其中**以 `VITE_` 开头**的变量放进 `import.meta.env`，代码里用 `import.meta.env.VITE_API_BASE` 读取。打包时，这些值会被直接替换进 JS 文件。
 
@@ -130,7 +130,7 @@ export function useProducts() {
 
 #### 🔍 拆解运行结果
 
-保存 `.env` 时，Vite 终端显示 `.env changed, restarting server...` 和 `server restarted.`，自动重启了。刷新页面，和第 11C 章完全一样：请求 `/api/products`，显示 5 个产品。
+保存 `.env` 时，Vite 终端显示 `.env changed, restarting server...` 和 `server restarted.`，自动重启了。刷新页面，和第 11D 章完全一样：请求 `/api/products`，显示 5 个产品。
 
 | 文件 / 代码 | 说明 |
 | --- | --- |

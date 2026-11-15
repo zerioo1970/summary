@@ -17,8 +17,8 @@ export function useProducts() {
 
     async function load() {
       try {
-        // 接口地址的前半段来自 .env 文件里的 VITE_API_BASE，换环境只改配置，不改代码
-        const response = await fetch(`${import.meta.env.VITE_API_BASE}/products`)
+        // 只写路径，请求发给页面所在的 Vite 开发服务器，由它转发给 3001 端口的模拟接口
+        const response = await fetch('/api/products')
         if (!response.ok) {
           throw new Error(`服务器返回 ${response.status}`)
         }

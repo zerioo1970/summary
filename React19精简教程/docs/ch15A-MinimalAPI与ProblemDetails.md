@@ -8,7 +8,7 @@
 
 ## 开始之前
 
-- 前面你已经会了：开发代理和 `.env`（第 11C、11D 章）、`api.ts` 写请求（第 12A–12C 章）、`ApiError` 和字段错误（第 13C 章）、登录与 Context（第 14A–14C 章）。
+- 前面你已经会了：开发代理和 `.env`（第 11D、11E 章）、`api.ts` 写请求（第 12A–12C 章）、`ApiError` 和字段错误（第 13C 章）、登录与 Context（第 14A–14C 章）。
 - 起点代码：前端仓库 `code/ch14C/price-list`（不含练习答案），本章不改它。
 - 需要 .NET 10 SDK。安装 Visual Studio 2026 时勾选「ASP.NET 和 Web 开发」工作负载会一起装上；也可以单独从 `https://dotnet.microsoft.com/download` 下载 .NET 10 SDK。在 PowerShell 里执行 `dotnet --version`，显示 `10.0.xxx` 就可以了（实测 10.0.403）。⚠️ Windows 安装过程未实机验证。
 - 预计耗时：35 分钟。
@@ -305,7 +305,7 @@ C# 里属性名是大写开头（`Id`、`Code`），JSON 里却是小写开头�
 
 用 curl 实测各接口出错时的返回（`curl` 是 Windows 10/11 自带的命令行工具，在 PowerShell 里要写成 `curl.exe`，⚠️ Windows 下的写法未实机验证）。和模拟接口对比：
 
-| 情况 | 模拟接口（第 11A–14C 章） | Minimal API（本章，实测） |
+| 情况 | 模拟接口（第 11B–14C 章） | Minimal API（本章，实测） |
 | --- | --- | --- |
 | 产品不存在 | 404 `{"message":"产品 99 不存在"}` | 404 `{"type":"...","title":"Not Found","status":404,"detail":"产品 99 不存在"}` |
 | 校验失败 | 400 `{"message":"校验失败","errors":{"code":"编号 P-001 已存在"}}` | 400 `{"type":"...","title":"校验失败","status":400,"errors":{"code":["编号 P-001 已存在"]}}` |

@@ -17,8 +17,8 @@ export function useProducts() {
 
     async function load() {
       try {
-        // 只写路径，请求发给页面所在的 Vite 开发服务器，由它转发给 3001 端口的模拟接口
-        const response = await fetch('/api/products')
+        // 直接写模拟接口的完整地址。页面在 5173 端口，接口在 3001 端口，浏览器会拦下这个请求
+        const response = await fetch('http://localhost:3001/api/products')
         if (!response.ok) {
           throw new Error(`服务器返回 ${response.status}`)
         }

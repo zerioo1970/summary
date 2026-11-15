@@ -17,8 +17,8 @@ export function useProducts() {
 
     async function load() {
       try {
-        // 直接写模拟接口的完整地址。页面在 5173 端口，接口在 3001 端口，浏览器会拦下这个请求
-        const response = await fetch('http://localhost:3001/api/products')
+        // BASE_URL 默认是 /，部署到子路径时自动变成 /price-list/ 这样，地址就不用改代码
+        const response = await fetch(`${import.meta.env.BASE_URL}products.json`)
         if (!response.ok) {
           throw new Error(`服务器返回 ${response.status}`)
         }

@@ -34,7 +34,7 @@ graph TB
 
 #### 💻 最小可运行代码
 
-**① 加载单个产品的 Hook。** 新建 `src/hooks/useProduct.ts`（如果做了第 11C 章练习 1，用下面的内容替换）：
+**① 加载单个产品的 Hook。** 新建 `src/hooks/useProduct.ts`（如果做了第 11D 章练习 1，用下面的内容替换）：
 
 ```ts
 // src/hooks/useProduct.ts
