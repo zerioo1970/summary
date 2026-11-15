@@ -86,47 +86,47 @@
 
 第 1 章拆成 4 个小章，每个小章只讲一个技术点：
 
-**[第 1A 章 装好工具，建项目并启动开发服务器](docs/ch01A-setup.md)**（30 分钟）
+**[第 1A 章 装好工具，建项目并启动开发服务器](docs/ch01A-装好工具并启动开发服务器.md)**（30 分钟）
 装 Node.js 和 VS Code，用 Vite 建项目，在浏览器里看到模板欢迎页。
 新概念：Vite 开发服务器
 
-**[第 1B 章 页面从哪来：index.html → main.tsx → App.tsx](docs/ch01B-entry.md)**（25 分钟）
+**[第 1B 章 页面从哪来：index.html → main.tsx → App.tsx](docs/ch01B-页面从哪来.md)**（25 分钟）
 找到页面的源头，把欢迎页换成自己的「产品价格清单」。
 新概念：入口文件 `main.tsx` → `App.tsx`
 
-**[第 1C 章 热更新：保存即生效，写错了看遮罩](docs/ch01C-hmr.md)**（20 分钟）
+**[第 1C 章 热更新：保存即生效，写错了看遮罩](docs/ch01C-热更新与错误遮罩.md)**（20 分钟）
 分清局部更新和整页刷新，读懂错误遮罩。
 新概念：热更新（HMR）
 
-**[第 1D 章 打开 TypeScript 严格检查](docs/ch01D-strict.md)**（20 分钟）
+**[第 1D 章 打开 TypeScript 严格检查](docs/ch01D-打开TypeScript严格检查.md)**（20 分钟）
 开发服务器不查类型，学会用编辑器和 `npm run build` 找类型错误。
 新概念：`strict` 严格模式
 
 第 2 章拆成 3 个小章，每个小章只讲一个技术点：
 
-**[第 2A 章 函数组件：把页面拆成几块](docs/ch02A-components.md)**（20 分钟）
+**[第 2A 章 函数组件：把页面拆成几块](docs/ch02A-函数组件.md)**（20 分钟）
 页头、卡片、页脚各写成一个组件，`App` 只负责摆放。
 新概念：函数组件
 
-**[第 2B 章 JSX 规则：和 HTML 不一样的几处](docs/ch02B-jsx.md)**（25 分钟）
+**[第 2B 章 JSX 规则：和 HTML 不一样的几处](docs/ch02B-JSX规则.md)**（25 分钟）
 从 HTML 复制过来为什么报错：根元素、闭合、`className`、花括号。
 新概念：JSX 规则
 
-**[第 2C 章 用 import / export 把组件拆到各自的文件](docs/ch02C-modules.md)**（25 分钟）
+**[第 2C 章 用 import / export 把组件拆到各自的文件](docs/ch02C-用import和export拆分文件.md)**（25 分钟）
 每个组件一个文件，`App.tsx` 只留摆放的代码。
 新概念：`export` / `import`
 
 第 3 章拆成 3 个小章，每个小章只讲一个技术点：
 
-**[第 3A 章 props：给组件传数据](docs/ch03A-props.md)**（20 分钟）
+**[第 3A 章 props：给组件传数据](docs/ch03A-props给组件传数据.md)**（20 分钟）
 同一个产品卡片组件，显示不同的产品。
 新概念：props
 
-**[第 3B 章 用 type 描述产品：对象 prop 与可选 prop](docs/ch03B-product-type.md)**（25 分钟）
+**[第 3B 章 用 type 描述产品：对象 prop 与可选 prop](docs/ch03B-用type描述产品.md)**（25 分钟）
 产品的字段只定义一次，整个产品对象传给卡片；耗材按「瓶」计。
 新概念：共享类型文件 `types.ts` · 可选 prop 与默认值 · `import type`
 
-**[第 3C 章 children：把一段界面传给组件](docs/ch03C-children.md)**（20 分钟）
+**[第 3C 章 children：把一段界面传给组件](docs/ch03C-children传一段界面.md)**（20 分钟）
 带标题的分组框，探头和耗材分开放。
 新概念：`children`
 
@@ -134,43 +134,43 @@
 
 第 4 章拆成 3 个小章，每个小章只讲一个技术点：
 
-**[第 4A 章 useState：让组件记住会变的数据](docs/ch04A-usestate.md)**（25 分钟）
+**[第 4A 章 useState：让组件记住会变的数据](docs/ch04A-useState记住会变的数据.md)**（25 分钟）
 询价数量点一下就要变，但直接改变量页面没反应，本章解决这个。
 新概念：`useState`
 
-**[第 4B 章 事件处理：onClick 与事件对象的类型](docs/ch04B-events.md)**（25 分钟）
+**[第 4B 章 事件处理：onClick 与事件对象的类型](docs/ch04B-事件处理与事件类型.md)**（25 分钟）
 按住 Shift 点「+」一次加 10：从事件对象里读信息。
 新概念：事件处理及其类型
 
-**[第 4C 章 重新渲染：state 变了之后发生什么](docs/ch04C-rerender.md)**（30 分钟）
+**[第 4C 章 重新渲染：state 变了之后发生什么](docs/ch04C-重新渲染.md)**（30 分钟）
 把渲染过程打印出来，看清快照和更新函数。
 新概念：重新渲染的原理 · 更新函数
 
 第 5 章拆成 3 个小章，每个小章只讲一个技术点：
 
-**[第 5A 章 map + key：用一个数组生成整张表](docs/ch05A-map-key.md)**（20 分钟）
+**[第 5A 章 map + key：用一个数组生成整张表](docs/ch05A-map和key生成列表.md)**（20 分钟）
 产品放进数组，用 map 生成表格行。
 新概念：`map` + `key`
 
-**[第 5B 章 数组的不可变更新：删除一行、修改一行](docs/ch05B-immutable.md)**（30 分钟）
+**[第 5B 章 数组的不可变更新：删除一行、修改一行](docs/ch05B-数组的不可变更新.md)**（30 分钟）
 能删除、能入库，学会正确修改 state 里的数组。
 新概念：不可变更新
 
-**[第 5C 章 条件渲染：缺货标红、删光了显示「暂无产品」](docs/ch05C-conditional.md)**（25 分钟）
+**[第 5C 章 条件渲染：缺货标红、删光了显示「暂无产品」](docs/ch05C-条件渲染.md)**（25 分钟）
 按条件决定显示什么。
 新概念：条件渲染（`&&`、`? :`）
 
 第 6 章拆成 3 个小章，每个小章只讲一个技术点：
 
-**[第 6A 章 受控输入框：输入框的内容由 state 决定](docs/ch06A-controlled.md)**（25 分钟）
+**[第 6A 章 受控输入框：输入框的内容由 state 决定](docs/ch06A-受控输入框.md)**（25 分钟）
 录入表单的输入部分：编号、名称、分类、单价。
 新概念：受控输入框
 
-**[第 6B 章 表单提交：onSubmit 与 preventDefault](docs/ch06B-submit.md)**（25 分钟）
+**[第 6B 章 表单提交：onSubmit 与 preventDefault](docs/ch06B-表单提交.md)**（25 分钟）
 点保存或按回车，组装出新产品。
 新概念：表单提交（`SubmitEvent`；`@types/react` 19.3 已把旧的 `FormEvent` 标为弃用）
 
-**[第 6C 章 派生值：校验结果从 state 现算](docs/ch06C-derived.md)**（30 分钟）
+**[第 6C 章 派生值：校验结果从 state 现算](docs/ch06C-派生值.md)**（30 分钟）
 名称为空、价格不是数字时给出提示，提示随输入实时变化。
 新概念：派生值
 
@@ -178,47 +178,47 @@
 
 第 7 章拆成 4 个小章，每个小章只讲一个技术点：
 
-**[第 7A 章 useEffect：页面显示之后再做的事](docs/ch07A-useeffect.md)**（20 分钟）
+**[第 7A 章 useEffect：页面显示之后再做的事](docs/ch07A-useEffect.md)**（20 分钟）
 标签页标题显示产品种数。
 新概念：`useEffect`
 
-**[第 7B 章 依赖数组：什么变了才执行 effect](docs/ch07B-deps.md)**（20 分钟）
+**[第 7B 章 依赖数组：什么变了才执行 effect](docs/ch07B-依赖数组.md)**（20 分钟）
 只在数量变化时改标题。
 新概念：依赖数组
 
-**[第 7C 章 在 useEffect 里加载数据：fetch、await 与清理函数](docs/ch07C-fetch.md)**（35 分钟）
+**[第 7C 章 在 useEffect 里加载数据：fetch、await 与清理函数](docs/ch07C-在useEffect里加载数据.md)**（35 分钟）
 页面打开时自动从 `public/products.json` 取数据，显示「加载中」「出错了」。
 新概念：在 effect 里加载数据（`fetch`、`async` / `await`、清理函数）
 
-**[第 7D 章 判别联合：用一个 state 表示加载状态](docs/ch07D-union.md)**（30 分钟）
+**[第 7D 章 判别联合：用一个 state 表示加载状态](docs/ch07D-判别联合.md)**（30 分钟）
 三个 state 合成一个，不可能的组合写不出来。
 新概念：判别联合
 
 第 8 章拆成 3 个小章，每个小章只讲一个技术点：
 
-**[第 8A 章 回调 props：子组件通知父组件](docs/ch08A-callback.md)**（30 分钟）
+**[第 8A 章 回调 props：子组件通知父组件](docs/ch08A-回调props.md)**（30 分钟）
 表格拆成组件，表单录入的产品加进表格。
 新概念：回调 props
 
-**[第 8B 章 状态提升：两个兄弟组件共用一份数据](docs/ch08B-lift-state.md)**（25 分钟）
+**[第 8B 章 状态提升：两个兄弟组件共用一份数据](docs/ch08B-状态提升.md)**（25 分钟）
 搜索框和表格联动。
 新概念：状态提升
 
-**[第 8C 章 自定义 Hook：把取数逻辑抽成 useProducts](docs/ch08C-custom-hook.md)**（30 分钟）
+**[第 8C 章 自定义 Hook：把取数逻辑抽成 useProducts](docs/ch08C-自定义Hook.md)**（30 分钟）
 加载和增删改逻辑抽出来，App 只剩页面结构。
 新概念：自定义 Hook
 
 第 9 章拆成 3 个小章，每个小章只讲一个技术点：
 
-**[第 9A 章 路由表：按地址显示不同的页面](docs/ch09A-routes.md)**（30 分钟）
+**[第 9A 章 路由表：按地址显示不同的页面](docs/ch09A-路由表.md)**（30 分钟）
 安装 React Router，`/`、`/about`、不存在的地址各显示不同页面。
 新概念：路由表（`BrowserRouter` / `Routes` / `Route`）
 
-**[第 9B 章 Link：换页不重新加载](docs/ch09B-link.md)**（20 分钟）
+**[第 9B 章 Link：换页不重新加载](docs/ch09B-Link换页不刷新.md)**（20 分钟）
 页头下面的导航，点一下就换页。
 新概念：`Link`
 
-**[第 9C 章 URL 参数：一个详情页显示任意一个产品](docs/ch09C-params.md)**（35 分钟）
+**[第 9C 章 URL 参数：一个详情页显示任意一个产品](docs/ch09C-URL参数.md)**（35 分钟）
 从列表点进产品详情页，地址栏跟着变，刷新后仍停在详情页。
 新概念：URL 参数（`useParams`）
 
@@ -226,15 +226,15 @@
 
 第 10 章拆成 3 个小章，每个小章只讲一个技术点：
 
-**[第 10A 章 CSS Modules：组件自己的样式不互相干扰](docs/ch10A-css-modules.md)**（25 分钟）
+**[第 10A 章 CSS Modules：组件自己的样式不互相干扰](docs/ch10A-CSS模块.md)**（25 分钟）
 表格的样式搬进模块，类名不再冲突。
 新概念：CSS Modules
 
-**[第 10B 章 npm run build：打包成浏览器能直接用的文件](docs/ch10B-build.md)**（20 分钟）
+**[第 10B 章 npm run build：打包成浏览器能直接用的文件](docs/ch10B-打包.md)**（20 分钟）
 打包到 `dist`，看清楚里面是什么。
 新概念：`npm run build`
 
-**[第 10C 章 部署 dist：刷新 404 与子路径](docs/ch10C-deploy.md)**（30 分钟）
+**[第 10C 章 部署 dist：刷新 404 与子路径](docs/ch10C-部署dist.md)**（30 分钟）
 部署时最常见的两个问题：刷新子页面 404、子路径 `base`。
 新概念：`dist` 部署（回退规则、`base`）
 
@@ -242,61 +242,61 @@
 
 第 11 章拆成 4 个小章，每个小章只讲一个技术点：
 
-**[第 11A 章 本地模拟接口：不装后端也有接口可连](docs/ch11A-mock.md)**（25 分钟）
+**[第 11A 章 本地模拟接口：不装后端也有接口可连](docs/ch11A-本地模拟接口.md)**（25 分钟）
 启动只用 Node.js 自带功能写的模拟接口。
 新概念：模拟接口
 
-**[第 11B 章 跨域：浏览器为什么拦下了请求](docs/ch11B-cors.md)**（20 分钟）
+**[第 11B 章 跨域：浏览器为什么拦下了请求](docs/ch11B-跨域.md)**（20 分钟）
 页面直接请求 3001 端口被拦下，看清原因。
 新概念：跨域（CORS）
 
-**[第 11C 章 开发代理：让请求经过开发服务器转发](docs/ch11C-proxy.md)**（25 分钟）
+**[第 11C 章 开发代理：让请求经过开发服务器转发](docs/ch11C-开发代理.md)**（25 分钟）
 用 Vite 开发代理连上接口。
 新概念：开发代理
 
-**[第 11D 章 环境变量：接口地址放进配置文件](docs/ch11D-env.md)**（25 分钟）
+**[第 11D 章 环境变量：接口地址放进配置文件](docs/ch11D-环境变量.md)**（25 分钟）
 接口前缀放进 `.env`，换环境不改代码。
 新概念：环境变量
 
 第 12 章拆成 3 个小章，每个小章只讲一个技术点：
 
-**[第 12A 章 写请求：新增、删除、入库保存到接口](docs/ch12A-write.md)**（35 分钟）
+**[第 12A 章 写请求：新增、删除、入库保存到接口](docs/ch12A-写请求.md)**（35 分钟）
 三个操作真正调用接口，刷新数据还在。
 新概念：写请求（方法、请求头、请求体）
 
-**[第 12B 章 await 之后用更新函数改 state](docs/ch12B-updater.md)**（25 分钟）
+**[第 12B 章 await 之后用更新函数改 state](docs/ch12B-await之后用更新函数.md)**（25 分钟）
 复现并修掉「删掉的行又出现」的异步 bug。
 新概念：`await` 之后用更新函数改 state
 
-**[第 12C 章 提交中与失败状态：保存中禁用按钮，失败显示原因](docs/ch12C-submitting.md)**（30 分钟）
+**[第 12C 章 提交中与失败状态：保存中禁用按钮，失败显示原因](docs/ch12C-提交中与失败状态.md)**（30 分钟）
 显示「保存中」，失败时显示服务器给的原因。
 新概念：提交中与失败状态（`try / catch / finally`）
 
 第 13 章拆成 3 个小章，每个小章只讲一个技术点：
 
-**[第 13A 章 编辑页：用已有数据做表单的初始值](docs/ch13A-initial.md)**（35 分钟）
+**[第 13A 章 编辑页：用已有数据做表单的初始值](docs/ch13A-编辑页的表单初始值.md)**（35 分钟）
 编辑页带出原值，新增和编辑共用一个表单。
 新概念：用已有数据做表单初始值
 
-**[第 13B 章 保存后跳转：useNavigate](docs/ch13B-navigate.md)**（20 分钟）
+**[第 13B 章 保存后跳转：useNavigate](docs/ch13B-保存后跳转.md)**（20 分钟）
 保存成功自动回到列表。
 新概念：`useNavigate`
 
-**[第 13C 章 把后端校验错误显示到对应的输入框](docs/ch13C-field-errors.md)**（30 分钟）
+**[第 13C 章 把后端校验错误显示到对应的输入框](docs/ch13C-后端校验错误显示到输入框.md)**（30 分钟）
 「编号重复」显示在编号输入框下面。
 新概念：后端字段错误映射到表单
 
 第 14 章拆成 3 个小章，每个小章只讲一个技术点：
 
-**[第 14A 章 Context：跨层级共享「当前用户」](docs/ch14A-context.md)**（35 分钟）
+**[第 14A 章 Context：跨层级共享「当前用户」](docs/ch14A-Context共享当前用户.md)**（35 分钟）
 做出登录，所有页面都能取到当前用户。
 新概念：Context（`createContext` / `useContext`）
 
-**[第 14B 章 按登录状态和角色显示界面](docs/ch14B-roles.md)**（25 分钟）
+**[第 14B 章 按登录状态和角色显示界面](docs/ch14B-按登录状态和角色显示界面.md)**（25 分钟）
 没登录不能录入，只有管理员能看到删除按钮。
 新概念：按登录状态和角色显示界面
 
-**[第 14C 章 React DevTools：看组件、props 和 state](docs/ch14C-devtools.md)**（20 分钟）
+**[第 14C 章 React DevTools：看组件、props 和 state](docs/ch14C-React开发者工具.md)**（20 分钟）
 不加 console.log 也能看清组件此刻的状态。
 新概念：React DevTools
 
@@ -304,15 +304,15 @@
 
 第 15 章拆成 3 个小章，每个小章只讲一个技术点：
 
-**[第 15A 章 Minimal API 接口与 ProblemDetails 错误格式](docs/ch15A-minimal-api.md)**（35 分钟）
+**[第 15A 章 Minimal API 接口与 ProblemDetails 错误格式](docs/ch15A-MinimalAPI与ProblemDetails.md)**（35 分钟）
 用 .NET 10 Minimal API 写出和模拟接口相同的 6 个接口。
 新概念：Minimal API 接口与 ProblemDetails
 
-**[第 15B 章 前端对接：代理目标和错误格式](docs/ch15B-connect.md)**（25 分钟）
+**[第 15B 章 前端对接：代理目标和错误格式](docs/ch15B-前端对接新后端.md)**（25 分钟）
 前端只改代理端口和 `api.ts` 就接上新后端。
 新概念：前端对接新的错误格式
 
-**[第 15C 章 同站点部署：前端打包进后端的 wwwroot](docs/ch15C-same-site.md)**（25 分钟）
+**[第 15C 章 同站点部署：前端打包进后端的 wwwroot](docs/ch15C-同站点部署.md)**（25 分钟）
 打包进后端 `wwwroot`，前后端合成一个网站。
 新概念：同站点部署（`wwwroot` + 页面回退）
 
