@@ -50,7 +50,3 @@ body {
 .empty {
   color: #999;
 }
-
-.product-form label { display: block; margin: 6px 0; }
-.error { display: block; color: #dc2626; font-size: 14px; }
-.success { color: #16a34a; }

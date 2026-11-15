@@ -93,66 +93,7 @@ function App() {
 export default App
 ```
 
-用下面的内容整个替换 `src/index.css`（末尾多了表单的三行样式）：
-
-```css
-/* src/index.css */
-/* 全局样式先保持最少，第 10A 章再整理 */
-body {
-  margin: 24px;
-  font-family: system-ui, 'Microsoft YaHei', sans-serif;
-}
-
-.subtitle {
-  color: #666;
-}
-
-.card {
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 8px 16px;
-  margin-bottom: 12px;
-  max-width: 360px;
-}
-
-.panel {
-  border-left: 4px solid #3b82f6;
-  padding-left: 12px;
-  margin-bottom: 16px;
-}
-
-.product-table {
-  border-collapse: collapse;
-  margin-bottom: 16px;
-}
-
-.product-table th,
-.product-table td {
-  border: 1px solid #ddd;
-  padding: 6px 10px;
-}
-
-.out-of-stock {
-  margin-left: 6px;
-  padding: 0 6px;
-  color: #fff;
-  background: #dc2626;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-.low {
-  color: #dc2626;
-}
-
-.empty {
-  color: #999;
-}
-
-.product-form label { display: block; margin: 6px 0; }
-.error { display: block; color: #dc2626; font-size: 14px; }
-.success { color: #16a34a; }
-```
+`src/index.css` 本章不用改。表单暂时没有专门的样式，四个输入框挤在同一行，窗口窄时自动换行；第 8B 章整理样式时再让它们一行一个。
 
 `ProductForm.tsx` 下面马上新建。在它建好之前，页面空白，终端里显示 `Failed to load url /src/components/ProductForm.tsx ... Does the file exist?`，这是正常的。
 
@@ -226,11 +167,29 @@ export function ProductForm() {
 | --- | --- |
 | `useState('')` | 输入框的值永远是字符串，所以单价也用 `''` 作初始值，保存时再转成数字 |
 | `onChange={(e) => setCode(e.target.value)}` | `e.target` 是触发事件的那个输入框，`.value` 是它现在的内容。直接写在 JSX 里的箭头函数，TypeScript 能从 `onChange` 推断出 `e` 的类型，不用手写 |
-| `handlePriceChange(e: ChangeEvent<HTMLInputElement>)` | 单独定义的函数，TypeScript 不知道它会被用在哪里，所以参数类型要手写。`<select>` 上用 `ChangeEvent<HTMLSelectElement>` |
+| `onChange={handlePriceChange}` | 单价用了另一种写法：把处理函数单独定义出来，这里只写函数名。下一小节细讲 |
 | `<label>编号 <input /></label>` | 输入框写在 `label` 里面，点文字也能把光标放进输入框 |
 | `<select value={category}>` | 下拉框也一样受控：`value` 决定选中哪项 |
 
 React 的 `onChange` 在**每输入一个字符**时都触发，这和原生 HTML 里「离开输入框才触发 change」不同。
+
+#### 单价为什么单独写成函数
+
+编号、名称、分类用的是行内写法，单价用的是单独函数。两种写法运行效果完全一样，都是把 `e.target.value` 写进 state。这里让单价换一种写法，是为了把两种写法放在一起对比。
+
+| 对比 | 行内写法 | 单独函数 |
+| --- | --- | --- |
+| 写法 | `onChange={(e) => setCode(e.target.value)}` | 先定义 `function handlePriceChange(e: ChangeEvent<HTMLInputElement>) { ... }`，再写 `onChange={handlePriceChange}` |
+| `e` 的类型 | 不用写。函数直接写在 `onChange` 里，TypeScript 知道 `onChange` 会传什么进来 | **必须手写**。函数定义在 JSX 外面，TypeScript 不知道它以后会交给谁，不写就报 `TS7006`（见下面实验 ④） |
+| 适合 | 处理只有一行 `setXxx(...)` | 处理有好几行（比如先去掉空格再存），或者好几个地方共用同一个处理 |
+
+类型的写法和第 4B 章的 `MouseEvent<HTMLButtonElement>` 一样：事件类型从 `react` 导入（`import type { ChangeEvent } from 'react'`），尖括号里写发生事件的元素。
+
+| 元素 | 参数类型 |
+| --- | --- |
+| `<input>` | `ChangeEvent<HTMLInputElement>` |
+| `<select>` | `ChangeEvent<HTMLSelectElement>` |
+| `<textarea>` | `ChangeEvent<HTMLTextAreaElement>` |
 
 #### 改坏一处试试
 
@@ -255,6 +214,15 @@ src/components/ProductForm.tsx(25,34): error TS2322: Type '(e: ChangeEvent<HTMLI
   ...
       Type 'HTMLSelectElement' is missing the following properties from type 'HTMLInputElement': accept, align, alt, capture, and 38 more.
 ```
+
+**④ 单独函数不写参数类型。** 把 `handlePriceChange(e: ChangeEvent<HTMLInputElement>)` 改成 `handlePriceChange(e)`，`npx tsc -b` 报：
+
+```text
+src/components/ProductForm.tsx(3,15): error TS6196: 'ChangeEvent' is declared but never used.
+src/components/ProductForm.tsx(13,30): error TS7006: Parameter 'e' implicitly has an 'any' type.
+```
+
+第二行是关键：没写类型，TypeScript 只能把 `e` 当成 `any`，严格模式不允许。第一行是顺带的：导入的 `ChangeEvent` 没人用了。
 
 每次实验后改回。
 

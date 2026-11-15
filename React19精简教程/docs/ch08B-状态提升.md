@@ -56,7 +56,7 @@ export function FilterBar({ keyword, onKeywordChange }: FilterBarProps) {
 }
 ```
 
-用下面的内容整个替换 `src/index.css`（末尾多了 `.filter-bar` 一行）：
+用下面的内容整个替换 `src/index.css`（末尾多了表单用的三行样式和 `.filter-bar` 一行。表单的三行让输入框一行一个、成功提示变绿、错误提示变红）：
 
 ```css
 /* src/index.css */
