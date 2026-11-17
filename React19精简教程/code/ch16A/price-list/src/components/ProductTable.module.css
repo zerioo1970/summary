@@ -1,0 +1,34 @@
+/* src/components/ProductTable.module.css */
+/* 只给 ProductTable 用的样式。类名打包时会被改成唯一的名字，不会和别的文件冲突 */
+.table {
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  min-width: 560px;
+}
+
+/* 类名后面跟元素选择器也可以：只影响 .table 里面的 th、td */
+.table th,
+.table td {
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+}
+
+.table th {
+  background: #f3f4f6;
+  text-align: left;
+}
+
+/* 类名用驼峰写法，在 TSX 里就能写成 styles.outOfStock */
+.outOfStock {
+  margin-left: 6px;
+  padding: 0 6px;
+  color: #fff;
+  background: #dc2626;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.low {
+  color: #dc2626;
+  font-weight: bold;
+}

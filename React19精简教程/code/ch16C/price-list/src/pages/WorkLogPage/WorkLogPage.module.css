@@ -1,0 +1,21 @@
+/* src/pages/WorkLogPage/WorkLogPage.module.css */
+/* 查询条件、录入表单：输入项横着排，一行放不下自动换行 */
+.fields label {
+  display: inline-block;
+  margin: 0 16px 8px 0;
+}
+
+.table {
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  border: 1px solid #ddd;
+  padding: 4px 12px;
+  text-align: left;
+}
+
+.table th {
+  background: #f3f4f6;
+}
