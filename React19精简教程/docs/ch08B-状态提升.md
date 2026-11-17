@@ -242,6 +242,27 @@ export default App
 | `c-00`（小写） | 耦合剂 250ml、探头保护套（编号 C-001、C-002） |
 | `xyz` | 暂无产品 |
 
+输入「探头」后，页面上三个组件各管什么：
+
+![输入「探头」后：App 存着 keyword，FilterBar 显示它，ProductTable 显示筛选结果](images/ch08B-搜索框和表格.png)
+
+框和颜色是为说明而加的标注，你的页面上没有这些样式（截图时还去掉了页头、录入表单和页脚）。搜索框里的「探头」和表格里的 3 行，都来自 App 里同一个 `keyword`。
+
+从输入到表格变化，数据走了一圈：
+
+```mermaid
+graph TB
+    A["① 在搜索框里输入「探头」"] --> B["② FilterBar 的 onChange<br/>调用 onKeywordChange<br/>参数是 '探头'"]
+    B --> C["③ onKeywordChange 就是<br/>App 传来的 setKeyword<br/>所以执行<br/>setKeyword('探头')"]
+    C --> D["④ keyword 变成「探头」<br/>App 重新渲染"]
+    D --> E["⑤ 把 keyword='探头'<br/>传给 FilterBar"]
+    D --> F["⑤ 按 keyword 筛选产品<br/>5 个里剩 3 个"]
+    E --> G["⑥ 输入框显示「探头」"]
+    F --> H["⑥ 把 3 个产品传给<br/>ProductTable，表格剩 3 行"]
+```
+
+关键在第 ③ 步：FilterBar 自己不改任何东西，它调用的 `onKeywordChange` 其实是 App 交给它的 `setKeyword`，所以改的是 App 的 state。App 重新渲染后，第 ⑤ 步同一个 `keyword` 分两路往下传，搜索框和表格因此始终一致。
+
 「共 5 种产品」不随搜索变化：它用完整的 `state.products`，表格用筛选后的 `visible`。筛选结果是派生值（第 6C 章），不另存 state。
 
 `onKeywordChange={setKeyword}` 能直接传，因为 `setKeyword` 本身就是「接收一个字符串」的函数，正好符合 `(keyword: string) => void`。
