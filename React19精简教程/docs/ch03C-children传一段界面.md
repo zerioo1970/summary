@@ -44,9 +44,15 @@
 
 ```mermaid
 graph TB
-    A["App 里写<br/>Panel title=说明<br/>中间放一个 p"] --> B["Panel 收到 props<br/>title 和 children"]
-    B --> C["Panel 输出<br/>h2 标题 + children 的内容"]
+    A["App.tsx 里使用 Panel<br/>开始标签上：title=说明<br/>两个标签中间：<br/>#60;p#62;价格含税#60;/p#62;"]
+    A -->|"写在标签上的"| B["props.title<br/>= '说明'"]
+    A -->|"写在标签中间的"| C["props.children<br/>= #60;p#62;价格含税#60;/p#62;"]
+    B --> D["Panel.tsx 的 return<br/>#60;h2#62;{title}#60;/h2#62;<br/>{children}"]
+    C --> D
+    D --> E["浏览器里得到<br/>#60;h2#62;说明#60;/h2#62;<br/>#60;p#62;价格含税#60;/p#62;"]
 ```
+
+图里把那段文字缩短成了「价格含税」，免得方框太宽。
 
 ### 3C.2 最小例子：分组框里放一段文字
 
@@ -173,6 +179,13 @@ export default App
 ```
 
 `Panel.tsx` 一个字没改。这就是 children 的意义：**写 `Panel.tsx` 时不需要知道 children 将来是什么，只需要决定把它放在哪里**，放什么由用 `Panel` 的地方决定。
+
+```mermaid
+graph TB
+    P["Panel.tsx 只写一次<br/>h2 标题 + {children}"]
+    P --> X["说明分组<br/>children = 一段文字"]
+    P --> Y["探头分组<br/>children = 两张卡片"]
+```
 
 页面上依次是：标题「探头」、两张探头卡片、标题「耗材」、一张耗材卡片。
 
