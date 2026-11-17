@@ -39,7 +39,7 @@ export const initialProducts: Product[] = [
 | `export const` | 导出一个常量，和导出组件一样（第 2C 章） |
 | 扩展名 `.ts` | 里面没有 JSX |
 
-用下面的内容整个替换 `src/index.css`（和上一章相比，末尾多了表格的样式）：
+用下面的内容整个替换 `src/index.css`（和上一章相比，末尾多了分组框 `.panel` 和表格的样式。`.panel` 让第 3C 章做的分组框左边有一条蓝线）：
 
 ```css
 /* src/index.css */

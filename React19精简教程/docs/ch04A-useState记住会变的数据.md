@@ -8,8 +8,8 @@
 
 ## 开始之前
 
-- 上一章你已经会了：用 props 给组件传数据、用 `type` 声明 props、用 `children` 传一段界面。
-- 起点代码：仓库 `code/ch03C/price-list`（不含练习答案）。在 `D:\react-study\price-list` 执行 `npm run dev`。
+- 上一章你已经会了：JSX 写完是 ReactElement 对象、`ReactNode` 包括哪些东西、`children` 可以声明成哪些类型。再往前：props、用 `type` 声明 props、`children`。
+- 起点代码：仓库 `code/ch03D/price-list`（不含练习答案）。在 `D:\react-study\price-list` 执行 `npm run dev`。
 - 本章要在浏览器开发者工具的「控制台」里看输出：按 `F12`，切到「控制台（Console）」标签。
 - 预计耗时：25 分钟。
 
@@ -45,7 +45,7 @@ export function QuantityPicker({ price }: QuantityPickerProps) {
 }
 ```
 
-把它放进卡片：用下面的内容整个替换 `src/components/ProductCard.tsx`（和第 3C 章相比只多了两处：第 4 行的 `import`，以及库存下面的 `<QuantityPicker />`）。这个文件第 4 章后面都不再改。
+把它放进卡片：用下面的内容整个替换 `src/components/ProductCard.tsx`（和第 3D 章相比改了三处：第 4 行的 `import`；外层 `section` 改成 `div`、卡片标题 `h2` 降为 `h3`，因为卡片现在放在分组框里，分组框的标题才是 `h2`；库存下面的 `<QuantityPicker />`）。这个文件第 4 章后面都不再改。
 
 ```tsx
 // src/components/ProductCard.tsx

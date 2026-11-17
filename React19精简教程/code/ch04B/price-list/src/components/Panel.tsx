@@ -10,6 +10,7 @@ type PanelProps = {
 
 export function Panel({ title, children }: PanelProps) {
   return (
+    // className="panel" 先留着，样式第 5A 章再加。现在不写样式，分组框照样能显示
     <section className="panel">
       <h2>{title}</h2>
       {/* 写在 <Panel>...</Panel> 中间的内容，会出现在这里 */}

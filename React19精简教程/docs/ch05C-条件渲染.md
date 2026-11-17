@@ -193,14 +193,14 @@ export default App
 | 代码 | 说明 |
 | --- | --- |
 | `{products.length === 0 ? (...) : (...)}` | 两个分支都是多行 JSX，各自用圆括号包起来 |
-| `{p.stock === 0 && <span ...>缺货</span>}` | `&&` 左边成立，结果是右边的 JSX；不成立，结果是 `false`，React 不显示 `false` |
+| `{p.stock === 0 && <span ...>缺货</span>}` | `&&` 左边成立，结果是右边的 JSX；不成立，结果是 `false`，React 不显示 `false`（第 3D 章） |
 | `共 {products.length} 种产品` | 数组的 `length` 是元素个数，删一行就少一 |
 
 #### 改坏一处试试
 
 **① `&&` 左边写成数字。** 把缺货那一行改成 `{p.stock && <span className="out-of-stock">有货</span>}`（想表达「有库存就显示有货」）。实测：前 4 行显示「有货」，但「探头保护套」后面显示了一个 **`0`**。
 
-`a && b` 在 `a` 不成立时，结果是 `a` 本身。`p.stock` 是 `0` 时整个表达式的值就是数字 `0`，React 会把数字显示出来（`false`、`null`、`undefined` 才什么都不显示）。`&&` 左边要写成真正的判断：`p.stock > 0 && ...`。TypeScript 不会报这个错。
+`a && b` 在 `a` 不成立时，结果是 `a` 本身。`p.stock` 是 `0` 时整个表达式的值就是数字 `0`，React 会把数字显示出来（`false`、`null`、`undefined` 才什么都不显示，第 3D 章实测过）。`&&` 左边要写成真正的判断：`p.stock > 0 && ...`。TypeScript 不会报这个错。
 
 **② 三元表达式少了 `:` 后面那一半。** 把缺货那一行写成 `{p.stock === 0 ? <span className="out-of-stock">缺货</span>}`，`npx tsc -b` 报：
 

@@ -219,7 +219,7 @@ export default App
 | `async function load()` 写在 effect 里面 | effect 函数本身不能是 `async`，因为它只能返回清理函数或什么都不返回，`async` 函数会返回 Promise |
 | `const data: Product[] = await response.json()` | 这里是**信任**服务器返回的格式，TypeScript 不会在运行时检查。字段名对不上时页面会显示空白单元格，不会报错 |
 | `err instanceof Error ? err.message : String(err)` | `catch` 到的东西类型是 `unknown`（JavaScript 能 `throw` 任何值），确认是 `Error` 才能读 `message` |
-| `let content: ReactNode` 加 `if / else if` | 第 5C 章说过，情况多时在 `return` 前用 `if` 算好。`ReactNode` 是「React 能显示的任何东西」（第 3C 章） |
+| `let content: ReactNode` 加 `if / else if` | 第 5C 章说过，情况多时在 `return` 前用 `if` 算好。`ReactNode` 是「React 能显示的任何东西」（第 3D 章） |
 
 #### 改坏一处试试
 

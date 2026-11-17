@@ -10,6 +10,7 @@ type PanelProps = {
 
 export function Panel({ title, children }: PanelProps) {
   return (
+    // className="panel" 的样式在 index.css 里（第 5A 章加的）
     <section className="panel">
       <h2>{title}</h2>
       {/* 写在 <Panel>...</Panel> 中间的内容，会出现在这里 */}

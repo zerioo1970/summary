@@ -10,16 +10,16 @@ type ProductCardProps = {
 
 export function ProductCard({ product, unit = '台' }: ProductCardProps) {
   return (
-    <div className="card">
+    <section className="card">
       {/* 练习 1：分类来自数据，用 Tag 包起来 */}
-      <h3>
+      <h2>
         {product.name} <Tag>{product.category}</Tag>
-      </h3>
+      </h2>
       <p>编号：{product.code}</p>
       <p>单价：{product.price.toLocaleString()} 元</p>
       <p>
         库存：{product.stock} {unit}
       </p>
-    </div>
+    </section>
   )
 }

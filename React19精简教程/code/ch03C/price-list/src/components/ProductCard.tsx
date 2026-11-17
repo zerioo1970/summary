@@ -11,14 +11,13 @@ type ProductCardProps = {
 
 export function ProductCard({ product, unit = '台' }: ProductCardProps) {
   return (
-    <div className="card">
-      {/* 卡片放进 Panel 后，Panel 的标题是 h2，卡片标题降一级用 h3 */}
-      <h3>{product.name}</h3>
+    <section className="card">
+      <h2>{product.name}</h2>
       <p>编号：{product.code}</p>
       <p>单价：{product.price.toLocaleString()} 元</p>
       <p>
         库存：{product.stock} {unit}
       </p>
-    </div>
+    </section>
   )
 }
