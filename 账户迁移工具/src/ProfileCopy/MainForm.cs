@@ -141,6 +141,9 @@ namespace ProfileCopy
             pageCopy.Controls.Add(root);
             tabs.TabPages.Add(pageAccount);
             tabs.TabPages.Add(pageCopy);
+            var pageWeChat = new TabPage("③ 查找微信数据");
+            pageWeChat.Controls.Add(new WeChatPanel());
+            tabs.TabPages.Add(pageWeChat);
             Controls.Add(tabs);
         }
 
@@ -275,7 +278,7 @@ namespace ProfileCopy
             return any ? FormatBytes(total) : "没有";
         }
 
-        private static long DirectorySize(string root, out bool partial)
+        internal static long DirectorySize(string root, out bool partial)
         {
             partial = false;
             long total = 0;
@@ -303,7 +306,7 @@ namespace ProfileCopy
             return total;
         }
 
-        private static string FormatBytes(long b)
+        internal static string FormatBytes(long b)
         {
             if (b < 1024L * 1024) return (b / 1024.0).ToString("0") + " KB";
             if (b < 1024L * 1024 * 1024) return (b / 1024.0 / 1024).ToString("0.0") + " MB";
