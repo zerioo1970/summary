@@ -1,0 +1,31 @@
+<!-- 账户迁移工具/src/ProfileCopy/ProfileCopy.csproj -->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- WinExe：窗口程序，运行时不弹黑色控制台窗口 -->
+    <OutputType>WinExe</OutputType>
+    <!-- .NET Framework 4.8：Windows 10/11 自带，目标电脑不用另装运行环境 -->
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>ProfileCopy</AssemblyName>
+    <RootNamespace>ProfileCopy</RootNamespace>
+    <LangVersion>7.3</LangVersion>
+    <!-- 64 位系统上以 64 位运行，避免 System32 被重定向到 SysWOW64 -->
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <!-- 清单里写了“需要管理员权限”，双击运行时会弹出 UAC 窗口 -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Product>账户文件迁移工具</Product>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 让没装 .NET Framework 4.8 开发包的电脑（包括 Linux）也能编译 -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>
