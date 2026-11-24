@@ -133,7 +133,15 @@ namespace ProfileCopy
             buttons.Controls.Add(btnStart);
             root.Controls.Add(buttons, 0, 4);
 
-            Controls.Add(root);
+            // 两个标签页：先建账号，新账号登录一次以后再复制文件
+            var tabs = new TabControl { Dock = DockStyle.Fill };
+            var pageAccount = new TabPage("① 建立账号");
+            pageAccount.Controls.Add(new AccountPanel());
+            var pageCopy = new TabPage("② 复制文件");
+            pageCopy.Controls.Add(root);
+            tabs.TabPages.Add(pageAccount);
+            tabs.TabPages.Add(pageCopy);
+            Controls.Add(tabs);
         }
 
         private static Label MakeLabel(string text)

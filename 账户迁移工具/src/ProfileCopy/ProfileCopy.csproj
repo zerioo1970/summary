@@ -21,6 +21,9 @@
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
+    <!-- 新建本机账号用 -->
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
   </ItemGroup>
 
   <ItemGroup>
