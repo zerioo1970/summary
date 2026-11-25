@@ -1,0 +1,19 @@
+#ip link set lo up; ip addr add 192.168.1.50/24 dev lo
+nginx
+curl -I http://localhost
+curl http://localhost
+ps -o pid,user,cmd -C nginx
+ss -tlnp | grep nginx
+grep -nE '^\s*(listen|root|index|server_name)' /etc/nginx/sites-enabled/default
+ls -l /etc/nginx/sites-enabled
+nginx
+nginx -s stop
+curl -I http://localhost
+nginx
+echo '<h1>Hello nginx</h1>' | tee /var/www/html/index.html
+curl http://192.168.1.50
+curl -I http://192.168.1.50/hello.html
+nginx -s stop
+rm /var/www/html/index.html
+ip -4 addr show
+hostname -I

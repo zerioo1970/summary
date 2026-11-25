@@ -1,0 +1,7 @@
+#DEBIAN_FRONTEND=noninteractive apt-get purge -y -qq nginx nginx-common; rm -rf /var/www/html /etc/nginx
+apt update
+apt install -y nginx
+nginx -v
+ls /etc/nginx
+ls -l /var/www/html
+cat /usr/lib/systemd/system/nginx.service

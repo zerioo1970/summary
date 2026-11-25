@@ -1,0 +1,8 @@
+{"setup": "mkdir -p /run/sshd; ip link set lo up; ip addr add 192.168.1.50/24 dev lo; /usr/sbin/sshd 2>/dev/null; cd /root/web; export PS1='PS D:\\\\nginx-study> '",
+ "steps": [
+  ["> ", "scp -r site web01:~/\n"],
+  ["> ", "scp -r site web01:~/\n"],
+  ["> ", "ssh web01 \"ls -R ~/site\"\n"],
+  ["> ", "scp web01:/etc/os-release .\n"],
+  ["> ", "head -2 os-release\n"],
+  ["> ", "exit\n"]]}

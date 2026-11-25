@@ -1,0 +1,93 @@
+{
+ "setup": "ssh-keygen -A >/dev/null; mkdir -p /run/sshd; ip link set lo up; ip addr add 192.168.1.50/24 dev lo; /usr/sbin/sshd 2>/dev/null; cd /root/web; export PS1='PS C:\\\\Users\\\\zhang> '",
+ "steps": [
+  [
+   "> ",
+   "ssh-keygen -t ed25519\n"
+  ],
+  [
+   "\\): ",
+   "\n"
+  ],
+  [
+   "passphrase\\): ",
+   "\n"
+  ],
+  [
+   "again: ",
+   "\n"
+  ],
+  [
+   "> ",
+   "scp ~/.ssh/id_ed25519.pub ubuntu@192.168.1.50:~/\n"
+  ],
+  [
+   "\\? ",
+   "yes\n"
+  ],
+  [
+   "password: ",
+   "Abc12345\n"
+  ],
+  [
+   "> ",
+   "ssh ubuntu@192.168.1.50\n"
+  ],
+  [
+   "password: ",
+   "Abc12345\n"
+  ],
+  [
+   "\\$ ",
+   "mkdir -p ~/.ssh && chmod 700 ~/.ssh\n"
+  ],
+  [
+   "\\$ ",
+   "cat ~/id_ed25519.pub >> ~/.ssh/authorized_keys\n"
+  ],
+  [
+   "\\$ ",
+   "chmod 600 ~/.ssh/authorized_keys && rm ~/id_ed25519.pub\n"
+  ],
+  [
+   "\\$ ",
+   "exit\n"
+  ],
+  [
+   "> ",
+   "ssh ubuntu@192.168.1.50 \"echo 不用输密码了\"\n"
+  ],
+  [
+   "> ",
+   "ssh web01 \"whoami\"\n"
+  ],
+  [
+   "> ",
+   "printf 'Host web01\\n    HostName 192.168.1.50\\n    User ubuntu\\n' > ~/.ssh/config\n"
+  ],
+  [
+   "> ",
+   "ssh web01 \"whoami; hostname\"\n"
+  ],
+  [
+   "> ",
+   "ssh web01 \"chmod 777 ~/.ssh\"\n"
+  ],
+  [
+   "> ",
+   "ssh web01\n"
+  ],
+  [
+   "password: ",
+   "Abc12345\n"
+  ],
+  [
+   "\\$ ",
+   "chmod 700 ~/.ssh; exit\n"
+  ],
+  [
+   "> ",
+   "exit\n"
+  ]
+ ]
+}
