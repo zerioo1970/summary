@@ -1,0 +1,2 @@
+{"setup": "mkdir -p /run/sshd; ip link set lo up; ip addr add 192.168.1.50/24 dev lo; /usr/sbin/sshd 2>/dev/null; cd /root; export PS1='PS C:\\\\Users\\\\zhang> '",
+ "steps": [["> ", "ssh web01\n"], ["\\$ ", "echo '<h1>Hello nginx</h1>' > /var/www/html/index.html\n"], ["\\$ ", "apt install -y nginx\n"], ["\\$ ", "exit\n"], ["> ", "exit\n"]]}

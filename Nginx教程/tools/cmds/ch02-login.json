@@ -1,0 +1,3 @@
+{"setup": "ssh-keygen -A >/dev/null; mkdir -p /run/sshd; ip link set lo up; ip addr add 192.168.1.50/24 dev lo; /usr/sbin/sshd 2>/dev/null; cd /root/web; export PS1='PS C:\\\\Users\\\\zhang> '",
+ "steps": [["> ", "ssh ubuntu@192.168.1.50\n"], ["\\? ", "yes\n"], ["password: ", "wrong1\n"], ["password: ", "wrong2\n"], ["password: ", "wrong3\n"],
+  ["> ", "ssh ubuntu@192.168.1.50\n"], ["password: ", "Abc12345\n"], ["\\$ ", "whoami\n"], ["\\$ ", "hostname\n"], ["\\$ ", "exit\n"], ["> ", "exit\n"]]}

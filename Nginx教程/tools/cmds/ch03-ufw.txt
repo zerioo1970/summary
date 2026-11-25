@@ -1,0 +1,13 @@
+#ip link set lo up; ip link add ens33 type dummy; ip addr add 192.168.1.50/24 dev ens33; ip link set ens33 up
+hostname -I
+ip -4 addr show ens33
+ufw status
+ufw app list
+ufw app info 'Nginx HTTP'
+ufw allow OpenSSH
+ufw allow 'Nginx HTTP'
+yes | ufw enable
+ufw status
+ufw delete allow 'Nginx HTTP'
+ufw status numbered
+#ufw --force reset; ufw disable

@@ -1,0 +1,11 @@
+#curl(){ command curl -sS "$@"; }; ip link set lo up; ip addr add 192.168.1.50/24 dev lo; nginx
+runuser -u ubuntu -- apt install -y nginx
+runuser -u ubuntu -- bash -c "echo '<h1>Hello</h1>' > /var/www/html/index.html"
+cp /home/ubuntu/hello.html /var/www/html/
+ls -l /var/www/html
+curl -I http://192.168.1.50/hello.html
+curl http://192.168.1.50/hello.html
+ufw app info 'Nginx Full'
+ufw app info 'Nginx QUIC'
+ufw app info OpenSSH
+#rm /var/www/html/hello.html; nginx -s stop

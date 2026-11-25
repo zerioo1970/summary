@@ -1,0 +1,2 @@
+{"setup": "DEBIAN_FRONTEND=noninteractive apt-get purge -y -qq nginx nginx-common >/dev/null 2>&1; rm -rf /var/www/html /etc/nginx; cd /root; export PS1='ubuntu@web01:~$ '",
+ "steps": [["\\$ ", "apt update\n"], ["\\$ ", "apt install -y nginx\n"], ["\\$ ", "nginx -v\n"], ["\\$ ", "exit\n"]]}

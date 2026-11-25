@@ -1,0 +1,5 @@
+{"setup": "ssh-keygen -A >/dev/null; mkdir -p /run/sshd; ip link set lo up; ip addr add 192.168.1.50/24 dev lo; /usr/sbin/sshd 2>/dev/null; cd /root/web; export PS1='PS C:\\\\Users\\\\zhang> '",
+ "steps": [["> ", "pkill -x sshd; sleep 1; clear\n"], ["> ", "ssh ubuntu@192.168.1.50\n"],
+  ["> ", "iptables -A INPUT -p tcp --dport 22 -j DROP; /usr/sbin/sshd 2>/dev/null; clear\n"], ["> ", "ssh -o ConnectTimeout=5 ubuntu@192.168.1.50\n"],
+  ["> ", "iptables -F; pkill -x sshd; sleep 1; rm -f /etc/ssh/ssh_host_*; ssh-keygen -A >/dev/null; /usr/sbin/sshd 2>/dev/null; clear\n"],
+  ["> ", "ssh ubuntu@192.168.1.50\n"], ["> ", "ssh-keygen -R 192.168.1.50\n"], ["> ", "exit\n"]]}
