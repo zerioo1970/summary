@@ -21,6 +21,19 @@
   - `PS C:\Users\zhang>`：你自己的 Windows 电脑，PowerShell 窗口；
   - `ubuntu@web01:~$`：已经用 ssh 登录的服务器。
 - 每条命令写清楚每个参数的作用，后面给出**实际运行的输出**，再告诉你看到什么算做对了。
+- 每章都和 **Windows Server 的做法对照**：先说在 Windows Server 上你用什么工具做这件事，再说 Ubuntu 上对应的命令，以及两者不一样的地方。例如：
+
+  | 要做的事 | Windows Server | Ubuntu Server |
+  |---|---|---|
+  | 管理服务 | 服务管理器（`services.msc`） | `systemctl` |
+  | 看进程、结束进程 | 任务管理器 | `top`、`htop`、`kill` |
+  | 看系统日志 | 事件查看器 | `journalctl` |
+  | 定时执行任务 | 任务计划程序 | `crontab`、systemd 定时器 |
+  | 分区、格式化、加盘 | 磁盘管理（`diskmgmt.msc`） | `lsblk`、`parted`、`mkfs`、`/etc/fstab` |
+  | 防火墙 | 高级安全 Windows Defender 防火墙 | `ufw` |
+  | 装软件、打补丁 | 安装程序、Windows 更新 | `apt`、`unattended-upgrades` |
+  | 用户和权限 | 计算机管理 → 本地用户和组、NTFS 权限 | `adduser`、`usermod`、`chmod`、`chown` |
+
 - 文中服务器地址统一写成 `192.168.1.50`，用户名写成 `ubuntu`，主机名写成 `web01`，你的 Windows 用户名写成 `zhang`。照做时换成你自己的。
 
 ## 章节编号和文件组织
