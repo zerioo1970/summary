@@ -5,6 +5,7 @@
 > | 项 | 版本 |
 > |---|---|
 > | 服务器系统 | Ubuntu Server 26.04.1 LTS（只装命令行，不装桌面） |
+> | 练习用的服务器 | 在 Windows 上用 **VMware Workstation Pro**（26H1 版，个人和商业使用都免费）建虚拟机，安装 Ubuntu Server |
 > | 你的电脑 | Windows 10 / 11，命令在 **PowerShell** 里执行；使用 Windows 自带的 OpenSSH 客户端（`ssh`、`scp`、`ssh-keygen`） |
 > | 用到的系统组件 | 26.04 默认的 `sudo-rs`（sudo）、`chrony`（时间同步）、`netplan`（网络配置）、`ufw`（防火墙）、`systemd`（服务、日志、定时器）；其他软件的具体版本在对应章节写作时核实 |
 
@@ -126,7 +127,7 @@ Ubuntu服务器日常管理教程/
 
 | 章 | 一句话说明 |
 |---|---|
-| 第 1-1 章 安装 Ubuntu Server 26.04 | 在虚拟机或物理机上安装；安装向导每一屏怎么选：语言、网络、磁盘（LVM）、用户、OpenSSH |
+| 第 1-1 章 安装 Ubuntu Server 26.04 | 在 VMware Workstation 里建虚拟机、挂安装镜像（物理服务器和其他虚拟化平台的不同之处单独说明）；安装向导每一屏怎么选：语言、网络、磁盘（LVM）、用户、OpenSSH |
 | 第 1-2 章 装好后先做的几件事 | 第一次 ssh 登录，更新系统，改主机名，设时区，检查时间同步（`timedatectl`、`chronyc`） |
 | 第 1-3 章 用密钥登录，关掉密码登录 | `ssh-keygen` 生成密钥，把公钥放到服务器，确认密钥能登录后再关闭密码登录；用 `~/.ssh/config` 简化登录命令 |
 
