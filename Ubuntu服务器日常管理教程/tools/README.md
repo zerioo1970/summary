@@ -40,11 +40,17 @@ sha256sum .tools/iso/ubuntu-26.04.1-live-server-amd64.iso
 
 `ch01-03/k.sh`（在 `--unshare-net --unshare-pid` 的 bwrap 里运行）：模拟 cloud-init 写 `sshd_config.d/50-cloud-init.conf`（`PasswordAuthentication yes`），起 sshd；普通用户 `ssh-keygen`（`k.py` 伪终端回答提示）、按 CRLF 换行把公钥经 ssh 追加到 `authorized_keys`（密码用 `SSH_ASKPASS` 提供）、密钥登录、`ssh -v`、`~/.ssh/config`；对比只改主配置文件和 `01-no-password.conf` 两种做法的 `sshd -T`；`sshd -t` 语法错误；关闭密码后的拒绝提示；`.ssh` 权限 777 的日志。
 
-## 5. PowerShell 输出
+## 5. 第 2-1 章：交互式 bash
+
+`ch02-01/bashdrive.py 剧本.json 输出目录`：在伪终端里执行 `wr.sh su - ubuntu`，按剧本发按键（Tab、Ctrl+R、Ctrl+C 等），用 pyte 保存每个时刻的屏幕文字。剧本 `t21.json`。用户 `ubuntu` 的 `.bashrc`、`.profile` 从 `/etc/skel` 复制。
+
+**根文件系统的符号链接修复（2026-11-28）**：用 7-Zip 解 squashfs 时，指向绝对路径的符号链接（如 `/usr/bin/which -> /etc/alternatives/which`）没有解出来，u2604 少了 536 个、w2604 少了 266 个（第 1-2 章补 `awk` 就是这个原因）。修复方法：在 r2404 里装 `squashfs-tools`、`liblzo2-2`，`unsquashfs -lls` 列出两层 squashfs 的全部符号链接，把缺的逐个建上。重建环境时直接用 `unsquashfs` 解包即可避免。
+
+## 6. PowerShell 输出
 
 `Get-FileHash` 等命令用 Linux 版 PowerShell 7.7.0（GitHub 发布页的 `linux-x64.tar.gz`）对真实 ISO 文件执行；Windows 上的路径写法按 Windows 改写。
 
-## 6. 测试环境做不到、正文标注 ⚠ 未实机验证 的内容
+## 7. 测试环境做不到、正文标注 ⚠ 未实机验证 的内容
 
 - VMware Workstation 的界面和菜单；
 - 安装进度、重启、控制台登录和欢迎信息；
