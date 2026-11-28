@@ -29,11 +29,18 @@ sha256sum .tools/iso/ubuntu-26.04.1-live-server-amd64.iso
 
 演示模式做不到的：安装进度日志（靠 journald，沙箱没有）、"Installation complete!" 那一屏、重启和第一次开机。这些内容在正文里标注了未实机验证，界面文字从源码 `subiquity/ui/views/installprogress.py` 核实。
 
-## 3. PowerShell 输出
+## 3. 第 1-2 章：升级、ssh、chrony
+
+- 工作副本：`cp -a .tools/u2604 .tools/w2604`，写入 `/etc/hostname`（web01）和 `/etc/hosts`，软件源改成 `cn.archive.ubuntu.com`（安装程序会这样写），删掉解包遗留的 `cdrom.sources`；测试用的 `APT::Sandbox::User "root"` 写在 `/etc/apt/apt.conf.d/99zz-test-sandbox`（bwrap 里 apt 无法切换到 `_apt` 用户）；`update-alternatives` 补上 `awk -> mawk`。
+- `ch01-02/wr.sh 命令` 以 root 在工作副本里执行（共享宿主机网络），用于 `apt update/upgrade/list`、时区；需要终端效果的用 `script -qc` 包一层。
+- ssh：`apt install openssh-server` 后，`bwrap --unshare-net --unshare-pid --cap-add CAP_NET_ADMIN` 建独立网络，回环网卡加 192.168.1.50，起 `sshd`，用 `ch01-02/sshtest.py`（伪终端按剧本输入 yes、密码）从普通用户执行 `ssh ubuntu@192.168.1.50`；剧本见 `ch01-02/net.sh`、`net2.sh`。客户端是 Ubuntu 的 OpenSSH 10.2p1，提示文字和 Windows 版 OpenSSH 相同，路径按 Windows 改写。
+- chrony：`ch01-02/chr.sh` 以 `chronyd -x -u root`（只测量、不调整时钟）运行 40 秒，再执行 `chronyc sources`、`tracking`。
+
+## 4. PowerShell 输出
 
 `Get-FileHash` 等命令用 Linux 版 PowerShell 7.7.0（GitHub 发布页的 `linux-x64.tar.gz`）对真实 ISO 文件执行；Windows 上的路径写法按 Windows 改写。
 
-## 4. 测试环境做不到、正文标注 ⚠ 未实机验证 的内容
+## 5. 测试环境做不到、正文标注 ⚠ 未实机验证 的内容
 
 - VMware Workstation 的界面和菜单；
 - 安装进度、重启、控制台登录和欢迎信息；
