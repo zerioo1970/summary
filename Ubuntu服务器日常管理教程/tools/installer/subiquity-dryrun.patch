@@ -1,0 +1,99 @@
+diff --git a/examples/lsb-release-resolute b/examples/lsb-release-resolute
+index 0b7d4e7..68b0483 100644
+--- a/examples/lsb-release-resolute
++++ b/examples/lsb-release-resolute
+@@ -1,4 +1,4 @@
+ DISTRIB_ID=Ubuntu
+ DISTRIB_RELEASE=26.04
+ DISTRIB_CODENAME=resolute
+-DISTRIB_DESCRIPTION="Ubuntu Resolute Raccoon (development branch)"
++DISTRIB_DESCRIPTION="Ubuntu 26.04.1 LTS"
+diff --git a/subiquity/server/controllers/refresh.py b/subiquity/server/controllers/refresh.py
+index be60c15..4efa338 100644
+--- a/subiquity/server/controllers/refresh.py
++++ b/subiquity/server/controllers/refresh.py
+@@ -190,7 +190,7 @@ class RefreshController(SubiquityController):
+     @with_context()
+     async def check_for_update(self, context):
+         await asyncio.shield(self.configure_task)
+-        if self.app.updated:
++        if self.app.updated or self.opts.dry_run:
+             context.description = "not offered update when already updated"
+             self.status.availability = RefreshCheckState.UNAVAILABLE
+             return
+diff --git a/subiquity/server/geoip.py b/subiquity/server/geoip.py
+index 85a8e8e..85c6533 100644
+--- a/subiquity/server/geoip.py
++++ b/subiquity/server/geoip.py
+@@ -53,9 +53,9 @@ class DryRunGeoIPStrategy(GeoIPStrategy):
+   <Response>
+     <Ip>255.255.255.255</Ip>
+     <Status>OK</Status>
+-    <CountryCode>FR</CountryCode>
++    <CountryCode>CN</CountryCode>
+     <CountryCode3>Unknown</CountryCode3>
+-    <CountryName>France</CountryName>
++    <CountryName>China</CountryName>
+     <RegionCode>A8</RegionCode>
+     <RegionName>Ile-de-France</RegionName>
+     <City>Paris</City>
+@@ -63,7 +63,7 @@ class DryRunGeoIPStrategy(GeoIPStrategy):
+     <Latitude>48.8151</Latitude>
+     <Longitude>2.2182</Longitude>
+     <AreaCode>None</AreaCode>
+-    <TimeZone>Europe/Paris</TimeZone>
++    <TimeZone>Asia/Shanghai</TimeZone>
+   </Response>
+ """
+ 
+diff --git a/subiquitycore/controllers/network.py b/subiquitycore/controllers/network.py
+index 98336c5..4623236 100644
+--- a/subiquitycore/controllers/network.py
++++ b/subiquitycore/controllers/network.py
+@@ -121,31 +121,12 @@ default_netplan = """
+ network:
+   version: 2
+   ethernets:
+-    "all-en":
+-       match:
+-         name: "en*"
+-       addresses:
+-         - 10.0.2.15/24
+-       nameservers:
+-         addresses:
+-           - 8.8.8.8
+-           - 8.4.8.4
+-         search:
+-           - foo
+-           - bar
+-       routes:
+-         - to: default
+-           via: 10.0.2.2
++    "ens33":
++       dhcp4: true
+     "all-eth":
+        match:
+          name: "eth*"
+        dhcp4: true
+-  wifis:
+-    "wlsp4":
+-       dhcp4: true
+-       access-points:
+-         "some-ap":
+-            password: password
+ """
+ 
+ 
+diff --git a/subiquitycore/lsb_release.py b/subiquitycore/lsb_release.py
+index 7bf9172..f6c8995 100644
+--- a/subiquitycore/lsb_release.py
++++ b/subiquitycore/lsb_release.py
+@@ -3,7 +3,7 @@ import shlex
+ from typing import Dict
+ 
+ LSB_RELEASE_FILE = "/etc/lsb-release"
+-LSB_RELEASE_EXAMPLE = "examples/lsb-release-focal"
++LSB_RELEASE_EXAMPLE = "examples/lsb-release-resolute"
+ 
+ 
+ def lsb_release_from_path(path: str) -> Dict[str, str]:
