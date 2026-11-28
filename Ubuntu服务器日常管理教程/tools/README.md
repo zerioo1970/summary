@@ -36,11 +36,15 @@ sha256sum .tools/iso/ubuntu-26.04.1-live-server-amd64.iso
 - ssh：`apt install openssh-server` 后，`bwrap --unshare-net --unshare-pid --cap-add CAP_NET_ADMIN` 建独立网络，回环网卡加 192.168.1.50，起 `sshd`，用 `ch01-02/sshtest.py`（伪终端按剧本输入 yes、密码）从普通用户执行 `ssh ubuntu@192.168.1.50`；剧本见 `ch01-02/net.sh`、`net2.sh`。客户端是 Ubuntu 的 OpenSSH 10.2p1，提示文字和 Windows 版 OpenSSH 相同，路径按 Windows 改写。
 - chrony：`ch01-02/chr.sh` 以 `chronyd -x -u root`（只测量、不调整时钟）运行 40 秒，再执行 `chronyc sources`、`tracking`。
 
-## 4. PowerShell 输出
+## 4. 第 1-3 章：密钥登录
+
+`ch01-03/k.sh`（在 `--unshare-net --unshare-pid` 的 bwrap 里运行）：模拟 cloud-init 写 `sshd_config.d/50-cloud-init.conf`（`PasswordAuthentication yes`），起 sshd；普通用户 `ssh-keygen`（`k.py` 伪终端回答提示）、按 CRLF 换行把公钥经 ssh 追加到 `authorized_keys`（密码用 `SSH_ASKPASS` 提供）、密钥登录、`ssh -v`、`~/.ssh/config`；对比只改主配置文件和 `01-no-password.conf` 两种做法的 `sshd -T`；`sshd -t` 语法错误；关闭密码后的拒绝提示；`.ssh` 权限 777 的日志。
+
+## 5. PowerShell 输出
 
 `Get-FileHash` 等命令用 Linux 版 PowerShell 7.7.0（GitHub 发布页的 `linux-x64.tar.gz`）对真实 ISO 文件执行；Windows 上的路径写法按 Windows 改写。
 
-## 5. 测试环境做不到、正文标注 ⚠ 未实机验证 的内容
+## 6. 测试环境做不到、正文标注 ⚠ 未实机验证 的内容
 
 - VMware Workstation 的界面和菜单；
 - 安装进度、重启、控制台登录和欢迎信息；
